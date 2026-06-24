@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>יד תמר – מודרני ונועז</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" />
+  <style>
+:root {
+  --bg:      #F5F7FF;
+  --bg2:     #ECEFFE;
+  --card:    #FFFFFF;
+  --text:    #0F172A;
+  --muted:   #64748B;
+  --teal:    #6366F1;
+  --teal-dk: #4338CA;
+  --teal-lt: #EEF2FF;
+  --gold:    #F59E0B;
+  --gold-dk: #D97706;
+  --pink:    #EC4899;
+  --pink-lt: #FDF2F8;
+  --green:   #10B981;
+  --red:     #EF4444;
+  --border:  #E2E8F0;
+  --shadow:  0 1px 10px rgba(15,23,42,.08);
+  --shadow-md: 0 4px 24px rgba(15,23,42,.12);
+  --shadow-lg: 0 8px 40px rgba(15,23,42,.16);
+  --radius:  16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Header */
+.site-header {
+  background: #fff;
+  color: var(--text);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 0 var(--border), 0 4px 16px rgba(15,23,42,.06);
+}
+.header-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; max-width: 1280px; margin: 0 auto; }
+.logo-area { display: flex; align-items: center; gap: 12px; }
+.logo-img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; object-position: center top; box-shadow: 0 2px 8px rgba(99,102,241,.3); }
+.logo-text h1 { font-size: 1.35rem; font-weight: 900; color: var(--teal); letter-spacing: -.5px; }
+.logo-text p  { font-size: .75rem; color: var(--muted); }
+.header-nav { display: flex; gap: 6px; }
+.nav-btn { background: transparent; border: 1.5px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 10px; cursor: pointer; font-family: 'Heebo', sans-serif; font-size: .88rem; font-weight: 500; transition: all .2s; }
+.nav-btn:hover { background: var(--teal-lt); border-color: var(--teal); color: var(--teal-dk); }
+.nav-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 700; }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #4338CA 0%, #7C3AED 45%, #EC4899 100%);
+  padding: 64px 32px 56px;
+  position: relative; overflow: hidden;
+}
+.hero-bg-circles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.hero-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,.06); }
+.hero-circle.c1 { width: 400px; height: 400px; top: -150px; left: -80px; }
+.hero-circle.c2 { width: 280px; height: 280px; bottom: -80px; right: 60px; }
+.hero-circle.c3 { width: 180px; height: 180px; top: 20px; right: 30%; }
+
+.hero-top { display: flex; align-items: center; justify-content: center; gap: 56px; max-width: 1000px; margin: 0 auto 48px; position: relative; z-index: 1; }
+.hero-text { flex: 1; text-align: right; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: .8rem; font-weight: 600; padding: 5px 14px; border-radius: 20px; margin-bottom: 18px; }
+.hero-text h2 { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 14px; line-height: 1.15; letter-spacing: -.5px; }
+.hero-text p  { font-size: 1.1rem; color: rgba(255,255,255,.8); }
+.hero-illustration { width: 220px; height: 220px; min-width: 180px; border-radius: 28px; overflow: hidden; border: 4px solid rgba(255,255,255,.3); box-shadow: 0 16px 48px rgba(0,0,0,.25); flex-shrink: 0; transform: rotate(-3deg); }
+.hero-illustration img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+
+.product-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.product-card { background: rgba(255,255,255,.95); border-radius: 20px; padding: 26px 20px; width: 250px; cursor: pointer; border: 2px solid transparent; transition: all .3s; text-align: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,.12); backdrop-filter: blur(10px); }
+.product-card:hover { transform: translateY(-8px); border-color: #fff; box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+.product-card.selected { border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(99,102,241,.2), 0 8px 32px rgba(0,0,0,.15); }
+.product-card .card-icon { font-size: 2.8rem; margin-bottom: 10px; }
+.product-card h3 { font-size: 1rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 6px; }
+.product-card .card-price { font-size: 1.5rem; font-weight: 900; color: var(--pink); margin: 8px 0 4px; }
+.card-price-free { color: var(--green) !important; }
+.product-card .card-desc { font-size: .8rem; color: var(--muted); line-height: 1.55; }
+.product-card.card-gift { border: 2px dashed rgba(245,158,11,.6); background: rgba(255,253,235,.95); }
+.card-gift-badge { position: absolute; top: -13px; right: 50%; transform: translateX(50%); background: var(--gold); color: #fff; font-size: .72rem; font-weight: 800; padding: 3px 14px; border-radius: 20px; white-space: nowrap; }
+
+/* About */
+.about-section { background: var(--bg2); padding: 56px 32px; }
+.about-inner { max-width: 960px; margin: 0 auto; }
+.about-header { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+.about-logo-pill { display: flex; align-items: center; gap: 14px; background: var(--card); border-radius: 60px; padding: 8px 20px 8px 8px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+.about-logo-pill img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; object-position: center top; }
+.about-logo-pill span { font-size: .9rem; font-weight: 700; color: var(--teal-dk); }
+.about-heading { font-size: 1.4rem; font-weight: 900; color: var(--text); }
+
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.about-card { background: var(--card); border-radius: var(--radius); padding: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.about-card-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.about-card h4 { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.about-card p { font-size: .88rem; color: var(--muted); line-height: 1.7; }
+.about-card ul { list-style: none; }
+.about-card ul li { font-size: .88rem; color: var(--text); padding: 4px 0; }
+.about-card ul li::before { content: '→ '; color: var(--teal); font-weight: 700; }
+.about-copyright { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 20px; }
+
+/* Progress Steps */
+.steps-bar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+}
+.steps-inner { display: flex; align-items: center; max-width: 600px; margin: 0 auto; padding: 20px 0; }
+.step { display: flex; align-items: center; flex: 1; cursor: pointer; }
+.step-num-circle { width: 36px; height: 36px; border-radius: 50%; background: var(--border); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 800; flex-shrink: 0; transition: all .3s; }
+.step.active .step-num-circle { background: var(--teal); color: #fff; box-shadow: 0 0 0 4px rgba(99,102,241,.2); }
+.step.done  .step-num-circle { background: var(--green); color: #fff; }
+.step-label { font-size: .82rem; color: var(--muted); margin-right: 10px; white-space: nowrap; transition: color .3s; }
+.step.active .step-label { color: var(--teal-dk); font-weight: 700; }
+.step.done  .step-label { color: var(--green); }
+.step-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; transition: background .3s; }
+.step.done + .step .step-line { background: var(--green); }
+.step:last-child .step-line { display: none; }
+
+/* Layout */
+.page-section { display: none; padding: 36px 32px; }
+.page-section.active { display: block; }
+.container { max-width: 1140px; margin: 0 auto; }
+.section-title { font-size: 1.5rem; font-weight: 900; color: var(--text); margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+
+/* Catalog */
+.catalog-toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+.search-input { flex: 1; min-width: 200px; padding: 11px 18px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: .95rem; direction: rtl; outline: none; transition: all .2s; background: #fff; color: var(--text); box-shadow: var(--shadow); }
+.search-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { padding: 7px 16px; border-radius: 10px; border: 1.5px solid var(--border); background: #fff; font-family: 'Heebo', sans-serif; font-size: .82rem; cursor: pointer; transition: all .2s; color: var(--muted); font-weight: 500; }
+.chip:hover  { border-color: var(--teal); color: var(--teal-dk); background: var(--teal-lt); }
+.chip.active { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 700; box-shadow: 0 2px 8px rgba(99,102,241,.3); }
+.catalog-actions { margin-bottom: 16px; display: flex; gap: 10px; }
+.btn-select-all, .btn-select-cat { padding: 8px 18px; border-radius: 10px; border: 1.5px solid var(--teal); background: var(--teal-lt); color: var(--teal-dk); font-family: 'Heebo', sans-serif; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .2s; }
+.btn-select-all:hover, .btn-select-cat:hover { background: var(--teal); color: #fff; }
+
+.stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.story-item { background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: all .2s; display: flex; align-items: flex-start; gap: 10px; }
+.story-item:hover   { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(99,102,241,.12); }
+.story-item.checked { border-color: var(--teal); background: var(--teal-lt); box-shadow: 0 0 0 2px rgba(99,102,241,.2); }
+.story-check { width: 20px; height: 20px; min-width: 20px; border: 1.5px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: .75rem; color: #fff; background: #fff; transition: all .2s; margin-top: 2px; }
+.story-item.checked .story-check { background: var(--teal); border-color: var(--teal); }
+.adult-disc-item { cursor: default; }
+.adult-disc-item:hover { transform: none !important; box-shadow: none !important; border-color: var(--teal) !important; }
+.story-info .story-code { font-size: .72rem; color: var(--muted); margin-bottom: 2px; }
+.story-info .story-title { font-size: .88rem; font-weight: 600; line-height: 1.3; color: var(--text); }
+.story-info .story-cat   { font-size: .72rem; color: var(--teal); margin-top: 3px; font-weight: 600; }
+.story-info .story-dur   { font-size: .72rem; color: var(--muted); }
+
+/* Pricing Bar */
+.pricing-bar { position: sticky; bottom: 0; background: var(--text); color: #fff; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 -4px 20px rgba(15,23,42,.15); flex-wrap: wrap; z-index: 50; border-radius: 20px 20px 0 0; margin: 0 16px; }
+.pricing-info { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+.pricing-stat .val { font-size: 1.4rem; font-weight: 900; color: #fff; }
+.pricing-stat .lbl { font-size: .73rem; color: rgba(255,255,255,.6); }
+.pricing-tiers-label { font-size: .78rem; color: rgba(255,255,255,.6); margin-bottom: 5px; }
+.pricing-tiers { display: flex; gap: 6px; flex-wrap: wrap; }
+.tier-badge { padding: 3px 10px; border-radius: 8px; font-size: .75rem; background: rgba(255,255,255,.1); color: rgba(255,255,255,.7); border: none; }
+.tier-badge.active-tier { background: var(--gold); color: #111; font-weight: 700; }
+
+/* Buttons */
+.btn { padding: 12px 28px; border-radius: 12px; border: none; cursor: pointer; font-family: 'Heebo', sans-serif; font-size: 1rem; font-weight: 700; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--teal); color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,.35); }
+.btn-primary:hover { background: var(--teal-dk); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,.45); }
+.btn-pink { background: var(--pink); color: #fff; box-shadow: 0 4px 14px rgba(236,72,153,.3); }
+.btn-pink:hover { background: #d1348a; transform: translateY(-2px); }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--muted); }
+.btn-outline:hover { border-color: var(--teal); color: var(--teal-dk); background: var(--teal-lt); }
+.btn-sm { padding: 7px 16px; font-size: .85rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Cards & Summary */
+.summary-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.summary-card h3 { font-size: 1.08rem; font-weight: 800; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--teal-lt); display: flex; align-items: center; gap: 8px; }
+.order-items-list { list-style: none; max-height: 260px; overflow-y: auto; }
+.order-items-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+.order-items-list li:last-child { border-bottom: none; }
+.price-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: .92rem; color: var(--muted); }
+.price-row.total { font-size: 1.2rem; font-weight: 800; color: var(--text); border-top: 2px solid var(--border); margin-top: 8px; padding-top: 12px; }
+.price-row.total .amount { color: var(--pink); }
+
+/* Forms */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: .85rem; font-weight: 700; color: var(--text); }
+.form-group label .req { color: var(--red); }
+.form-input, .form-textarea { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Heebo', sans-serif; font-size: .95rem; direction: rtl; outline: none; transition: all .2s; background: #fff; color: var(--text); }
+.form-input:focus, .form-textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+.form-input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+.error-msg { font-size: .78rem; color: var(--red); margin-top: 2px; }
+
+.payment-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.payment-option { flex: 1; min-width: 130px; border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; text-align: center; transition: all .2s; background: var(--bg); }
+.payment-option:hover { border-color: var(--teal); background: var(--teal-lt); }
+.payment-option.selected { border-color: var(--teal); background: var(--teal-lt); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+.payment-option .pay-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.payment-option .pay-name { font-size: .88rem; font-weight: 700; color: var(--text); }
+.payment-option .pay-desc { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+.usb-toggle { display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: all .2s; background: var(--bg); }
+.usb-toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--teal); }
+.usb-toggle.active { border-color: var(--teal); background: var(--teal-lt); }
+
+/* Success */
+.success-screen { text-align: center; padding: 80px 24px; }
+.check-circle { width: 96px; height: 96px; background: linear-gradient(135deg, var(--teal), var(--pink)); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; font-weight: 800; margin: 0 auto 28px; animation: pop .4s ease; box-shadow: 0 8px 32px rgba(99,102,241,.35); }
+@keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.success-screen h2 { font-size: 2.2rem; font-weight: 900; color: var(--teal-dk); margin-bottom: 12px; }
+.success-screen p  { font-size: 1.05rem; color: var(--muted); max-width: 500px; margin: 0 auto 28px; }
+
+/* Gift */
+.gift-section { background: linear-gradient(135deg, var(--teal), var(--pink)); border-radius: 24px; padding: 48px; text-align: center; }
+.gift-section h2 { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
+.gift-section p  { color: rgba(255,255,255,.85); margin-bottom: 28px; font-size: 1.05rem; }
+.gift-form { max-width: 420px; margin: 0 auto; text-align: right; }
+.gift-form .form-input { background: rgba(255,255,255,.92); border-color: transparent; }
+.gift-form .form-input:focus { border-color: #fff; background: #fff; }
+
+/* Toast */
+#toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+.toast { padding: 12px 24px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: .9rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.15); animation: slideUp .3s ease; white-space: nowrap; }
+.toast-success { background: var(--green); color: #fff; }
+.toast-error   { background: var(--red); color: #fff; }
+.toast-info    { background: var(--teal); color: #fff; }
+@keyframes slideUp { from{transform:translateX(-50%) translateY(20px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+
+@media(max-width:768px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .steps-inner { overflow-x: auto; gap: 0; }
+}
+@media(max-width:640px) {
+  .hero-top { flex-direction: column-reverse; }
+  .form-grid { grid-template-columns: 1fr; }
+  #summary-layout { grid-template-columns: 1fr !important; }
+  .hero-text h2 { font-size: 2rem; }
+  .pricing-bar { border-radius: 0; margin: 0; }
+}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <img src="../גלופה%20001.jpg" alt="יד תמר" class="logo-img" />
+      <div class="logo-text">
+        <h1>יד תמר</h1>
+        <p>גם חוויה וגם ידע</p>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" onclick="showTab('store')">חנות</button>
+      <button class="nav-btn" onclick="showTab('gift')">סיפור מתנה</button>
+      <button class="nav-btn" onclick="window.location='../admin.html'">ניהול</button>
+    </nav>
+  </div>
+</header>
+
+<div id="tab-store">
+
+  <section class="hero">
+    <div class="hero-bg-circles">
+      <div class="hero-circle c1"></div>
+      <div class="hero-circle c2"></div>
+      <div class="hero-circle c3"></div>
+    </div>
+
+    <div class="hero-top">
+      <div class="hero-text">
+        <div class="hero-badge">✨ 428 סיפורים דיגיטליים</div>
+        <h2>ספריית סיפורים<br>לכל המשפחה</h2>
+        <p>סיפורי שמע לילדים – בחרו, שלמו, קבלו מיד</p>
+      </div>
+      <div class="hero-illustration">
+        <img src="../גלופה%20001.jpg" alt="רב מספר סיפורים לילדים" />
+      </div>
+    </div>
+
+    <div class="product-cards">
+      <div class="product-card" id="card-selection" onclick="selectProduct('STORY_SELECTION')">
+        <div class="card-icon">🎧</div>
+        <h3>בחירה חופשית</h3>
+        <div class="card-price" id="price-indicator">₪8 לסיפור</div>
+        <div class="card-desc">בחרו סיפורים לפי בחירתכם<br>מחיר דינמי לפי כמות</div>
+      </div>
+      <div class="product-card" id="card-full" onclick="selectProduct('FULL_LIBRARY')">
+        <div class="card-icon">📚</div>
+        <h3>ספרייה מלאה</h3>
+        <div class="card-price">₪1,550</div>
+        <div class="card-desc">כל 428 הסיפורים בחבילה אחת<br>+ 5 קבצי גמרא</div>
+      </div>
+      <div class="product-card" id="card-adult" onclick="selectProduct('ADULT_COLLECTION')">
+        <div class="card-icon">🎓</div>
+        <h3>אוסף מבוגרים</h3>
+        <div class="card-price">₪360</div>
+        <div class="card-desc">24 אוספי MP3 – כ-283 שיעורים<br>כולל דיסק און קי</div>
+      </div>
+      <div class="product-card card-gift" id="card-gift" onclick="showTab('gift')">
+        <div class="card-gift-badge">ללא תשלום</div>
+        <div class="card-icon">🎁</div>
+        <h3>סיפור מתנה</h3>
+        <div class="card-price card-price-free">חינם!</div>
+        <div class="card-desc">השאירו פרטים בלבד<br>קבלו סיפור נבחר במתנה</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="about-inner">
+      <div class="about-header">
+        <div class="about-logo-pill">
+          <img src="../גלופה%20001.jpg" alt="יד תמר" />
+          <span>יד תמר – מפי הרב עמנואל תהילה</span>
+        </div>
+      </div>
+      <h2 class="about-heading" style="margin-bottom:24px">ספורי חז"ל ותנ"ך לילדים — אוצר לדורות</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-card-icon">📖</div>
+          <h4>40 שנות יצירה</h4>
+          <p>הסיפורים המסופרים בקולו העדין של הרב מעשירים בידע תורני, מוסר יהודי, ערכים ויראת שמיים. מיוחד לפני שעות השינה.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon">🏠</div>
+          <h4>לכל הגילאים</h4>
+          <ul>
+            <li>גילאי 5 ומעלה — לכל המשפחה</li>
+            <li>מורות, גננות ומלמדים</li>
+            <li>אנשי חינוך והוראה</li>
+            <li>כולל דיסק און קי לגיבוי</li>
+          </ul>
+        </div>
+        <div class="about-card" style="grid-column:1/-1">
+          <div class="about-card-icon">🏆</div>
+          <h4>בהסכמת גדולי ישראל</h4>
+          <p>הסיפורים בהסכמת ובהמלצת הגה"צ רבי דב יפה זצוק"ל — משגיח רוחני דישיבת "כנסת חזקיהו" כפר חסידים. ספורי השקפה יהודית, תודה, ערכים ויראת שמיים לנשמה הצעירה.</p>
+        </div>
+      </div>
+      <p class="about-copyright">כל הזכויות שמורות ל"יד תמר" — החומר נמכר לשימוש אישי בלבד</p>
+    </div>
+  </section>
+
+  <div class="steps-bar" id="steps-bar">
+    <div class="steps-inner">
+      <div class="step active" id="step-1" onclick="goToStep(1)">
+        <div class="step-num-circle">1</div>
+        <span class="step-label">בחירת תוכן</span>
+        <div class="step-line"></div>
+      </div>
+      <div class="step" id="step-2" onclick="goToStep(2)">
+        <div class="step-num-circle">2</div>
+        <span class="step-label">סיכום הזמנה</span>
+        <div class="step-line"></div>
+      </div>
+      <div class="step" id="step-3" onclick="goToStep(3)">
+        <div class="step-num-circle">3</div>
+        <span class="step-label">פרטים ותשלום</span>
+        <div class="step-line"></div>
+      </div>
+      <div class="step" id="step-4">
+        <div class="step-num-circle">4</div>
+        <span class="step-label">אישור</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="max-width:1140px;margin:0 auto">
+
+    <!-- STEP 1 -->
+    <div class="page-section active" id="section-1">
+      <div id="bundle-info" style="display:none;padding:24px 0">
+        <div class="summary-card" id="bundle-card">
+          <h3>📦 <span id="bundle-title"></span></h3>
+          <p id="bundle-desc" style="color:var(--muted);margin-bottom:16px"></p>
+          <div class="price-row" style="font-size:1.3rem;font-weight:800">
+            <span>סה״כ לתשלום:</span>
+            <span class="amount" id="bundle-price-display" style="color:var(--pink)"></span>
+          </div>
+        </div>
+        <div id="adult-disc-list" style="display:none;margin-top:16px">
+          <div class="section-title" style="font-size:1rem;margin-bottom:12px">📋 תוכן האוסף — 24 דיסקים, 283 הרצאות</div>
+          <div class="stories-grid" id="adult-discs-grid"></div>
+        </div>
+        <div style="text-align:center;margin-top:16px">
+          <button class="btn btn-primary" onclick="goToStep(2)">המשך להזמנה ←</button>
+        </div>
+      </div>
+
+      <div id="catalog-panel">
+        <div class="catalog-toolbar">
+          <input type="text" class="search-input" id="search-box" placeholder="🔍 חיפוש סיפור לפי שם או קוד..." oninput="filterStories()" />
+          <div class="filter-chips" id="category-chips">
+            <button class="chip active" data-cat="all" onclick="filterByCategory(this)">הכל</button>
+          </div>
+        </div>
+        <div class="catalog-actions" id="catalog-actions">
+          <button class="btn-select-all" id="select-all-btn" onclick="toggleSelectAll()">✓ בחר הכל</button>
+          <button class="btn-select-cat" id="select-cat-btn" onclick="toggleSelectCategory()" style="display:none">✓ בחר קטגוריה</button>
+        </div>
+        <div class="stories-grid" id="stories-grid"></div>
+      </div>
+
+      <div class="pricing-bar" id="pricing-bar">
+        <div class="pricing-info">
+          <div class="pricing-stat"><div class="val" id="sel-count">0</div><div class="lbl">סיפורים נבחרו</div></div>
+          <div class="pricing-stat"><div class="val" id="unit-price">₪8</div><div class="lbl">מחיר לסיפור</div></div>
+          <div class="pricing-stat"><div class="val" id="total-price">₪0</div><div class="lbl">סה״כ</div></div>
+        </div>
+        <div>
+          <div class="pricing-tiers-label">💡 מחיר לסיפור יורד ככל שבוחרים יותר:</div>
+          <div class="pricing-tiers" id="pricing-tiers"></div>
+          <div style="margin-top:8px;text-align:center">
+            <button class="btn btn-primary" id="continue-btn" onclick="goToStep(2)" disabled>המשך לסיכום ←</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="page-section" id="section-2">
+      <div class="section-title">🛒 סיכום הזמנה</div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start" id="summary-layout">
+        <div class="summary-card">
+          <h3>📋 פריטי ההזמנה</h3>
+          <ul class="order-items-list" id="order-items-list"></ul>
+        </div>
+        <div>
+          <div class="summary-card">
+            <h3>💰 פירוט מחיר</h3>
+            <div class="price-breakdown" id="price-breakdown"></div>
+          </div>
+          <div class="summary-card" id="usb-section">
+            <h3>📬 אופציות מסירה</h3>
+            <label class="usb-toggle active" id="drive-toggle" style="margin-bottom:10px">
+              <input type="checkbox" id="drive-check" checked onchange="toggleDrive()" />
+              <div><div style="font-weight:700;font-size:.95rem">☁️ מסירה בדרייב</div><div style="font-size:.8rem;color:var(--muted)">ללא עלות</div></div>
+            </label>
+            <label class="usb-toggle" id="usb-toggle">
+              <input type="checkbox" id="usb-check" onchange="toggleUsb()" />
+              <div><div style="font-weight:700;font-size:.95rem">💾 מסירה ב-דיסק און קי</div><div style="font-size:.8rem;color:var(--muted)" id="usb-price-note">עלות: ₪15</div></div>
+            </label>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:8px">✅ הזמנות מ-50 קבצים ומעלה – דיסק און קי חינם!</div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btn-outline" onclick="goToStep(1)">← חזרה</button>
+            <button class="btn btn-primary" onclick="goToStep(3)">פרטים ותשלום →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="page-section" id="section-3">
+      <div class="section-title">👤 פרטים אישיים ותשלום</div>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+        <div>
+          <div class="summary-card">
+            <h3>📝 פרטי הלקוח</h3>
+            <div class="form-grid">
+              <div class="form-group"><label>שם מלא <span class="req">*</span></label><input type="text" class="form-input" id="c-name" /><div class="error-msg" id="err-name"></div></div>
+              <div class="form-group"><label>טלפון <span class="req">*</span></label><input type="tel" class="form-input" id="c-phone" /><div class="error-msg" id="err-phone"></div></div>
+              <div class="form-group full"><label>דוא"ל <span class="req">*</span></label><input type="email" class="form-input" id="c-email" /><div class="error-msg" id="err-email"></div></div>
+            </div>
+          </div>
+          <div class="summary-card mt-16" id="address-section" style="display:none">
+            <h3>📦 כתובת למשלוח דיסק און קי <span class="req">*</span></h3>
+            <div class="form-grid">
+              <div class="form-group"><label>רחוב <span class="req">*</span></label><input type="text" class="form-input" id="c-street" /><div class="error-msg" id="err-street"></div></div>
+              <div class="form-group"><label>מספר בית <span class="req">*</span></label><input type="text" class="form-input" id="c-house" /><div class="error-msg" id="err-house"></div></div>
+              <div class="form-group"><label>מספר דירה</label><input type="text" class="form-input" id="c-apt" /></div>
+              <div class="form-group"><label>ת.ד.</label><input type="text" class="form-input" id="c-po" /></div>
+              <div class="form-group"><label>עיר <span class="req">*</span></label><input type="text" class="form-input" id="c-city" /><div class="error-msg" id="err-city"></div></div>
+              <div class="form-group"><label>מיקוד</label><input type="text" class="form-input" id="c-zip" /></div>
+            </div>
+          </div>
+          <div class="summary-card mt-16">
+            <h3>💌 הקדשה אישית</h3>
+            <textarea class="form-textarea" id="c-dedication" rows="3" placeholder="אני רוצה להוסיף הקדשה אישית..." style="width:100%;resize:vertical"></textarea>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:6px">אופציונלי – תישלח יחד עם ההזמנה</div>
+          </div>
+          <div class="summary-card mt-16">
+            <h3>💳 אמצעי תשלום</h3>
+            <div class="payment-options">
+              <div class="payment-option selected" id="pay-CREDIT_CARD" onclick="selectPayment('CREDIT_CARD')"><div class="pay-icon">💳</div><div class="pay-name">כרטיס אשראי</div><div class="pay-desc">עיבוד אוטומטי</div></div>
+              <div class="payment-option" id="pay-BANK_TRANSFER" onclick="selectPayment('BANK_TRANSFER')"><div class="pay-icon">🏦</div><div class="pay-name">העברה בנקאית</div><div class="pay-desc">צוות יצור קשר</div></div>
+              <div class="payment-option" id="pay-CALLBACK" onclick="selectPayment('CALLBACK')"><div class="pay-icon">📞</div><div class="pay-name">התקשרו אליי</div><div class="pay-desc">שירות אישי</div></div>
+            </div>
+          </div>
+          <div id="credit-card-panel" class="summary-card mt-16">
+            <h3>🔒 פרטי כרטיס</h3>
+            <div style="background:var(--teal-lt);border-radius:12px;padding:20px;text-align:center;border:2px dashed rgba(99,102,241,.3)">
+              <div style="font-size:2rem;margin-bottom:8px">🔐</div>
+              <div style="font-weight:700;color:var(--teal-dk)">מעבד התשלומים HYP</div>
+              <div style="font-size:.82rem;color:var(--muted);margin-top:4px">לחצו על "בצע הזמנה" – תועברו לדף תשלום מאובטח</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn btn-outline" onclick="goToStep(2)">← חזרה</button>
+            <button class="btn btn-pink" onclick="submitOrder()" id="submit-btn">🛒 בצע הזמנה</button>
+          </div>
+        </div>
+        <div class="summary-card" style="position:sticky;top:80px">
+          <h3>📌 סיכום מהיר</h3>
+          <div id="mini-summary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="page-section" id="section-4">
+      <div class="success-screen">
+        <div class="check-circle">✓</div>
+        <h2>ההזמנה נקלטה!</h2>
+        <p id="confirm-msg">תודה על ההזמנה. אישור ישלח אל כתובת הדוא"ל שהזנת.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="resetOrder()">🔄 הזמנה חדשה</button>
+        </div>
+        <div style="margin-top:32px;padding:24px;background:#fff;border-radius:16px;max-width:500px;margin:32px auto 0;text-align:right;border:1px solid var(--border);box-shadow:var(--shadow)">
+          <div style="font-weight:800;margin-bottom:8px;color:var(--teal-dk)">📞 יד תמר – שירות לקוחות</div>
+          <div style="font-size:.9rem;color:var(--muted)">טלפון: 04-9846776</div>
+          <div style="font-size:.9rem;color:var(--muted)">דוא"ל: yadtamar613@gmail.com</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="tab-gift" style="display:none;padding:48px 32px">
+  <div class="container" style="max-width:700px;margin:0 auto">
+    <div class="gift-section">
+      <h2>🎁 סיפור מתנה חינם!</h2>
+      <p>השאירו פרטים וקבלו סיפור נבחר לדוא"ל שלכם מיד</p>
+      <div class="gift-form">
+        <input type="text" class="form-input" id="gift-name" placeholder="שם מלא *" style="width:100%;margin-bottom:12px" />
+        <input type="email" class="form-input" id="gift-email" placeholder='דוא״ל *' style="width:100%;margin-bottom:12px" />
+        <input type="tel" class="form-input" id="gift-phone" placeholder="טלפון (אופציונלי)" style="width:100%;margin-bottom:20px" />
+        <button class="btn btn-primary" style="width:100%;justify-content:center;background:#fff;color:var(--teal-dk)" onclick="submitGift()">🎁 שלחו לי סיפור מתנה!</button>
+        <div class="error-msg" id="gift-error" style="text-align:center;margin-top:8px;color:#fff"></div>
+      </div>
+      <div id="gift-success" style="display:none;margin-top:20px">
+        <div style="background:rgba(255,255,255,.95);border-radius:16px;padding:28px;text-align:center">
+          <div style="font-size:3rem">🎉</div>
+          <div style="font-weight:800;font-size:1.2rem;color:var(--teal-dk);margin:8px 0">הסיפור בדרך אליכם!</div>
+          <div style="color:var(--muted)">בדקו את תיבת הדוא"ל שלכם</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="../js/data.js"></script>
+<script>
+let state = { product:'STORY_SELECTION', selectedStories:new Set(), useDrive:true, useUsb:false, paymentType:'CREDIT_CARD', currentStep:1, filterCat:'all', search:'' };
+
+document.addEventListener('DOMContentLoaded', () => { buildCategoryChips(); renderStories(); renderPricingTiers(); updateSelectButtons(); selectProduct('STORY_SELECTION'); });
+
+function showTab(t) {
+  document.getElementById('tab-store').style.display = t==='store'?'block':'none';
+  document.getElementById('tab-gift').style.display  = t==='gift' ?'block':'none';
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='store')||(i===1&&t==='gift')));
+}
+
+function selectProduct(type) {
+  if (state.currentStep>1) goToStep(1);
+  state.product=type;
+  ['STORY_SELECTION','FULL_LIBRARY','ADULT_COLLECTION'].forEach(t=>{
+    const map={STORY_SELECTION:'selection',FULL_LIBRARY:'full',ADULT_COLLECTION:'adult'};
+    document.getElementById('card-'+map[t]).classList.toggle('selected',t===type);
+  });
+  const catalogPanel=document.getElementById('catalog-panel'), bundleInfo=document.getElementById('bundle-info'), pricingBar=document.getElementById('pricing-bar');
+  if (type==='STORY_SELECTION') { catalogPanel.style.display=''; bundleInfo.style.display='none'; pricingBar.style.display=''; }
+  else {
+    catalogPanel.style.display='none'; bundleInfo.style.display=''; pricingBar.style.display='none';
+    const info={ FULL_LIBRARY:{title:'ספרייה מלאה – 428 סיפורים',desc:'כל ספריית הילדים המלאה: 423 סיפורים + 5 קבצי גמרא.',price:FULL_LIBRARY_PRICE}, ADULT_COLLECTION:{title:'אוסף מבוגרים ונוער',desc:'24 אוספי MP3 – כ-283 שיעורים.',price:ADULT_COLLECTION_PRICE} };
+    const d=info[type]; document.getElementById('bundle-title').textContent=d.title; document.getElementById('bundle-desc').textContent=d.desc; document.getElementById('bundle-price-display').textContent='₪'+d.price.toLocaleString();
+    const adultList=document.getElementById('adult-disc-list');
+    if (type==='ADULT_COLLECTION') { adultList.style.display=''; document.getElementById('adult-discs-grid').innerHTML=ADULT_DISCS.map(d=>`<div class="story-item checked adult-disc-item"><div class="story-check">✓</div><div class="story-info"><div class="story-code">${d.cat}. דיסק ${d.disc}</div><div class="story-title">${d.catName}</div><div class="story-dur">⏱ ${d.count} הרצאות</div></div></div>`).join(''); }
+    else { adultList.style.display='none'; }
+  }
+}
+
+function buildCategoryChips() { const chips=document.getElementById('category-chips'); CATEGORIES.forEach(cat=>{ const b=document.createElement('button'); b.className='chip'; b.dataset.cat=cat.id; b.textContent=cat.name; b.onclick=()=>filterByCategory(b); chips.appendChild(b); }); }
+function filterByCategory(btn) { state.filterCat=btn.dataset.cat; document.querySelectorAll('#category-chips .chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderStories(); }
+function filterStories() { state.search=document.getElementById('search-box').value.trim().toLowerCase(); renderStories(); }
+function getCategoryName(id) { return CATEGORIES.find(c=>c.id===id)?.name||''; }
+
+function renderStories() {
+  const grid=document.getElementById('stories-grid');
+  const filtered=STORIES.filter(s=>{ const matchCat=state.filterCat==='all'||s.categoryId===state.filterCat; const matchSearch=!state.search||s.title.toLowerCase().includes(state.search)||s.storyCode.toLowerCase().includes(state.search); return matchCat&&matchSearch&&s.isActive; });
+  grid.innerHTML=filtered.map(s=>{ const checked=state.selectedStories.has(s.id); return `<div class="story-item ${checked?'checked':''}" onclick="toggleStory('${s.id}')"><div class="story-check">${checked?'✓':''}</div><div class="story-info"><div class="story-code">${s.storyCode}</div><div class="story-title">${s.title}</div><div class="story-cat">${getCategoryName(s.categoryId)}</div><div class="story-dur">⏱ ${s.duration} דקות</div></div></div>`; }).join('');
+  updateSelectButtons();
+}
+function toggleStory(id) { if(state.selectedStories.has(id))state.selectedStories.delete(id); else state.selectedStories.add(id); renderStories(); updatePricingBar(); }
+function toggleSelectAll() { const all=STORIES.filter(s=>s.isActive); const allSelected=all.every(s=>state.selectedStories.has(s.id)); all.forEach(s=>allSelected?state.selectedStories.delete(s.id):state.selectedStories.add(s.id)); renderStories(); updatePricingBar(); }
+function toggleSelectCategory() { const cats=STORIES.filter(s=>s.isActive&&s.categoryId===state.filterCat); const allSelected=cats.every(s=>state.selectedStories.has(s.id)); cats.forEach(s=>allSelected?state.selectedStories.delete(s.id):state.selectedStories.add(s.id)); renderStories(); updatePricingBar(); }
+function updateSelectButtons() { const all=STORIES.filter(s=>s.isActive); const allSel=all.length>0&&all.every(s=>state.selectedStories.has(s.id)); document.getElementById('select-all-btn').textContent=allSel?'✗ בטל הכל':'✓ בחר הכל'; const catBtn=document.getElementById('select-cat-btn'); if(state.filterCat!=='all'){catBtn.style.display='';const cats=all.filter(s=>s.categoryId===state.filterCat);const catSel=cats.length>0&&cats.every(s=>state.selectedStories.has(s.id));catBtn.textContent=catSel?`✗ בטל: ${getCategoryName(state.filterCat)}`:`✓ בחר: ${getCategoryName(state.filterCat)}`;}else{catBtn.style.display='none';} }
+function updatePricingBar() { const qty=state.selectedStories.size, up=calcUnitPrice(qty), tot=calcTotal(qty); document.getElementById('sel-count').textContent=qty; document.getElementById('unit-price').textContent='₪'+up; document.getElementById('total-price').textContent='₪'+tot.toLocaleString(); document.getElementById('continue-btn').disabled=qty===0; if(qty>0)document.getElementById('price-indicator').textContent='₪'+up+' לסיפור'; renderPricingTiers(qty); }
+function renderPricingTiers(qty=0) { document.getElementById('pricing-tiers').innerHTML=PRICING_RULES.map(r=>{ const active=qty>=r.min&&qty<=r.max; const label=r.max===Infinity?`${r.min}+`:`${r.min}–${r.max}`; return `<span class="tier-badge ${active?'active-tier':''}">${label} → ₪${r.unitPrice}</span>`; }).join(''); }
+
+function goToStep(n) {
+  if(n===2){if(state.product==='STORY_SELECTION'&&state.selectedStories.size===0){showToast('בחרו לפחות סיפור אחד','error');return;}buildSummary(true);}
+  if(n===3){if(!state.useDrive&&!state.useUsb){showToast('באיזו דרך תרצו לקבל את הקבצים?','error');return;}buildMiniSummary();document.getElementById('address-section').style.display=state.useUsb?'':'none';}
+  state.currentStep=n;
+  for(let i=1;i<=4;i++){document.getElementById('section-'+i).classList.toggle('active',i===n);const stepEl=document.getElementById('step-'+i);if(!stepEl)return;stepEl.classList.toggle('active',i===n);stepEl.classList.toggle('done',i<n);}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function getOrderTotal() { let subtotal=0,filesCount=0; if(state.product==='STORY_SELECTION'){filesCount=state.selectedStories.size;subtotal=calcTotal(filesCount);}else if(state.product==='FULL_LIBRARY'){subtotal=FULL_LIBRARY_PRICE;filesCount=TOTAL_STORIES;}else{subtotal=ADULT_COLLECTION_PRICE;} const usbFree=state.product==='ADULT_COLLECTION'||filesCount>=FREE_USB_MIN_FILES; const usbCost=state.useUsb?(usbFree?0:USB_PRICE):0; return{subtotal,usbCost,total:subtotal+usbCost,filesCount,usbFree}; }
+
+function buildSummary(autoSet=false) {
+  const{subtotal,filesCount,usbFree}=getOrderTotal();
+  if(autoSet){state.useUsb=state.product==='ADULT_COLLECTION'?true:usbFree;document.getElementById('usb-toggle').classList.toggle('active',state.useUsb);document.getElementById('usb-check').checked=state.useUsb;document.getElementById('address-section').style.display=state.useUsb?'':'none';}
+  const{usbCost,total}=getOrderTotal();
+  const list=document.getElementById('order-items-list');
+  if(state.product==='STORY_SELECTION'){const stories=STORIES.filter(s=>state.selectedStories.has(s.id));list.innerHTML=stories.map(s=>`<li><span>${s.storyCode} – ${s.title}</span><span style="color:var(--muted);font-size:.8rem">₪${calcUnitPrice(state.selectedStories.size)}</span></li>`).join('');}
+  else if(state.product==='FULL_LIBRARY'){list.innerHTML=`<li><span>📚 ספרייה מלאה – 428 סיפורים</span><span>₪1,550</span></li>`;}
+  else{list.innerHTML=`<li><span>🎓 אוסף מבוגרים ונוער</span><span>₪360</span></li>`;}
+  const bd=document.getElementById('price-breakdown'); const unitP=state.product==='STORY_SELECTION'?calcUnitPrice(filesCount):null;
+  bd.innerHTML=`${state.product==='STORY_SELECTION'?`<div class="price-row"><span>${filesCount} סיפורים × ₪${unitP}</span><span>₪${subtotal.toLocaleString()}</span></div>`:state.product==='ADULT_COLLECTION'?`<div class="price-row"><span>אוסף מבוגרים (כולל דיסק)</span><span>₪${subtotal.toLocaleString()}</span></div>`:`<div class="price-row"><span>מחיר חבילה</span><span>₪${subtotal.toLocaleString()}</span></div>`}${state.useUsb&&state.product!=='ADULT_COLLECTION'?`<div class="price-row"><span>דיסק און קי ${usbFree?'(חינם)':''}</span><span>₪${usbCost}</span></div>`:''}<div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
+  const usbNote=document.getElementById('usb-price-note'); if(state.product==='ADULT_COLLECTION'){usbNote.textContent='✅ כלול במחיר';}else{usbNote.textContent=usbFree?'✨ חינם להזמנה זו!':`עלות: ₪${USB_PRICE}`;}
+}
+
+function buildMiniSummary() { const{usbCost,total}=getOrderTotal(); const payLabels={CREDIT_CARD:'כרטיס אשראי',BANK_TRANSFER:'העברה בנקאית',CALLBACK:'התקשרו אליי'}; document.getElementById('mini-summary').innerHTML=`<div class="price-row"><span>סוג הזמנה</span><span>${state.product==='STORY_SELECTION'?state.selectedStories.size+' סיפורים':state.product==='FULL_LIBRARY'?'ספרייה מלאה':'אוסף מבוגרים'}</span></div>${state.useDrive?`<div class="price-row"><span>☁️ דרייב</span><span style="color:var(--green)">כלול</span></div>`:''}${state.useUsb?`<div class="price-row"><span>💾 דיסק</span><span>₪${usbCost}</span></div>`:''}<div class="price-row total"><span>סה״כ</span><span class="amount">₪${total.toLocaleString()}</span></div><hr style="border:none;border-top:1px solid var(--border);margin:8px 0"/><div class="price-row"><span>תשלום</span><span>${payLabels[state.paymentType]}</span></div>`; }
+
+function toggleDrive(){state.useDrive=document.getElementById('drive-check').checked;document.getElementById('drive-toggle').classList.toggle('active',state.useDrive);buildMiniSummary();}
+function toggleUsb(){state.useUsb=document.getElementById('usb-check').checked;document.getElementById('usb-toggle').classList.toggle('active',state.useUsb);document.getElementById('address-section').style.display=state.useUsb?'':'none';buildSummary();}
+function selectPayment(type){state.paymentType=type;['CREDIT_CARD','BANK_TRANSFER','CALLBACK'].forEach(t=>document.getElementById('pay-'+t).classList.toggle('selected',t===type));document.getElementById('credit-card-panel').style.display=type==='CREDIT_CARD'?'':'none';buildMiniSummary();}
+
+function submitOrder() {
+  const name=document.getElementById('c-name').value.trim(), email=document.getElementById('c-email').value.trim(), phone=document.getElementById('c-phone').value.trim(); let valid=true;
+  [['name',name,'יש להזין שם מלא'],['email',email,'יש להזין כתובת דוא"ל'],['phone',phone,'יש להזין מספר טלפון']].forEach(([f,v,msg])=>{const err=document.getElementById('err-'+f),inp=document.getElementById('c-'+f);if(!v){err.textContent=msg;inp.classList.add('error');valid=false;}else{err.textContent='';inp.classList.remove('error');}});
+  if(state.useUsb){const street=document.getElementById('c-street').value.trim(),house=document.getElementById('c-house').value.trim(),city=document.getElementById('c-city').value.trim();[['street',street,'יש להזין רחוב'],['house',house,'יש להזין מספר בית'],['city',city,'יש להזין עיר']].forEach(([f,v,msg])=>{const err=document.getElementById('err-'+f),inp=document.getElementById('c-'+f);if(!v){err.textContent=msg;inp.classList.add('error');valid=false;}else{err.textContent='';inp.classList.remove('error');}});}
+  if(!valid)return; if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){document.getElementById('err-email').textContent='כתובת דוא"ל לא תקינה';document.getElementById('c-email').classList.add('error');return;}
+  const btn=document.getElementById('submit-btn'); btn.disabled=true; btn.textContent='⏳ מעבד...';
+  setTimeout(()=>{
+    let msg=state.paymentType==='CREDIT_CARD'?`אישור הזמנה ישלח אל ${email}.`:state.paymentType==='BANK_TRANSFER'?`צוות יד תמר יצור אתכם קשר.`:`צוות יד תמר יתקשר אליכם בהקדם.`;
+    const{total}=getOrderTotal();
+    const order={id:'ORD-'+Date.now(),createdAt:new Date().toLocaleString('he-IL'),customerName:name,email,phone,paymentType:state.paymentType,product:state.product,filesCount:state.selectedStories.size||(state.product==='FULL_LIBRARY'?428:0),useDrive:state.useDrive,useUsb:state.useUsb,total,dedication:document.getElementById('c-dedication').value.trim(),address:state.useUsb?{street:document.getElementById('c-street').value.trim(),house:document.getElementById('c-house').value.trim(),apt:document.getElementById('c-apt').value.trim(),po:document.getElementById('c-po').value.trim(),city:document.getElementById('c-city').value.trim(),zip:document.getElementById('c-zip').value.trim()}:null};
+    const stored=JSON.parse(localStorage.getItem('yadtamar_orders')||'[]'); stored.unshift(order); localStorage.setItem('yadtamar_orders',JSON.stringify(stored));
+    document.getElementById('confirm-msg').textContent=msg; btn.disabled=false; btn.textContent='🛒 בצע הזמנה'; goToStep(4); showToast('ההזמנה נקלטה בהצלחה!','success');
+  },1200);
+}
+
+function resetOrder() {
+  state={product:'STORY_SELECTION',selectedStories:new Set(),useDrive:true,useUsb:false,paymentType:'CREDIT_CARD',currentStep:1,filterCat:'all',search:''};
+  ['c-name','c-email','c-phone','c-street','c-house','c-apt','c-po','c-city','c-zip','c-dedication'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('address-section').style.display='none';
+  ['c-name','c-email','c-phone','c-street','c-house','c-city'].forEach(id=>document.getElementById(id).classList.remove('error'));
+  ['err-name','err-email','err-phone','err-street','err-house','err-city'].forEach(id=>document.getElementById(id).textContent='');
+  document.getElementById('drive-toggle').classList.add('active'); document.getElementById('drive-check').checked=true;
+  document.getElementById('usb-toggle').classList.remove('active'); document.getElementById('usb-check').checked=false;
+  selectProduct('STORY_SELECTION'); renderStories(); updatePricingBar(); goToStep(1);
+}
+
+function submitGift() { const name=document.getElementById('gift-name').value.trim(), email=document.getElementById('gift-email').value.trim(), errEl=document.getElementById('gift-error'); if(!name||!email){errEl.textContent='שם ודוא"ל הם שדות חובה';return;} if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){errEl.textContent='כתובת דוא"ל לא תקינה';return;} errEl.textContent=''; document.getElementById('gift-success').style.display=''; document.querySelector('.gift-form').style.display='none'; showToast('הסיפור נשלח לדוא"ל שלכם!','success'); }
+function showToast(msg,type='info') { const div=document.createElement('div'); div.className=`toast toast-${type}`; div.textContent=msg; document.getElementById('toast-container').appendChild(div); setTimeout(()=>div.remove(),3500); }
+</script>
+</body>
+</html>

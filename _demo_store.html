@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>יד תמר – ספריית סיפורים קוליים</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+:root{
+  --teal:#00B4CC;--teal-dk:#007A8C;--teal-lt:#E0F7FA;
+  --gold:#F5C518;--gold-dk:#C9A500;
+  --pink:#E91E8C;--pink-lt:#FDE9F4;
+  --green:#27AE60;--red:#E74C3C;--orange:#F39C12;
+  --bg:#F4FAFB;--card:#FFFFFF;--text:#1A1A2E;
+  --muted:#6B7280;--border:#D1E8EC;
+  --radius:12px;--shadow:0 2px 12px rgba(0,0,0,.08);--shadow-md:0 4px 24px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Heebo',sans-serif;direction:rtl;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+.site-header{background:linear-gradient(135deg,var(--teal-dk) 0%,var(--teal) 100%);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 28px}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-icon{width:52px;height:52px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.logo-text h1{font-size:1.5rem;font-weight:800;letter-spacing:-.5px}
+.logo-text p{font-size:.8rem;opacity:.85;margin-top:1px}
+.header-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:6px 16px;border-radius:20px;font-size:.85rem}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#E0F7FA 0%,#B2EBF2 40%,#E8F5E9 100%);padding:44px 28px 36px;text-align:center;border-bottom:3px solid var(--teal-lt)}
+.hero h2{font-size:2.2rem;font-weight:800;color:var(--teal-dk);margin-bottom:10px}
+.hero p{font-size:1.05rem;color:var(--muted);max-width:560px;margin:0 auto 28px;line-height:1.7}
+.hero-stats{display:flex;justify-content:center;gap:36px;flex-wrap:wrap}
+.hero-stat .val{font-size:1.8rem;font-weight:800;color:var(--teal-dk)}
+.hero-stat .lbl{font-size:.78rem;color:var(--muted)}
+
+/* PRICING TIERS */
+.pricing-strip{background:#fff;border-bottom:2px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;overflow-x:auto}
+.pricing-strip .strip-title{font-size:.82rem;font-weight:700;color:var(--muted);margin-left:8px;white-space:nowrap}
+.tier{padding:5px 14px;border-radius:14px;font-size:.78rem;font-weight:600;background:var(--teal-lt);color:var(--teal-dk);border:1px solid var(--border);white-space:nowrap;cursor:default}
+.tier.highlight{background:var(--gold);color:#333;border-color:var(--gold-dk)}
+.sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.pkg{padding:5px 14px;border-radius:14px;font-size:.78rem;font-weight:700;background:var(--pink-lt);color:var(--pink);border:1px solid #F48FB1;white-space:nowrap}
+
+/* CATALOG AREA */
+.catalog-wrap{max-width:1240px;margin:0 auto;padding:28px 20px 120px}
+
+/* CATEGORY TABS */
+.cat-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;overflow-x:auto}
+.cat-tab{padding:11px 22px;border:none;background:transparent;font-family:'Heebo',sans-serif;font-size:.92rem;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .18s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.cat-tab:hover{color:var(--teal-dk)}
+.cat-tab.active{color:var(--teal-dk);font-weight:700;border-bottom-color:var(--teal)}
+.cat-tab .cat-count{background:var(--teal-lt);color:var(--teal-dk);border-radius:10px;font-size:.72rem;font-weight:700;padding:1px 7px}
+.cat-tab.active .cat-count{background:var(--teal);color:#fff}
+
+/* SEARCH */
+.search-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search-input{flex:1;min-width:220px;padding:10px 18px;border:2px solid var(--border);border-radius:24px;font-family:'Heebo',sans-serif;font-size:.95rem;direction:rtl;outline:none;transition:border-color .2s;background:#fff}
+.search-input:focus{border-color:var(--teal)}
+.result-count{font-size:.85rem;color:var(--muted)}
+
+/* STORIES GRID */
+.stories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px}
+.story-card{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:14px 14px 12px;cursor:pointer;transition:all .22s;display:flex;flex-direction:column;gap:8px;position:relative}
+.story-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.story-card.selected{border-color:var(--teal);background:var(--teal-lt)}
+.story-card.selected .check{background:var(--teal);border-color:var(--teal);color:#fff}
+.check{width:22px;height:22px;min-width:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.75rem;background:#fff;transition:all .2s;align-self:flex-start}
+.story-main{display:flex;gap:10px;align-items:flex-start}
+.story-code{font-size:.7rem;color:var(--muted);font-family:monospace}
+.story-title{font-size:.88rem;font-weight:700;line-height:1.35;color:var(--text)}
+.story-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cat-tag{font-size:.7rem;color:var(--teal-dk);background:var(--teal-lt);padding:2px 8px;border-radius:8px;font-weight:600}
+.dur-tag{font-size:.7rem;color:var(--muted)}
+
+/* BUNDLES */
+.bundles-row{display:flex;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.bundle-card{flex:1;min-width:200px;background:#fff;border:2px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:all .25s;box-shadow:var(--shadow)}
+.bundle-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.bundle-card.selected{border-color:var(--teal);background:var(--teal-lt)}
+.bundle-icon{font-size:2.4rem;margin-bottom:8px}
+.bundle-name{font-size:1rem;font-weight:700;color:var(--teal-dk);margin-bottom:4px}
+.bundle-price{font-size:1.4rem;font-weight:800;color:var(--pink);margin:6px 0}
+.bundle-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
+.bundle-badge{display:inline-block;background:var(--gold);color:#333;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:10px;margin-top:6px}
+
+/* PRICING BAR */
+.pricing-bar{position:fixed;bottom:0;right:0;left:0;background:#fff;border-top:2px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 -4px 16px rgba(0,0,0,.1);flex-wrap:wrap;z-index:50}
+.bar-stats{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.bar-stat .val{font-size:1.25rem;font-weight:800;color:var(--teal-dk)}
+.bar-stat .lbl{font-size:.75rem;color:var(--muted)}
+.bar-actions{display:flex;gap:10px;align-items:center}
+.btn{padding:11px 26px;border-radius:24px;border:none;cursor:pointer;font-family:'Heebo',sans-serif;font-size:.95rem;font-weight:700;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:var(--teal-dk);transform:translateY(-2px)}
+.btn-outline{background:transparent;border:2px solid var(--teal);color:var(--teal-dk)}
+.btn-outline:hover{background:var(--teal-lt)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .big{font-size:3rem;margin-bottom:12px}
+.empty-state p{font-size:1rem}
+
+/* SECTION TITLE */
+.section-title{font-size:1.15rem;font-weight:800;color:var(--teal-dk);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* FOOTER */
+.footer-note{text-align:center;padding:16px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--border);margin-top:32px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--teal-lt)}
+::-webkit-scrollbar-thumb{background:var(--teal);border-radius:3px}
+
+@media(max-width:680px){
+  .hero h2{font-size:1.6rem}
+  .bundles-row{flex-direction:column}
+  .pricing-bar{flex-direction:column;gap:10px}
+  .bar-stats{justify-content:center}
+  .header-badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">🌴</div>
+      <div class="logo-text">
+        <h1>יד תמר</h1>
+        <p>ספריית סיפורים קוליים לילדים</p>
+      </div>
+    </div>
+    <div class="header-badge">📦 428 סיפורים | ✅ הורדה מיידית</div>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <h2>🎙 הספרייה הקולית הגדולה בישראל לילדים</h2>
+  <p>מאות סיפורים קוליים מרתקים בעברית – מעשיות, פרשת שבוע, חגים ועוד.<br/>בחרו בעצמכם כמה שרוצים, בכל קטגוריה שאוהבים.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val">428</div><div class="lbl">סיפורים</div></div>
+    <div class="hero-stat"><div class="val">5</div><div class="lbl">קטגוריות</div></div>
+    <div class="hero-stat"><div class="val">₪4.3</div><div class="lbl">ממחיר ליחידה</div></div>
+    <div class="hero-stat"><div class="val">⚡</div><div class="lbl">הורדה מיידית</div></div>
+  </div>
+</section>
+
+<!-- ═══ PRICING STRIP ═══ -->
+<div class="pricing-strip">
+  <span class="strip-title">מחירון:</span>
+  <span class="tier">1–49 קבצים ← ₪8</span>
+  <span class="tier">50–99 ← ₪7.5</span>
+  <span class="tier">100–149 ← ₪7</span>
+  <span class="tier">150–314 ← ₪6</span>
+  <span class="tier highlight">315+ ← ₪4.3 🎉</span>
+  <span class="sep"></span>
+  <span class="pkg">ספרייה מלאה ₪1,550</span>
+  <span class="pkg">אוסף מבוגרים ₪360</span>
+</div>
+
+<!-- ═══ CATALOG ═══ -->
+<div class="catalog-wrap">
+
+  <!-- Bundles -->
+  <div class="section-title">🎁 חבילות מיוחדות</div>
+  <div class="bundles-row">
+    <div class="bundle-card" id="bundle-full" onclick="selectBundle('full')">
+      <div class="bundle-icon">📚</div>
+      <div class="bundle-name">ספרייה מלאה</div>
+      <div class="bundle-price">₪1,550</div>
+      <div class="bundle-desc">כל 428 הסיפורים + כל התוספות העתידיות</div>
+      <div class="bundle-badge">הכי שווה</div>
+    </div>
+    <div class="bundle-card" id="bundle-adult" onclick="selectBundle('adult')">
+      <div class="bundle-icon">🕍</div>
+      <div class="bundle-name">אוסף מבוגרים</div>
+      <div class="bundle-price">₪360</div>
+      <div class="bundle-desc">שיעורי גמרא, הלכה ומחשבה לבוגרים</div>
+    </div>
+    <div class="bundle-card" id="bundle-usb" onclick="selectBundle('usb')">
+      <div class="bundle-icon">💾</div>
+      <div class="bundle-name">USB פיזי</div>
+      <div class="bundle-price">₪15</div>
+      <div class="bundle-desc">הוספת USB לכל הזמנה. חינם להזמנות מעל 50 קבצים!</div>
+    </div>
+    <div class="bundle-card" id="bundle-gift" onclick="selectBundle('gift')">
+      <div class="bundle-icon">🎁</div>
+      <div class="bundle-name">שלח מתנה</div>
+      <div class="bundle-price">חינם</div>
+      <div class="bundle-desc">שלח סיפור מתנה לחבר – בחינם, כולל הפתעה</div>
+    </div>
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="section-title">🎵 בחירת סיפורים</div>
+  <div class="cat-tabs" id="cat-tabs">
+    <button class="cat-tab active" data-cat="all" onclick="setCategory('all',this)">
+      הכל <span class="cat-count">428</span>
+    </button>
+    <button class="cat-tab" data-cat="c1" onclick="setCategory('c1',this)">
+      📖 סיפורים לילדים <span class="cat-count">210</span>
+    </button>
+    <button class="cat-tab" data-cat="c3" onclick="setCategory('c3',this)">
+      ✨ מעשיות <span class="cat-count">95</span>
+    </button>
+    <button class="cat-tab" data-cat="c4" onclick="setCategory('c4',this)">
+      📜 פרשת השבוע <span class="cat-count">68</span>
+    </button>
+    <button class="cat-tab" data-cat="c5" onclick="setCategory('c5',this)">
+      🕍 חגים ומועדים <span class="cat-count">50</span>
+    </button>
+    <button class="cat-tab" data-cat="c2" onclick="setCategory('c2',this)">
+      🎓 גמרא ולימוד <span class="cat-count">5</span>
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-row">
+    <input class="search-input" id="search-input" placeholder="🔍 חפשו שם סיפור..." oninput="renderGrid()"/>
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <!-- Grid -->
+  <div class="stories-grid" id="stories-grid"></div>
+
+</div>
+
+<!-- ═══ PRICING BAR ═══ -->
+<div class="pricing-bar">
+  <div class="bar-stats">
+    <div class="bar-stat"><div class="val" id="bar-count">0</div><div class="lbl">סיפורים נבחרו</div></div>
+    <div class="bar-stat"><div class="val" id="bar-price">₪0</div><div class="lbl">מחיר כולל</div></div>
+    <div class="bar-stat"><div class="val" id="bar-unit">–</div><div class="lbl">מחיר ליחידה</div></div>
+  </div>
+  <div class="bar-actions">
+    <button class="btn btn-outline" onclick="clearAll()">נקה הכל</button>
+    <button class="btn btn-primary" id="checkout-btn" disabled onclick="alert('דמו – בגרסה האמיתית כאן עוברים לתשלום')">המשך לתשלום ←</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+var CATEGORIES = {
+  c1:'סיפורים לילדים', c2:'גמרא ולימוד',
+  c3:'מעשיות', c4:'פרשת השבוע', c5:'חגים ומועדים'
+};
+
+var RAW = [
+  // סיפורים לילדים (c1) – 20 items
+  {id:'s001',code:'YT-0001',cat:'c1',title:'הנסיך הקטן והכוכב',dur:9},
+  {id:'s002',code:'YT-0002',cat:'c1',title:'הדב הגדול והדב הקטן',dur:8},
+  {id:'s003',code:'YT-0003',cat:'c1',title:'ילדה שחיפשה את הקשת',dur:11},
+  {id:'s004',code:'YT-0004',cat:'c1',title:'הרכבת הקסומה',dur:10},
+  {id:'s005',code:'YT-0005',cat:'c1',title:'ציפורי הגן',dur:7},
+  {id:'s006',code:'YT-0006',cat:'c1',title:'הדרקון הידידותי',dur:12},
+  {id:'s007',code:'YT-0007',cat:'c1',title:'מה חלם הירח הלילה',dur:8},
+  {id:'s008',code:'YT-0008',cat:'c1',title:'הגמד שבתוך העץ',dur:10},
+  {id:'s009',code:'YT-0009',cat:'c1',title:'מסע בין הכוכבים',dur:13},
+  {id:'s010',code:'YT-0010',cat:'c1',title:'הנסיכה שאהבה לקפוץ',dur:9},
+  {id:'s011',code:'YT-0011',cat:'c1',title:'פיל ופרפר',dur:8},
+  {id:'s012',code:'YT-0012',cat:'c1',title:'בית בתוך הענן',dur:11},
+  {id:'s013',code:'YT-0013',cat:'c1',title:'ילד הים',dur:10},
+  {id:'s014',code:'YT-0014',cat:'c1',title:'הגנן הקטן',dur:9},
+  {id:'s015',code:'YT-0015',cat:'c1',title:'שלושת הגורים',dur:8},
+  {id:'s016',code:'YT-0016',cat:'c1',title:'הצ׳לו שר',dur:12},
+  {id:'s017',code:'YT-0017',cat:'c1',title:'הסוס הלבן',dur:10},
+  {id:'s018',code:'YT-0018',cat:'c1',title:'ארמון הקרח',dur:14},
+  {id:'s019',code:'YT-0019',cat:'c1',title:'ספר הניסים',dur:9},
+  {id:'s020',code:'YT-0020',cat:'c1',title:'מה יש מעבר לגדר',dur:11},
+  // מעשיות (c3) – 16 items
+  {id:'s101',code:'YT-0101',cat:'c3',title:'המלך שביקש חכמה',dur:12},
+  {id:'s102',code:'YT-0102',cat:'c3',title:'הרועה והאריה',dur:10},
+  {id:'s103',code:'YT-0103',cat:'c3',title:'שני אחים בערי',dur:11},
+  {id:'s104',code:'YT-0104',cat:'c3',title:'מעשה בתכלת',dur:9},
+  {id:'s105',code:'YT-0105',cat:'c3',title:'הצדיק הנסתר',dur:13},
+  {id:'s106',code:'YT-0106',cat:'c3',title:'הנחש והנשר',dur:8},
+  {id:'s107',code:'YT-0107',cat:'c3',title:'מלך ועני',dur:10},
+  {id:'s108',code:'YT-0108',cat:'c3',title:'ספינת הנגר',dur:12},
+  {id:'s109',code:'YT-0109',cat:'c3',title:'שלמה המלך ופרפר',dur:9},
+  {id:'s110',code:'YT-0110',cat:'c3',title:'הגיבור שפחד',dur:11},
+  {id:'s111',code:'YT-0111',cat:'c3',title:'מעשה בעץ תמר',dur:10},
+  {id:'s112',code:'YT-0112',cat:'c3',title:'האשה שנתנה לחם',dur:8},
+  {id:'s113',code:'YT-0113',cat:'c3',title:'הנסיך שלא ידע לצחוק',dur:13},
+  {id:'s114',code:'YT-0114',cat:'c3',title:'שלוש הברכות',dur:9},
+  {id:'s115',code:'YT-0115',cat:'c3',title:'הצייד והיונה',dur:10},
+  {id:'s116',code:'YT-0116',cat:'c3',title:'בית הרוחות',dur:14},
+  // פרשת השבוע (c4) – 14 items
+  {id:'s201',code:'YT-0201',cat:'c4',title:'פרשת בראשית – בין האור לחושך',dur:14},
+  {id:'s202',code:'YT-0202',cat:'c4',title:'פרשת נח – עולם חדש',dur:13},
+  {id:'s203',code:'YT-0203',cat:'c4',title:'פרשת לך לך – דרכו של אברהם',dur:15},
+  {id:'s204',code:'YT-0204',cat:'c4',title:'פרשת וירא – שלושת האורחים',dur:12},
+  {id:'s205',code:'YT-0205',cat:'c4',title:'פרשת תולדות – יעקב ועשו',dur:14},
+  {id:'s206',code:'YT-0206',cat:'c4',title:'פרשת ויצא – חלום הסולם',dur:13},
+  {id:'s207',code:'YT-0207',cat:'c4',title:'פרשת מקץ – יוסף ופרעה',dur:14},
+  {id:'s208',code:'YT-0208',cat:'c4',title:'פרשת שמות – הסנה הבוער',dur:12},
+  {id:'s209',code:'YT-0209',cat:'c4',title:'פרשת בשלח – קריעת ים סוף',dur:15},
+  {id:'s210',code:'YT-0210',cat:'c4',title:'פרשת יתרו – מתן תורה',dur:13},
+  {id:'s211',code:'YT-0211',cat:'c4',title:'פרשת במדבר – ספירת העם',dur:11},
+  {id:'s212',code:'YT-0212',cat:'c4',title:'פרשת עקב – ארץ זבת חלב',dur:12},
+  {id:'s213',code:'YT-0213',cat:'c4',title:'פרשת האזינו – שירת משה',dur:14},
+  {id:'s214',code:'YT-0214',cat:'c4',title:'פרשת וזאת הברכה – הפרידה',dur:11},
+  // חגים ומועדים (c5) – 12 items
+  {id:'s301',code:'YT-0301',cat:'c5',title:'שבת מלכה – סיפור לקבלת שבת',dur:10},
+  {id:'s302',code:'YT-0302',cat:'c5',title:'ראש השנה – הרמת כוס',dur:11},
+  {id:'s303',code:'YT-0303',cat:'c5',title:'יום כיפור – הניגון הנסתר',dur:13},
+  {id:'s304',code:'YT-0304',cat:'c5',title:'סוכות – ארבעת המינים',dur:10},
+  {id:'s305',code:'YT-0305',cat:'c5',title:'שמחת תורה – ריקוד הספר',dur:9},
+  {id:'s306',code:'YT-0306',cat:'c5',title:'חנוכה – נר שמיני',dur:11},
+  {id:'s307',code:'YT-0307',cat:'c5',title:'פורים – נס נסתר',dur:12},
+  {id:'s308',code:'YT-0308',cat:'c5',title:'פסח – הגדה של ילדים',dur:14},
+  {id:'s309',code:'YT-0309',cat:'c5',title:'שבועות – מתנת התורה',dur:10},
+  {id:'s310',code:'YT-0310',cat:'c5',title:'ל"ג בעומר – מדורת הרב',dur:9},
+  {id:'s311',code:'YT-0311',cat:'c5',title:'תשעה באב – חורבן ותיקון',dur:12},
+  {id:'s312',code:'YT-0312',cat:'c5',title:'ט"ו בשבט – שיר לאילנות',dur:8},
+  // גמרא ולימוד (c2) – 5 items
+  {id:'s401',code:'YT-0401',cat:'c2',title:'מסכת ברכות – פרק ראשון',dur:22},
+  {id:'s402',code:'YT-0402',cat:'c2',title:'מסכת שבת – מלאכות אסורות',dur:25},
+  {id:'s403',code:'YT-0403',cat:'c2',title:'מסכת ביצה – הכנה ביום טוב',dur:20},
+  {id:'s404',code:'YT-0404',cat:'c2',title:'מסכת בבא קמא – נזיקין',dur:24},
+  {id:'s405',code:'YT-0405',cat:'c2',title:'מסכת אבות – חמישה פרקים',dur:28},
+];
+
+// ── STATE ──
+var selected = {};
+var currentCat = 'all';
+var bundleMode = null;
+
+// ── PRICING ──
+var TIERS = [
+  {min:1,max:49,price:8},
+  {min:50,max:99,price:7.5},
+  {min:100,max:149,price:7},
+  {min:150,max:314,price:6},
+  {min:315,max:Infinity,price:4.3}
+];
+function unitPrice(n) {
+  for (var i=0;i<TIERS.length;i++) {
+    if (n>=TIERS[i].min && n<=TIERS[i].max) return TIERS[i].price;
+  }
+  return 8;
+}
+function totalPrice(n) { return +(n * unitPrice(n)).toFixed(2); }
+
+// ── RENDER ──
+function renderGrid() {
+  var q = document.getElementById('search-input').value.toLowerCase();
+  var list = RAW.filter(function(s) {
+    var catOk = currentCat === 'all' || s.cat === currentCat;
+    var qOk   = !q || s.title.toLowerCase().indexOf(q) >= 0 || s.code.toLowerCase().indexOf(q) >= 0;
+    return catOk && qOk;
+  });
+
+  document.getElementById('result-count').textContent = list.length + ' סיפורים';
+
+  if (list.length === 0) {
+    document.getElementById('stories-grid').innerHTML =
+      '<div class="empty-state" style="grid-column:1/-1"><div class="big">🔍</div><p>לא נמצאו סיפורים התואמים את החיפוש</p></div>';
+    return;
+  }
+
+  document.getElementById('stories-grid').innerHTML = list.map(function(s) {
+    var isOn = !!selected[s.id];
+    return '<div class="story-card' + (isOn?' selected':'') + '" onclick="toggle(\''+s.id+'\')">'+
+      '<div class="story-main">'+
+        '<div class="check">'+(isOn?'✓':'')+'</div>'+
+        '<div>'+
+          '<div class="story-code">'+s.code+'</div>'+
+          '<div class="story-title">'+s.title+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="story-meta">'+
+        '<span class="cat-tag">'+CATEGORIES[s.cat]+'</span>'+
+        '<span class="dur-tag">🎙 '+s.dur+' דק\'</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  updateBar();
+}
+
+function toggle(id) {
+  if (bundleMode) { bundleMode = null; document.querySelectorAll('.bundle-card').forEach(function(b){b.classList.remove('selected');}); }
+  if (selected[id]) { delete selected[id]; } else { selected[id] = true; }
+  renderGrid();
+}
+
+function updateBar() {
+  var n = Object.keys(selected).length;
+  var price = n > 0 ? totalPrice(n) : 0;
+  var unit  = n > 0 ? unitPrice(n) : 0;
+  document.getElementById('bar-count').textContent = n;
+  document.getElementById('bar-price').textContent = n > 0 ? '₪'+price.toLocaleString() : '₪0';
+  document.getElementById('bar-unit').textContent  = n > 0 ? '₪'+unit : '–';
+  document.getElementById('checkout-btn').disabled = n === 0 && !bundleMode;
+
+  // highlight active tier
+  document.querySelectorAll('.tier').forEach(function(t){ t.classList.remove('highlight'); });
+  if (n > 0) {
+    var idx = TIERS.findIndex ? TIERS.findIndex(function(t){ return n>=t.min && n<=t.max; })
+            : (function(){ for(var i=0;i<TIERS.length;i++) if(n>=TIERS[i].min && n<=TIERS[i].max) return i; return -1; })();
+    var strips = document.querySelectorAll('.tier');
+    if (strips[idx]) strips[idx].classList.add('highlight');
+  }
+}
+
+function setCategory(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('search-input').value = '';
+  renderGrid();
+}
+
+function clearAll() {
+  selected = {};
+  bundleMode = null;
+  document.querySelectorAll('.bundle-card').forEach(function(b){ b.classList.remove('selected'); });
+  renderGrid();
+}
+
+function selectBundle(type) {
+  bundleMode = type;
+  selected = {};
+  document.querySelectorAll('.bundle-card').forEach(function(b){ b.classList.remove('selected'); });
+  document.getElementById('bundle-'+type).classList.add('selected');
+  var prices = {full:'₪1,550 – ספרייה מלאה',adult:'₪360 – אוסף מבוגרים',usb:'₪15 – USB',gift:'חינם – מתנה'};
+  document.getElementById('bar-count').textContent = type==='full'?'428':type==='adult'?'–':'1';
+  document.getElementById('bar-price').textContent = prices[type].split('–')[0].trim();
+  document.getElementById('bar-unit').textContent = type==='full'?'₪3.6':'–';
+  document.getElementById('checkout-btn').disabled = false;
+  renderGrid();
+}
+
+// ── INIT ──
+renderGrid();
+</script>
+</body>
+</html>

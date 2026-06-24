@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>יד תמר – לוח ניהול</title>
+  <style>
+/* ===== Yad Tamar – Main Stylesheet (RTL Hebrew) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --teal:     #00B4CC;
+  --teal-dk:  #007A8C;
+  --teal-lt:  #E0F7FA;
+  --gold:     #F5C518;
+  --gold-dk:  #C9A500;
+  --pink:     #E91E8C;
+  --pink-lt:  #FDE9F4;
+  --green:    #27AE60;
+  --red:      #E74C3C;
+  --orange:   #F39C12;
+  --bg:       #F4FAFB;
+  --card:     #FFFFFF;
+  --text:     #1A1A2E;
+  --muted:    #6B7280;
+  --border:   #D1E8EC;
+  --radius:   12px;
+  --shadow:   0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 24px rgba(0,0,0,.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  direction: rtl;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== Layout ===== */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* ===== Header ===== */
+.site-header {
+  background: linear-gradient(135deg, var(--teal-dk) 0%, var(--teal) 100%);
+  color: #fff;
+  padding: 0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+}
+.logo-area { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 52px; height: 52px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.logo-img {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 2px solid rgba(255,255,255,.6);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.logo-text h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
+.logo-text p  { font-size: .8rem; opacity: .85; margin-top: 1px; }
+
+.header-nav { display: flex; gap: 8px; }
+.nav-btn {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: .9rem;
+  font-weight: 500;
+  transition: all .2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,.28); }
+.nav-btn.active { background: var(--gold); color: var(--text); border-color: var(--gold); font-weight: 700; }
+
+/* ===== Hero ===== */
+.hero {
+  background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 40%, #E8F5E9 100%);
+  padding: 48px 24px;
+  text-align: center;
+  border-bottom: 3px solid var(--teal-lt);
+}
+.hero h2 { font-size: 2.4rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 10px; }
+.hero p  { font-size: 1.1rem; color: var(--muted); margin: 0 0 0; }
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  max-width: 860px;
+  margin: 0 auto 28px;
+}
+.hero-text { flex: 1; text-align: right; }
+.hero-illustration {
+  width: 31.25vw;
+  height: 31.25vw;
+  max-width: 250px;
+  max-height: 250px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,122,140,.2);
+  border: 3px solid #fff;
+}
+.hero-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.product-cards {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  margin-top: 8px;
+}
+.product-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 270px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+  transition: all .25s;
+  text-align: center;
+}
+.product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--teal); }
+.product-card.selected { border-color: var(--teal); background: var(--teal-lt); }
+.product-card .card-icon { font-size: 2.8rem; margin-bottom: 12px; }
+.product-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--teal-dk); margin-bottom: 6px; }
+.product-card .card-price {
+  font-size: 1.5rem; font-weight: 800; color: var(--pink);
+  margin: 8px 0 4px;
+}
+.product-card .card-desc { font-size: .83rem; color: var(--muted); line-height: 1.5; }
+
+.product-card.card-gift {
+  border: 2px dashed var(--gold);
+  background: #fffdf0;
+  position: relative;
+  overflow: visible;
+}
+.product-card.card-gift:hover { border-color: var(--gold); box-shadow: 0 6px 24px rgba(212,170,0,.2); }
+.card-gift-badge {
+  position: absolute;
+  top: -13px;
+  right: 50%;
+  transform: translateX(50%);
+  background: var(--gold);
+  color: #7a5500;
+  font-size: .72rem;
+  font-weight: 800;
+  padding: 3px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: .03em;
+}
+.card-price-free { color: #2a9d4e !important; }
+
+/* ===== Steps / Wizard ===== */
+.steps-bar {
+  display: flex; gap: 0; background: #fff;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+.step {
+  flex: 1; min-width: 120px;
+  padding: 14px 8px;
+  text-align: center;
+  font-size: .85rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.step.active { color: var(--teal-dk); border-bottom-color: var(--teal); font-weight: 700; }
+.step.done   { color: var(--green); }
+.step .step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--border); color: var(--muted);
+  font-size: .75rem; font-weight: 700; margin-left: 6px;
+}
+.step.active .step-num { background: var(--teal); color: #fff; }
+.step.done  .step-num  { background: var(--green); color: #fff; }
+
+/* ===== Page sections ===== */
+.page-section { display: none; padding: 32px 24px; }
+.page-section.active { display: block; }
+
+/* ===== Story Catalog ===== */
+.catalog-toolbar {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-input {
+  flex: 1; min-width: 200px;
+  padding: 10px 16px;
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  font-family: 'Heebo', sans-serif;
+  font-size: .95rem;
+  direction: rtl;
+  outline: none;
+  transition: border-color .2s;
+}
+.search-input:focus { border-color: var(--teal); }
+
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  background: #fff;
+  font-family: 'Heebo', sans-serif;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: all .2s;
+  color: var(--muted);
+}
+.chip:hover  { border-color: var(--teal); color: var(--teal-dk); }
+.chip.active { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 600; }
+
+.stories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.story-item {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.story-item:hover   { border-color: var(--teal); transform: translateY(-2px); }
+.story-item.checked { border-color: var(--teal); background: var(--teal-lt); }
+.story-check {
+  width: 20px; height: 20px; min-width: 20px;
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; color: #fff;
+  background: #fff;
+  transition: all .2s;
+  margin-top: 2px;
+}
+.story-item.checked .story-check { background: var(--teal); border-color: var(--teal); }
+.adult-disc-item { cursor: default; }
+.adult-disc-item:hover { border-color: var(--teal); transform: none; }
+.story-info .story-code { font-size: .72rem; color: var(--muted); margin-bottom: 2px; }
+.story-info .story-title { font-size: .88rem; font-weight: 600; line-height: 1.3; }
+.story-info .story-cat   { font-size: .72rem; color: var(--teal-dk); margin-top: 3px; }
+.story-info .story-dur   { font-size: .72rem; color: var(--muted); }
+
+/* ===== Pricing bar ===== */
+.pricing-bar {
+  position: sticky; bottom: 0;
+  background: #fff;
+  border-top: 2px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+  flex-wrap: wrap;
+  z-index: 50;
+}
+.pricing-info { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.pricing-stat { text-align: center; }
+.pricing-stat .val { font-size: 1.3rem; font-weight: 800; color: var(--teal-dk); }
+.pricing-stat .lbl { font-size: .75rem; color: var(--muted); }
+.pricing-tiers-label {
+  font-size: .78rem; color: var(--muted); margin-bottom: 5px; font-weight: 500;
+}
+.pricing-tiers {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.tier-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: .75rem;
+  background: var(--teal-lt);
+  color: var(--teal-dk);
+  border: 1px solid var(--border);
+}
+.tier-badge.active-tier { background: var(--gold); color: #333; font-weight: 700; border-color: var(--gold-dk); }
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 12px 28px;
+  border-radius: 24px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--teal); color: #fff; }
+.btn-primary:hover { background: var(--teal-dk); transform: translateY(-2px); }
+.btn-pink { background: var(--pink); color: #fff; }
+.btn-pink:hover { background: #c01070; transform: translateY(-2px); }
+.btn-gold { background: var(--gold); color: var(--text); }
+.btn-gold:hover { background: var(--gold-dk); }
+.btn-outline { background: transparent; border: 2px solid var(--teal); color: var(--teal-dk); }
+.btn-outline:hover { background: var(--teal-lt); }
+.btn-sm { padding: 7px 16px; font-size: .85rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* ===== Order Summary ===== */
+.summary-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.summary-card h3 {
+  font-size: 1.1rem; font-weight: 700; color: var(--teal-dk);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--teal-lt);
+  display: flex; align-items: center; gap: 8px;
+}
+.order-items-list { list-style: none; max-height: 260px; overflow-y: auto; }
+.order-items-list li {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+}
+.order-items-list li:last-child { border-bottom: none; }
+
+.price-breakdown { margin-top: 16px; }
+.price-row {
+  display: flex; justify-content: space-between;
+  padding: 6px 0; font-size: .92rem; color: var(--muted);
+}
+.price-row.total {
+  font-size: 1.2rem; font-weight: 800; color: var(--text);
+  border-top: 2px solid var(--border); margin-top: 8px; padding-top: 12px;
+}
+.price-row.total .amount { color: var(--pink); }
+
+/* ===== Form ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: .88rem; font-weight: 600; color: var(--text); }
+.form-group label .req { color: var(--red); margin-right: 2px; }
+.form-input, .form-select, .form-textarea {
+  padding: 11px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Heebo', sans-serif;
+  font-size: .95rem;
+  direction: rtl;
+  outline: none;
+  transition: border-color .2s;
+  background: #fff;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--teal); }
+.form-input.error { border-color: var(--red); }
+.error-msg { font-size: .78rem; color: var(--red); margin-top: 2px; }
+
+.payment-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.payment-option {
+  flex: 1; min-width: 140px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  background: #fff;
+}
+.payment-option:hover   { border-color: var(--teal); }
+.payment-option.selected { border-color: var(--teal); background: var(--teal-lt); }
+.payment-option .pay-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.payment-option .pay-name { font-size: .88rem; font-weight: 700; color: var(--text); }
+.payment-option .pay-desc { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+.usb-toggle {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--teal-lt);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.usb-toggle:hover  { border-color: var(--teal); }
+.usb-toggle.active { border-color: var(--teal); background: #B2EBF2; }
+.usb-toggle input[type=checkbox] { width: 20px; height: 20px; cursor: pointer; }
+
+/* ===== Confirmation / Success ===== */
+.success-screen {
+  text-align: center;
+  padding: 60px 24px;
+}
+.success-screen .check-circle {
+  width: 90px; height: 90px;
+  background: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; color: #fff;
+  margin: 0 auto 24px;
+  animation: pop .4s ease;
+}
+@keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+.success-screen h2 { font-size: 2rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 12px; }
+.success-screen p  { font-size: 1.05rem; color: var(--muted); max-width: 500px; margin: 0 auto 28px; }
+
+/* ===== Gift Story ===== */
+.gift-section {
+  background: linear-gradient(135deg, #FDE9F4 0%, #F8BBD9 100%);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  border: 2px solid #F48FB1;
+}
+.gift-section h2 { font-size: 1.8rem; font-weight: 800; color: var(--pink); margin-bottom: 8px; }
+.gift-section p  { color: #880E4F; margin-bottom: 24px; }
+.gift-form { max-width: 400px; margin: 0 auto; text-align: right; }
+.gift-form .form-input { width: 100%; margin-bottom: 12px; }
+
+/* ===== Admin Dashboard ===== */
+.admin-layout {
+  display: flex; min-height: 100vh;
+}
+.admin-sidebar {
+  width: 240px; min-width: 240px;
+  background: linear-gradient(180deg, var(--teal-dk) 0%, #004D5E 100%);
+  color: #fff;
+  padding: 20px 0;
+  display: flex; flex-direction: column;
+}
+.sidebar-logo {
+  padding: 16px 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.sidebar-logo .logo-icon-sm {
+  width: 40px; height: 40px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.sidebar-logo span { font-size: 1.05rem; font-weight: 800; }
+
+.sidebar-menu { flex: 1; }
+.menu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  cursor: pointer;
+  font-size: .92rem;
+  transition: all .18s;
+  border-right: 3px solid transparent;
+  color: rgba(255,255,255,.8);
+}
+.menu-item:hover  { background: rgba(255,255,255,.1); color: #fff; }
+.menu-item.active { background: rgba(255,255,255,.18); color: #fff; border-right-color: var(--gold); font-weight: 700; }
+.menu-item .menu-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+.admin-main { flex: 1; background: var(--bg); overflow-y: auto; }
+.admin-topbar {
+  background: #fff;
+  padding: 14px 28px;
+  border-bottom: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+}
+.admin-topbar h2 { font-size: 1.2rem; font-weight: 700; }
+.admin-content { padding: 28px; }
+
+/* ===== KPI Cards ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.kpi-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-right: 4px solid var(--teal);
+  transition: transform .2s;
+}
+.kpi-card:hover { transform: translateY(-3px); }
+.kpi-card.danger  { border-right-color: var(--red); }
+.kpi-card.warning { border-right-color: var(--orange); }
+.kpi-card.success { border-right-color: var(--green); }
+.kpi-card.gold    { border-right-color: var(--gold); }
+.kpi-card.pink    { border-right-color: var(--pink); }
+.kpi-card .kpi-label { font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
+.kpi-card .kpi-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }
+.kpi-card .kpi-icon  { font-size: 1.6rem; float: left; opacity: .25; }
+
+/* ===== Data Table ===== */
+.table-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.table-header {
+  padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.table-header h3 { font-size: 1.05rem; font-weight: 700; }
+.table-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.data-table thead { background: var(--teal-lt); }
+.data-table th {
+  padding: 12px 14px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--teal-dk);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #F8FFFE; }
+.table-scroll { overflow-x: auto; }
+
+/* ===== Badges / Status ===== */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.badge-green  { background: #D4EDDA; color: #155724; }
+.badge-red    { background: #F8D7DA; color: #721C24; }
+.badge-yellow { background: #FFF3CD; color: #856404; }
+.badge-blue   { background: #CCE5FF; color: #004085; }
+.badge-gray   { background: #E2E3E5; color: #383D41; }
+.badge-pink   { background: var(--pink-lt); color: var(--pink); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 540px; width: 90%;
+  max-height: 85vh; overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform .25s;
+  direction: rtl;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--border);
+}
+.modal-header h3 { font-size: 1.15rem; font-weight: 800; }
+.close-btn {
+  background: var(--border); border: none; border-radius: 50%;
+  width: 30px; height: 30px;
+  font-size: 1.1rem; cursor: pointer; line-height: 30px; text-align: center;
+  transition: background .2s;
+}
+.close-btn:hover { background: #ccc; }
+
+/* ===== Toast ===== */
+#toast-container {
+  position: fixed; bottom: 24px; left: 24px;
+  display: flex; flex-direction: column-reverse; gap: 8px;
+  z-index: 9999;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  animation: slideUp .3s ease;
+  max-width: 320px;
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.toast-success { background: var(--green); }
+.toast-error   { background: var(--red); }
+.toast-info    { background: var(--teal); }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .product-cards { flex-direction: column; align-items: center; }
+  .admin-sidebar { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero h2 { font-size: 1.7rem; }
+  .hero-top { flex-direction: column-reverse; text-align: center; }
+  .hero-text { text-align: center; }
+  .hero-illustration { width: 150px; height: 150px; max-width: 150px; max-height: 150px; }
+  .stories-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--teal-lt); }
+::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 3px; }
+
+/* ===== Tabs in Admin ===== */
+.tab-list { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab-btn {
+  padding: 11px 20px;
+  border: none; background: transparent;
+  font-family: 'Heebo', sans-serif; font-size: .92rem;
+  cursor: pointer; color: var(--muted);
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  transition: all .18s;
+}
+.tab-btn:hover  { color: var(--teal-dk); }
+.tab-btn.active { color: var(--teal-dk); font-weight: 700; border-bottom-color: var(--teal); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== Loader ===== */
+.spinner {
+  width: 36px; height: 36px;
+  border: 4px solid var(--teal-lt);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin: 40px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Utility */
+.text-center { text-align: center; }
+.text-muted  { color: var(--muted); }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.flex  { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.fw-700 { font-weight: 700; }
+.section-title {
+  font-size: 1.25rem; font-weight: 800; color: var(--teal-dk);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.divider { border: none; border-top: 2px solid var(--border); margin: 20px 0; }
+
+.catalog-actions { display: flex; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }
+.btn-select-all,
+.btn-select-cat {
+  font-family: inherit; font-size: .82rem; font-weight: 600;
+  padding: 5px 14px; border-radius: 20px;
+  border: 1.5px solid var(--teal); background: var(--teal-lt);
+  color: var(--teal-dk); cursor: pointer;
+  transition: background .15s, color .15s; direction: rtl;
+}
+.btn-select-all:hover, .btn-select-cat:hover { background: var(--teal); color: #fff; }
+
+/* ===== ABOUT SECTION ===== */
+.about-section {
+  background: linear-gradient(160deg, #f5fcfb 0%, #fffdf0 100%);
+  border-top: 3px solid var(--teal);
+  border-bottom: 3px solid var(--gold);
+  padding: 28px 24px;
+}
+.about-inner { max-width: 680px; margin: 0 auto; }
+.about-title {
+  font-size: 1.15rem; font-weight: 900; color: var(--teal-dk);
+  margin: 0 0 6px; line-height: 1.5;
+}
+.about-subtitle {
+  font-size: .9rem; font-weight: 700; color: var(--gold);
+  margin: 0 0 12px;
+}
+.about-badges {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.about-badge {
+  background: var(--teal); color: #fff;
+  padding: 4px 14px; border-radius: 20px;
+  font-size: .78rem; font-weight: 700;
+}
+.about-desc {
+  font-size: .87rem; line-height: 1.85; color: #444;
+  margin-bottom: 14px;
+}
+.about-features {
+  list-style: none; padding: 0; margin: 0 0 14px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.about-features li {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: .87rem; color: #333; line-height: 1.5;
+}
+.about-features li::before {
+  content: '✓'; color: #2a9d4e; font-weight: 900;
+  font-size: 1rem; flex-shrink: 0; margin-top: 1px;
+}
+.about-copyright {
+  font-size: .72rem; color: var(--muted);
+  border-top: 1px solid #ddd; padding-top: 10px; margin: 0;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen" style="
+  min-height:100vh;
+  background:linear-gradient(135deg,#007A8C 0%,#00B4CC 50%,#4DC9E6 100%);
+  display:flex;align-items:center;justify-content:center;
+">
+  <div style="background:#fff;border-radius:20px;padding:48px 40px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center">
+    <div style="width:70px;height:70px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;box-shadow:0 4px 12px rgba(0,0,0,.15)">🌴</div>
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--teal-dk);margin-bottom:4px">יד תמר</h2>
+    <p style="color:var(--muted);margin-bottom:28px">לוח ניהול</p>
+    <div style="text-align:right;margin-bottom:14px">
+      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">דוא"ל מנהל</label>
+      <input type="email" id="login-email" class="form-input" style="width:100%" placeholder="yadtamar613@gmail.com" value="yadtamar613@gmail.com" />
+    </div>
+    <div style="text-align:right;margin-bottom:24px">
+      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">סיסמה</label>
+      <input type="password" id="login-pass" class="form-input" style="width:100%" placeholder="••••••••" value="admin123" />
+    </div>
+    <div id="login-err" class="error-msg" style="text-align:center;margin-bottom:10px"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1.05rem" onclick="doLogin()">
+      כניסה לניהול
+    </button>
+    <div style="margin-top:20px;font-size:.8rem;color:var(--muted)">
+      <a href="index.html" style="color:var(--teal);text-decoration:none">← חזרה לחנות</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN LAYOUT ===== -->
+<div id="admin-app" style="display:none">
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon-sm">🌴</div>
+        <span>יד תמר</span>
+      </div>
+      <nav class="sidebar-menu">
+        <div class="menu-item active" id="menu-dashboard" onclick="showPanel('dashboard')">
+          <span class="menu-icon">📊</span> לוח בקרה
+        </div>
+        <div class="menu-item" id="menu-orders" onclick="showPanel('orders')">
+          <span class="menu-icon">🛒</span> הזמנות
+        </div>
+        <div class="menu-item" id="menu-fulfillment" onclick="showPanel('fulfillment')">
+          <span class="menu-icon">📦</span> משלוחים
+        </div>
+        <div class="menu-item" id="menu-leads" onclick="showPanel('leads')">
+          <span class="menu-icon">👤</span> לידים
+        </div>
+        <div class="menu-item" id="menu-catalog" onclick="showPanel('catalog')">
+          <span class="menu-icon">🎵</span> קטלוג
+        </div>
+      </nav>
+      <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);margin-top:auto">
+        <div style="font-size:.8rem;opacity:.7;margin-bottom:8px">מחובר: yadtamar613@gmail.com</div>
+        <a href="index.html" style="font-size:.82rem;color:rgba(255,255,255,.7);text-decoration:none;display:block;margin-bottom:6px">← לחנות</a>
+        <div style="font-size:.8rem;opacity:.5">גרסה 1.1 MVP</div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h2 id="panel-title">לוח בקרה</h2>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:.85rem;color:var(--muted)">📅 18.06.2026</span>
+          <button class="btn btn-sm btn-outline" onclick="refreshData()">🔄 רענן</button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+
+        <!-- ===== PANEL: DASHBOARD ===== -->
+        <div id="panel-dashboard" class="tab-panel active">
+
+          <!-- KPI Cards -->
+          <div class="kpi-grid" id="kpi-grid"></div>
+
+          <!-- Quick stats -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+            <div class="summary-card">
+              <h3>📈 הזמנות אחרונות</h3>
+              <div id="recent-orders"></div>
+            </div>
+            <div class="summary-card">
+              <h3>⚡ פעולות מהירות</h3>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <button class="btn btn-outline" onclick="showPanel('orders')">🛒 צפה בכל ההזמנות</button>
+                <button class="btn btn-outline" onclick="showPanel('fulfillment')">📦 בדוק משלוחים תלויים</button>
+                <button class="btn btn-outline" onclick="showPanel('leads')">👤 ניהול לידים</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing reference -->
+          <div class="summary-card">
+            <h3>💰 טבלת מחירים נוכחית</h3>
+            <div class="table-scroll">
+              <table class="data-table" id="pricing-table"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL: ORDERS ===== -->
+        <div id="panel-orders" class="tab-panel">
+          <div class="tab-list">
+            <button class="tab-btn active" onclick="filterOrdersTab(this,'all')">כל ההזמנות</button>
+            <button class="tab-btn" onclick="filterOrdersTab(this,'PAID')">שולמו</button>
+            <button class="tab-btn" onclick="filterOrdersTab(this,'PENDING')">ממתין תשלום</button>
+            <button class="tab-btn" onclick="filterOrdersTab(this,'FAILED')">נכשל</button>
+          </div>
+          <div class="table-card">
+            <div class="table-header">
+              <h3>הזמנות</h3>
+              <div class="table-toolbar">
+                <input type="text" class="search-input" id="order-search"
+                       style="min-width:200px;padding:8px 14px;border-radius:20px"
+                       placeholder="🔍 חיפוש לפי שם / מספר..."
+                       oninput="renderOrders()" />
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table" id="orders-table">
+                <thead>
+                  <tr>
+                    <th>מספר הזמנה</th>
+                    <th>תאריך</th>
+                    <th>שם לקוח</th>
+                    <th>דוא"ל</th>
+                    <th>טלפון</th>
+                    <th>סכום</th>
+                    <th>תשלום</th>
+                    <th>סטטוס תשלום</th>
+                    <th>סטטוס עיבוד</th>
+                    <th>סוג מסירה</th>
+                    <th>פולפילמנט</th>
+                    <th>דיסק און קי</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL: FULFILLMENT ===== -->
+        <div id="panel-fulfillment" class="tab-panel">
+          <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+            <div class="kpi-card success">
+              <div class="kpi-icon">✅</div>
+              <div class="kpi-label">הושלמו</div>
+              <div class="kpi-value" id="ff-completed">0</div>
+            </div>
+            <div class="kpi-card warning">
+              <div class="kpi-icon">⏳</div>
+              <div class="kpi-label">בתהליך</div>
+              <div class="kpi-value" id="ff-pending">0</div>
+            </div>
+            <div class="kpi-card danger">
+              <div class="kpi-icon">❌</div>
+              <div class="kpi-label">נכשלו</div>
+              <div class="kpi-value" id="ff-failed">0</div>
+            </div>
+          </div>
+          <div class="table-card">
+            <div class="table-header">
+              <h3>📦 מעקב פולפילמנט</h3>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>מספר הזמנה</th>
+                    <th>לקוח</th>
+                    <th>סוג מסירה</th>
+                    <th>מספר קבצים</th>
+                    <th>סטטוס פולפילמנט</th>
+                    <th>קישור תיקייה</th>
+                    <th>תאריך</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="fulfillment-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL: LEADS ===== -->
+        <div id="panel-leads" class="tab-panel">
+          <div class="table-card">
+            <div class="table-header">
+              <h3>👤 לידים</h3>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>שם</th>
+                    <th>דוא"ל</th>
+                    <th>טלפון</th>
+                    <th>מקור</th>
+                    <th>סיפור מתנה נשלח</th>
+                    <th>תאריך</th>
+                    <th>פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="leads-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL: CATALOG ===== -->
+        <div id="panel-catalog" class="tab-panel">
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+            <div class="table-card">
+              <div class="table-header">
+                <h3>🎵 קטלוג סיפורים</h3>
+                <div class="table-toolbar">
+                  <input type="text" class="search-input"
+                         style="padding:8px 14px;border-radius:20px;min-width:180px"
+                         placeholder="🔍 חיפוש..." oninput="renderCatalog(this.value)" />
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>קוד</th>
+                      <th>שם</th>
+                      <th>קטגוריה</th>
+                      <th>משך</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalog-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <!-- Stats sidebar -->
+            <div>
+              <div class="summary-card">
+                <h3>📊 סטטיסטיקות קטלוג</h3>
+                <div class="price-row"><span>סה"כ סיפורים</span><span class="fw-700">428</span></div>
+                <div class="price-row"><span>סיפורי ילדים</span><span class="fw-700">423</span></div>
+                <div class="price-row"><span>קבצי גמרא</span><span class="fw-700">5</span></div>
+                <div class="price-row"><span>קטגוריות</span><span class="fw-700">5</span></div>
+                <hr class="divider"/>
+                <div class="price-row"><span>מחיר חבילה מלאה</span><span class="fw-700">₪1,550</span></div>
+                <div class="price-row"><span>אוסף מבוגרים</span><span class="fw-700">₪360</span></div>
+              </div>
+              <div class="summary-card mt-16">
+                <h3>🏷 טבלת מחירים</h3>
+                <div id="pricing-table-small"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Adult collection table -->
+          <div class="table-card mt-16">
+            <div class="table-header">
+              <h3>🎓 קטלוג מבוגרים – 24 דיסקים, 283 הרצאות</h3>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ק׳</th>
+                    <th>נושא</th>
+                    <th>דיסק</th>
+                    <th>הרצאות</th>
+                  </tr>
+                </thead>
+                <tbody id="adult-catalog-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /admin-content -->
+    </main>
+  </div>
+</div>
+
+<!-- ===== ORDER DETAIL MODAL ===== -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3>📋 פרטי הזמנה</h3>
+      <button class="close-btn" onclick="closeModal('order-modal')">✕</button>
+    </div>
+    <div id="order-modal-body"></div>
+  </div>
+</div>
+
+<!-- ===== ADD STORY MODAL ===== -->
+<div class="modal-overlay" id="story-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>➕ הוספת סיפור חדש</h3>
+      <button class="close-btn" onclick="closeModal('story-modal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>קוד סיפור *</label>
+        <input type="text" class="form-input" id="new-code" placeholder="YT-0429" />
+      </div>
+      <div class="form-group">
+        <label>שם הסיפור *</label>
+        <input type="text" class="form-input" id="new-title" placeholder="שם הסיפור" />
+      </div>
+      <div class="form-group">
+        <label>קטגוריה *</label>
+        <select class="form-select" id="new-cat">
+          <option value="">בחר קטגוריה</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>משך (דקות)</label>
+        <input type="number" class="form-input" id="new-dur" placeholder="10" min="1" max="120" />
+      </div>
+      <div class="form-group full">
+        <label>Google Drive File ID *</label>
+        <input type="text" class="form-input" id="new-driveid" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs..." />
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModal('story-modal')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveStory()">💾 שמור סיפור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NOTES MODAL ===== -->
+<div class="modal-overlay" id="notes-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📝 הערות משרד</h3>
+      <button class="close-btn" onclick="closeModal('notes-modal')">✕</button>
+    </div>
+    <textarea class="form-textarea" id="notes-text" rows="5" style="width:100%;margin-bottom:16px" placeholder="הוספת הערה..."></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-outline" onclick="closeModal('notes-modal')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveNotes()">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// Yad Tamar — real catalog data & pricing engine
+
+const PRICING_RULES = [
+  { min: 1,   max: 49,  unitPrice: 8.0  },
+  { min: 50,  max: 99,  unitPrice: 7.5  },
+  { min: 100, max: 149, unitPrice: 7.0  },
+  { min: 150, max: 314, unitPrice: 6.0  },
+  { min: 315, max: Infinity, unitPrice: 4.3 },
+];
+
+const ADULT_DISCS = [
+  { id:'ad01', cat:'א', catName:'חינוך ילדים',                    disc:1, count:12 },
+  { id:'ad02', cat:'ב', catName:'הבית היהודי',                    disc:1, count:7  },
+  { id:'ad03', cat:'ג', catName:'מחשבה והשקפה',                   disc:1, count:12 },
+  { id:'ad04', cat:'ג', catName:'מחשבה והשקפה',                   disc:2, count:12 },
+  { id:'ad05', cat:'ג', catName:'מחשבה והשקפה',                   disc:3, count:12 },
+  { id:'ad06', cat:'ג', catName:'מחשבה והשקפה',                   disc:4, count:10 },
+  { id:'ad07', cat:'ד', catName:'אקטואליה',                       disc:1, count:15 },
+  { id:'ad08', cat:'ה', catName:'מידות',                          disc:1, count:10 },
+  { id:'ad09', cat:'ה', catName:'מידות',                          disc:2, count:10 },
+  { id:'ad10', cat:'ה', catName:'מידות',                          disc:3, count:9  },
+  { id:'ad11', cat:'ו', catName:'מעגל השנה',                      disc:1, count:10 },
+  { id:'ad12', cat:'ו', catName:'מעגל השנה',                      disc:2, count:10 },
+  { id:'ad13', cat:'ז', catName:'קבלה',                           disc:1, count:12 },
+  { id:'ad14', cat:'ח', catName:'אמונה',                          disc:1, count:9  },
+  { id:'ad15', cat:'ט', catName:'גלות וגאולה',                    disc:1, count:9  },
+  { id:'ad16', cat:'י', catName:'תורה ומצוות ולשון הקודש',        disc:1, count:13 },
+  { id:'ad17', cat:'י', catName:'תורה ומצוות ולשון הקודש',        disc:2, count:13 },
+  { id:'ad18', cat:'יא', catName:'נושאים בפרשת השבוע',            disc:1, count:12 },
+  { id:'ad19', cat:'יא', catName:'נושאים בפרשת השבוע',            disc:2, count:12 },
+  { id:'ad20', cat:'יב', catName:'נושאים בתנ"ך',                  disc:1, count:10 },
+  { id:'ad21', cat:'יג', catName:'בנית דימוי עצמי חיובי',         disc:1, count:18 },
+  { id:'ad22', cat:'יד', catName:'ועדים בהשקפה',                  disc:1, count:14 },
+  { id:'ad23', cat:'טו', catName:'הכח לצמוח',                     disc:1, count:16 },
+  { id:'ad24', cat:'טו', catName:'הכח לצמוח',                     disc:2, count:16 },
+];
+
+const FULL_LIBRARY_PRICE    = 1550;
+const ADULT_COLLECTION_PRICE = 360;
+const USB_PRICE             = 15;
+const FREE_USB_MIN_FILES    = 50;
+const TOTAL_STORIES         = 428;
+
+function calcUnitPrice(qty) {
+  const rule = PRICING_RULES.find(r => qty >= r.min && qty <= r.max);
+  return rule ? rule.unitPrice : PRICING_RULES[PRICING_RULES.length - 1].unitPrice;
+}
+function calcTotal(qty) { return Math.min(+(qty * calcUnitPrice(qty)).toFixed(2), FULL_LIBRARY_PRICE); }
+
+const CATEGORIES = [
+  { id: 'c1', name: 'סיפורי חז"ל ומידות',  displayOrder: 1 },
+  { id: 'c2', name: 'מעגל השנה וחגים',      displayOrder: 2 },
+  { id: 'c3', name: 'ספרי התורה',           displayOrder: 3 },
+  { id: 'c4', name: 'נביאים',               displayOrder: 4 },
+  { id: 'c5', name: 'סיפורי מופת',          displayOrder: 5 },
+  { id: 'c6', name: 'שולחן שבת ובר מצוה',  displayOrder: 6 },
+  { id: 'c7', name: 'גמרא',                 displayOrder: 7 },
+];
+
+// [channelNum, categoryId, title, durationMin]
+const _RAW = [
+  [1,'c1','רב כהנא והמוסר - כבוד תלמידי חכמים',50],
+  [2,'c1','רב ששת, העוור הרואה - חכם עדיף מנביא',50],
+  [3,'c1','ר\' יהושע וחכמי אתונה',50],
+  [4,'c1','ר\' יהודה ועבד החשמונאים',50],
+  [5,'c1','ר\' יוסי ותחיית המתים - תפילה',50],
+  [6,'c1','שלמה המלך, אשמדאי והשמיר',50],
+  [7,'c1','דוד המלך ומעשי ה\'',50],
+  [8,'c1','דוד וישבי, אחיו של גולית',50],
+  [9,'c1','דרך ארץ - כבוד הבריות',50],
+  [10,'c1','כחה של צדקה',50],
+  [11,'c1','ר\' פנחס בן יאיר, חמורו והעכברים',50],
+  [12,'c1','ר\' פנחס בן יאיר והבריאה',50],
+  [13,'c1','ר\' שמעון בן חלפתא וברית המילה - בושה וחוצפה',50],
+  [14,'c1','רב ספרא ובנו - ענית אמן',50],
+  [15,'c1','אלכסנדר מוקדון ומלך קציא - איסור גזל',50],
+  [16,'c1','גביהה בן פסיסא, ארץ ישראל ואלכסנדר מוקדון',50],
+  [17,'c1','שמעון הצדיק ובית המקדש',50],
+  [18,'c1','ר\' אליעזר בן הורקנוס ושקידת התורה',50],
+  [19,'c1','חכמתם של בני ירושלים',50],
+  [20,'c1','רשב"י ובנו - מסירות נפש לתורה - ל"ג בעומר',50],
+  [21,'c1','יונה הנביא',50],
+  [22,'c1','כבדהו וחשדהו - היחס לזרים',50],
+  [23,'c1','זריזות והתמדה',50],
+  [24,'c1','טובה חכמה מכסף',50],
+  [25,'c1','הלל הנשיא ומידת הסבלנות',50],
+  [26,'c1','השמח בחלקו',50],
+  [27,'c1','גם זו לטובה',50],
+  [28,'c1','כבוד אב ואם א\'',50],
+  [29,'c1','כבוד אב ואם ב\'',50],
+  [30,'c1','שבת קודש',50],
+  [31,'c1','אליהו הנביא אוהב ישראל',50],
+  [32,'c1','לא תגנוב - הסוחר החכם',50],
+  [33,'c1','רבי ואנטונינוס קיסר א\'',50],
+  [34,'c1','רבי ואנטונינוס קיסר ב\'',50],
+  [35,'c1','אליהו הנביא ור\' יהושע בן לוי',50],
+  [36,'c1','ערכה של תורה - רב כהנא וסליק בנו א\'',50],
+  [37,'c1','ערכה של תורה - רב כהנא וסליק בנו ב\'',50],
+  [38,'c1','אליהו הנביא - הגנן, אשתו ושבע השנים הטובות',50],
+  [39,'c1','שלמה המלך ושלושת האחים',50],
+  [40,'c1','שלמה המלך ושלושת הסוחרים',50],
+  [41,'c1','הקצב שעמד בנסיון',50],
+  [42,'c1','ר\' אליעזר ולכידת הגנבים א\'',50],
+  [43,'c1','ר\' אליעזר ולכידת הגנבים ב\'',50],
+  [44,'c1','חנניה, מישאל ועזריה בכבשן האש א\' - בטחון עצמי',50],
+  [45,'c1','חנניה מישאל ועזריה בכבשן האש ב\' - בטחון עצמי',50],
+  [46,'c1','דניאל ונבוכדנאצר',50],
+  [47,'c1','דניאל בגוב האריות',50],
+  [48,'c1','עונשו וסופו של נבוכדנאצר הרשע',50],
+  [49,'c1','כוחה של תפילה',50],
+  [50,'c1','אמת ושקר',50],
+  [51,'c1','שמירת הלשון',50],
+  [52,'c1','שלום ומחלוקת',50],
+  [53,'c1','מידת הענווה',50],
+  [54,'c1','מידת הגאווה',50],
+  [55,'c1','מידת הכעס',50],
+  [56,'c1','מידת הרגזנות',50],
+  [57,'c1','צער הבריות א\'',50],
+  [58,'c1','צער הבריות ב\'',50],
+  [59,'c1','כבוד הזולת א\'',50],
+  [60,'c1','כבוד הזולת ב\'',50],
+  [61,'c1','ואהבת לרעך כמוך',50],
+  [62,'c1','לדון לכף זכות',50],
+  [63,'c1','מידת הרחמים ושכרה',50],
+  [64,'c1','צדקה תציל ממות',50],
+  [65,'c1','קנאה בין אחים',50],
+  [66,'c1','שלום ומריבות בין אחים',50],
+  [67,'c1','צער בעלי חיים',50],
+  [68,'c1','לשון נקיה',50],
+  [69,'c1','פה טהור',50],
+  [70,'c1','בל תשחית',50],
+  [71,'c1','ונשמרתם לנפשותיכם',50],
+  [72,'c1','מידת הנדיבות',50],
+  [73,'c1','מידת טהרת הלב',50],
+  [74,'c1','דוד המלך ובוסתנאי',50],
+  [75,'c1','כסא שלמה המלך',50],
+  [76,'c1','שלמה המלך ומלכות שבא',50],
+  [77,'c1','דניאל, דריוש, האליל בל והתנין',50],
+  [78,'c1','הלני המלכה, איזטיס וברית המילה',50],
+  [79,'c1','שמעון בן שטח והמכשפות באשקלון',50],
+  [80,'c1','כח קדושת אמן',50],
+  [81,'c1','משה רבינו מלך כוש',50],
+  [82,'c2','ר\' מאיר ואלישע בן אבויה',50],
+  [83,'c2','התשובה',50],
+  [84,'c2','עקידת יצחק',50],
+  [85,'c2','מלכות ושופר',50],
+  [86,'c2','יום המחילה',50],
+  [87,'c2','עבודת הכהן הגדול',50],
+  [88,'c2','יון וגזירת השמד',50],
+  [89,'c2','מרד החשמונאים',50],
+  [90,'c2','ניסי המלחמה ופך השמן',50],
+  [91,'c2','על הניסים ועל הפורקן',50],
+  [92,'c2','סעודת אחשוורוש',50],
+  [93,'c2','המן והגזירה',50],
+  [94,'c2','מפלת המן',50],
+  [95,'c2','הישועה - גדולת מרדכי',50],
+  [96,'c2','השעבוד',50],
+  [97,'c2','המכות',50],
+  [98,'c2','יציאת מצרים',50],
+  [99,'c2','קריעת ים סוף',50],
+  [100,'c2','הכנה למתן תורה',50],
+  [101,'c2','מתן תורה',50],
+  [102,'c2','שדי מואב',50],
+  [103,'c2','הנסיונות',50],
+  [104,'c2','אמה של מלכות',50],
+  [105,'c2','עין טובה - רבי עקיבא א\'',50],
+  [106,'c2','תורתו ועושרו - רבי עקיבא ב\'',50],
+  [107,'c2','איש שהכל בו - רבי עקיבא ג\'',50],
+  [108,'c2','המופת לדורות - רבי עקיבא ד\'',50],
+  [109,'c2','בית המקדש השני',50],
+  [110,'c2','חורבן בית שני - הגאולה',50],
+  [111,'c2','בר כוכבא ונפילת ביתר',50],
+  [112,'c2','בית המקדש הראשון',50],
+  [113,'c2','חורבן בית ראשון - הנחמה',50],
+  [114,'c3','נח והמבול',50],
+  [115,'c3','החיים בתיבה',50],
+  [116,'c3','נמרוד ודור הפלגה',50],
+  [117,'c3','אברהם אבינו בכבשן האש',50],
+  [118,'c3','אברהם ושרה במצרים',50],
+  [119,'c3','מלחמת המלכים - הגר - ברית המילה',50],
+  [120,'c3','בית החסד - חטאת סדום',50],
+  [121,'c3','הפיכת סדום - לידת יצחק',50],
+  [122,'c3','הגר וישמעאל - אברהם ואבימלך',50],
+  [123,'c3','פטירת שרה אמנו',50],
+  [124,'c3','רבקה אמנו',50],
+  [125,'c3','נעורי יעקב ועשיו',50],
+  [126,'c3','יצחק בגרר',50],
+  [127,'c3','הברכות',50],
+  [128,'c3','יעקב יוצא לגולה',50],
+  [129,'c3','האמהות והשבטים הקדושים',50],
+  [130,'c3','לבן אויב בניו',50],
+  [131,'c3','הכנות לפגישה עם עשיו - המאבק עם המלאך',50],
+  [132,'c3','הפגישה - שכם - פטירת רחל אמנו',50],
+  [133,'c3','המכירה',50],
+  [134,'c3','יוסף במצרים',50],
+  [135,'c3','יוסף עולה לגדולה',50],
+  [136,'c3','האחים במצרים',50],
+  [137,'c3','עלילת הגביע',50],
+  [138,'c3','התגלות יוסף',50],
+  [139,'c3','ירידת יעקב למצרים',50],
+  [140,'c3','הברכות - ויחי א\'',50],
+  [141,'c3','פטירת יעקב',50],
+  [142,'c3','מצרים - "כור הברזל"',50],
+  [143,'c3','גואל בא לעולם',50],
+  [144,'c3','משה במדין - אש הסנה בסיני',50],
+  [145,'c3','משה ואהרן בארמון פרעה',50],
+  [146,'c3','הטבע בשרות האדם - מכת דם',50],
+  [147,'c3','מכות - צפרדע, כינים וערוב',50],
+  [148,'c3','מכות - דבר, שחין וברד',50],
+  [149,'c3','מכות - ארבה וחושך',50],
+  [150,'c3','ליל הפלאות - מכת בכורות',50],
+  [151,'c3','היציאה לחירות',50],
+  [152,'c3','פרעה נכנס למלכודת',50],
+  [153,'c3','בתוך הים - שירת האמונה',50],
+  [154,'c3','מן - מזון מן השמים',50],
+  [155,'c4','ספר יהושע א\'-ב\' - בפתחה של א"י, רחב - שליחת ההשגחה',50],
+  [156,'c4','ספר יהושע ג\'-ה\' - הירדן שנסב לאחור - המילה',50],
+  [157,'c4','ספר יהושע ו\'-ז\' - חומות יריחו נבלעות',50],
+  [158,'c4','ספר יהושע ז\'-ח\' - חטא עכן ומפלת העי',50],
+  [159,'c4','ספר יהושע ט\'-י\' - הגבעונים - חוטבי עצים ושואבי מים',50],
+  [160,'c4','ספר יהושע י\'-יב\' - שמש בגבעון דום! מלחמת מי מרום',50],
+  [161,'c4','ספר יהושע יג\'-כא\' - חלוקת הארץ לנחלותיה',50],
+  [162,'c4','ספר יהושע כב\'-כד\' - יהושע פרנס הדור',50],
+  [163,'c4','יהושע, יניח ושובך',50],
+  [164,'c4','ספר שופטים א\'-ב\' - ארץ ישראל - ארמונו של מלך',50],
+  [165,'c4','ספר שופטים ג\' - עתניאל בן קנז, אהוד בן גרא ועגלון',50],
+  [166,'c4','ספר שופטים ד\' - דבורה הנביאה, ברק בן אבינועם וסיסרא',50],
+  [167,'c4','ספר שופטים ה\'-ו\' - שירת דבורה, גדעון בן יואש והמלאך',50],
+  [168,'c4','ספר שופטים ז\'-ח\' - גדעון ומלחמת מדין',50],
+  [169,'c4','ספר שופטים ח\' - גדעון והאפוד',50],
+  [170,'c4','ספר שופטים ט\' - משל יותם, אבימלך בן גדעון',50],
+  [171,'c4','ספר שופטים ט\'-י\' - מלחמות אבימלך וסופו',50],
+  [172,'c4','ספר שופטים יא\'-יב\' - יפתח והעמונים',50],
+  [173,'c4','ספר שופטים יג\'-יד\' - לידת שמשון, נס האריה',50],
+  [174,'c4','ספר שופטים יד\'-טו\' - שמשון הצדיק, הגבור שבגבורים',50],
+  [175,'c4','ספר שופטים טו\'-טז\' - שמשון השופט, לוחם יחידי',50],
+  [176,'c4','ספר שופטים טז\' - נקמת שמשון האחרונה',50],
+  [177,'c4','ספר שמואל א\' א\'-ב\' - חנה, שמואל ובית עלי',50],
+  [178,'c4','ספר שמואל א\' ג\'-ו\' - ארון ה\' ומכות פלישתים',50],
+  [179,'c4','ספר שמואל א\' ז\'-י\' - שמואל הנביא פרנס הדור',50],
+  [180,'c4','ספר שמואל א\' יא\'-יג\' - שאול המלך בחיר ה\'',50],
+  [181,'c4','ספר שמואל א\' יד\'-טו\' - מלחמות שאול ומלחמת עמלק',50],
+  [182,'c4','ספר שמואל א\' טז\' - דוד הרועה נמשח למלך',50],
+  [183,'c4','ספר שמואל א\' יז\'-יח\' - דוד וגולית',50],
+  [184,'c4','ספר שמואל א\' יט\'-כ\' - אהבת דוד ויונתן',50],
+  [185,'c4','ספר שמואל א\' כא\'-כב\' - נב עיר הכהנים',50],
+  [186,'c4','ספר שמואל א\' כג\'-כד\' - הנסיונות, דוד הנרדף',50],
+  [187,'c4','ספר שמואל א\' כה\'-כו\' - דוד ונבל הכרמלי',50],
+  [188,'c4','ספר שמואל א\' כז\'-ל\' - שאול נפרד מדוד, בעלת האוב',50],
+  [189,'c4','ספר שמואל א\' ל\'-לא\' - דוד וצקלג, מות שאול ובניו',50],
+  [190,'c4','ספר שמואל ב\' א\'-ב\' - שמש דוד זורחת',50],
+  [191,'c4','ספר שמואל ב\' ב\'-ג\' - משחק הדמים',50],
+  [192,'c4','ספר שמואל ב\' ג\'-ה\' - אבנר הגדול ואיש בושת',50],
+  [193,'c4','ספר שמואל ב\' ה\'-ו\' - דוד מלך ישראל, ארון ה\'',50],
+  [194,'c4','ספר שמואל ב\' ז\'-ח\' - הגדולה לדורות, מלחמות דוד',50],
+  [195,'c4','ספר שמואל ב\' ט\'-יא\' - חסדי דוד, עמון וארם, אוריה החיתי',50],
+  [196,'c4','ספר שמואל ב\' יב\'-יג\' - משל הכבשה, אמנון בכור דוד',50],
+  [197,'c4','ספר שמואל ב\' יד\'-טו\' - החכמה מתקוע, מרד אבשלום',50],
+  [198,'c4','ספר שמואל ב\' טז\'-יז\' - עצת אחיתופל, דוד ואוהביו',50],
+  [199,'c4','ספר שמואל ב\' יח\'-יט\' - כשלון המרד, מפיבושת בן יהונתן',50],
+  [200,'c4','ספר שמואל ב\' כ\'-כג\' - שבע בן בכרי, הגבעונים, שירת דוד',50],
+  [201,'c4','ספר שמואל ב\' כג\'-כד\' - גבורי דוד, המפקד, מקום המקדש',50],
+  [202,'c4','יואב כובש את קינסלי בירת עמלק',50],
+  [203,'c4','ספר מלכים א\' א\'-ב\' - דוד, אדוניהו והמלכת שלמה',50],
+  [204,'c4','ספר מלכים א\' ב\'-ג\' - פטירת דוד, החלום בגבעון, משפט שלמה',50],
+  [205,'c4','ספר מלכים א\' ג\'-ו\' - חכמת שלמה, רוחב ליבו ובנין ביהמ"ק',50],
+  [206,'c4','ספר מלכים א\' ז\'-י\' - תקופת הזהב של שלמה',50],
+  [207,'c4','ספר מלכים א\' יא\'-יב\' - שלמה, טעותו ופטירתו, פילוג הממלכה',50],
+  [208,'c4','ספר מלכים א\' יב\'-יד\' - ירבעם המשחית וחורבנו',50],
+  [209,'c4','ספר מלכים א\' יד\'-טז\' - מירבעם ועד אחאב',50],
+  [210,'c4','ספר מלכים א\' יח\'-יט\' - אליהו הנביא, ניסי כד הקמח ותחית המתים',50],
+  [211,'c4','ספר מלכים א\' יט\'-כ\' - נס מעמד הר הכרמל',50],
+  [212,'c4','ספר מלכים א\' יט\'-כ\' - אליהו בהר סיני, ניסי מלחמות ארם',50],
+  [213,'c4','ספר מלכים א\' כא\'-כב\' - כרם נבות ונפילת אחאב',50],
+  [214,'c4','נביא השקר מבית אל - פסל מיכה',50],
+  [215,'c4','ספר מלכים ב\' א\'-ב\' - אליהו עולה בסערה השמימה',50],
+  [216,'c4','ספר מלכים ב\' ב\'-ד\' - ניסי אלישע, דובים, מים ואסוך השמן',50],
+  [217,'c4','ספר מלכים ב\' ד\'-ה\' - השונמית ובנה, נס נעמן',50],
+  [218,'c4','ספר מלכים ב\' ו\'-ח\' - הרעב, ארבעת המצורעים',50],
+  [219,'c4','ספר מלכים ב\' ח\'-י\' - יהוא, סוף לבית אחאב',50],
+  [220,'c4','ספר מלכים ב\' י\'-יב\' - יהוידע הכהן, יואש מלך יהודה',50],
+  [221,'c4','ספר מלכים ב\' יג\'-טו\' - פטירת אלישע, נס התחיה, יותם המושלם',50],
+  [222,'c4','ספר מלכים ב\' טו\'-יז\' - גלות עשרת השבטים, חורבן שומרון',50],
+  [223,'c4','ספר מלכים ב\' יז\'-יח\' - כותים ואריות, מלכות חזקיהו',50],
+  [224,'c4','ספר מלכים ב\' יט\'-כ\' - יהודה ארץ התורה, נס מפלת אשור',50],
+  [225,'c4','ספר מלכים ב\' כ\'-כג\' - מנשה, יאשיהו דורש ה\'',50],
+  [226,'c4','ספר מלכים ב\' כג\'-כה\' - עלית הבבלים, גלות יהודה, צום גדליה',50],
+  [227,'c5','סוד ההצלחה בחיים - הרב שרר, הכושי ותרופת ה"הצלה"',50],
+  [228,'c5','"אין עוד מלבדו" - קצין המשטרה - חברת החשמל',50],
+  [229,'c5','ר\' ישעיהו ברדקי - השחיה אל החוף - נפוליון הזהב',50],
+  [230,'c5','אוניית ה"דוניירה" - נס ההצלה - דגי אנשובי בארץ פרו',50],
+  [231,'c5','האוצר שבכרוב - העץ שהחזיר את הגניבה',50],
+  [232,'c5','בעזרת ה\' - תפילת הדרך - מי השליט? - השוטר ה"מחליט"',50],
+  [233,'c5','דימוי עצמי א\' - כל אחד בן יחיד - רמי בר תמרי',50],
+  [234,'c5','דימוי עצמי ב\' - ר\' עקיבא אייגר - המפקד הליטאי',50],
+  [235,'c5','מעלתינו, מעלת חברינו - ההספד - בעל ה"לשם" - הגנן',50],
+  [236,'c5','היהודי והקיסר - שנאת חינם, כרטיס הכניסה לגלות',50],
+  [237,'c5','המזלגות - ה"טרמפ" באמריקה - אהבת ישראל, הכרטיס לגאולה',50],
+  [238,'c5','גר הצדק, הגרף פוטוצקי והגאון מוילנא',50],
+  [239,'c5','המהר"ל - הצלת הגיורת - הכומר והאש הקרה',50],
+  [240,'c5','הנס בקושטא - חוכמת הרוכל היהודי, טלית ותפילין',50],
+  [241,'c5','נדיבות - גלגל החסד החוזר - נתוחי ההצלה',50],
+  [242,'c5','"שלא לבייש" - חברי הטוב, יצחק',50],
+  [243,'c5','מידת האמת - מרכבות המלאכים - המבחן בקוצק - הכיפה',50],
+  [244,'c5','"להרגיש את השני" - נפוליון והחייט היהודי - עצים להסקה - מלך מרוקו',50],
+  [245,'c5','"הנודע ביהודה" והאופה הגוי - הרב מני ו"מלך המדבר" - שני משה',50],
+  [246,'c5','ממצוות מרויחים חיים - אסון מגדלי ה"תאומים"',50],
+  [247,'c5','ממצוות לא מפסידים - ר\' אהרון חסיד - הטייקון והכיפה',50],
+  [248,'c5','כף זכות - הרמב"ם - אצבעות אדם - שני תפוחים - שקל הקודש',50],
+  [249,'c5','"בצדק תשפוט עמיתך" - רחמים הרוכל - צפורת הסוכר - הרש"ש והשידוך',50],
+  [250,'c5','ברכת השבת - ילדים "כושים" מדברים יידיש - המצבר',50],
+  [251,'c5','בזכות שמירת השבת - השר מונטיפיורי, מכתב הרעל - תפוחי השבת',50],
+  [252,'c5','השבת המנצחת - ה"צ\'פלין" האמריקאי - מפעל "עמוד האש"',50],
+  [253,'c5','אור התורה - בבא מאיר והחטוף - המהר"ל דיסקין והבחור מרוסיה',50],
+  [254,'c5','"אור החיים" הקדוש - הירייה שחצתה ארצות',50],
+  [255,'c5','"אור החיים" הקדוש - הגלות - האריה',50],
+  [256,'c5','השד"ר - האילם והשייך המוסלמי',50],
+  [257,'c5','ר\' יונתן אייבשיץ - "חד גדיא" - הנסיכה - עין טובה',50],
+  [258,'c5','"יגעת ומצאת" - ארבעת הציירים - תאונת הסוס - המעלית',50],
+  [259,'c5','עמל התורה - המשוגע וצליל המטבע - המסמר של הרשב"א - 10 דולר',50],
+  [260,'c5','אמונה תמימה - החזו"א וצינור המים - בבא מאיר והמגרסה - האוטובוס לחיפה',50],
+  [261,'c5','חדרו של אליהו הנביא - הילד שזכה לגילוי אליהו',50],
+  [262,'c5','מידת הבטחון א\' - האלשי"ך הקדוש וחוצב האבנים - הבעש"ט הקדוש והחוכר',50],
+  [263,'c5','מידת הבטחון ב\' - נס האוניות בלב ים - שני סנדלרים וטבלת זהב',50],
+  [264,'c5','הכומר שנקבר 8 פעמים',50],
+  [265,'c5','חכמת גנב הנברשת - שני עגלונים יהודים ושני כמרים',50],
+  [266,'c5','גאוה יהודית - פגישתי עם כומר באמריקה - האדמו"ר מצאנז',50],
+  [267,'c5','הרש"ש זצ"ל - ר\' שלום גיבור',50],
+  [268,'c5','פיקחות יהודית - המסמך מתחתית הערימה - ההשגחה בעיר בורסק',50],
+  [269,'c5','מידת האיפוק - הירושלמי ומציאת הארנק בעיר וינה',50],
+  [270,'c5','מידת האצילות - "מסיבת הפרידה" בעיר וייץ',50],
+  [271,'c5','שכר מידת השלום - 50 ש"ח והביטוח הישיר - אחמד בקרית ספר',50],
+  [272,'c5','"נושא בעול עם חברו" - תעודת זהות פרסית - ה"נס" שלא היה נס',50],
+  [273,'c5','מידת ההבלגה - מי בעל הבית האמיתי? המסעדה בעיר בוסטון - ילד וכדור',50],
+  [274,'c5','"לא יאונה לצדיק כל און" - החמין של סמיר - "הכח שור" וקורי העכביש',50],
+  [275,'c5','מצות פדיון שבויים - החטיפה וההצלה באיטליה לפני כ-400 שנה',50],
+  [276,'c5','מצות כבוד הורים - המפתח החלוד לכספת - הרב פרדס זצ"ל והנציב העליון',50],
+  [277,'c5','ברכות הנהנין - "שהחיינו" והאוצר - ברכת "שהכל" על טנקים',50],
+  [278,'c5','מצות קדוש ה\' - "המציאה" באמריקה - המתמיד ומשלחת מלך מצרים',50],
+  [279,'c5','"בגלל אבות" - אבי ר\' אלימלך מליז\'נסק - אימו של חכם עזרא עטייה זצ"ל',50],
+  [280,'c5','הפרוכת בקישנב - "אתרוג הגזול" - ממות לחיים',50],
+  [281,'c5','חנוכה - נס מצוה ביער - בקבוק השמן השבור',50],
+  [282,'c5','נס חנוכה ברומניה - הסכין שהצילה ממות',50],
+  [283,'c5','נס פורים באמריקה - משלוח המנות בברדיצ\'ב',50],
+  [284,'c5','נס פורים ברוסיה תשי"ג - נס פורים, טקה, חברון',50],
+  [285,'c5','"ותומכיה מאושר" - סיפורו של כפתור באמריקה - טרקטורים במכס',50],
+  [286,'c5','אהבת תורה - אילפא ור\' יוחנן - האברך המיליארדר - הדוד והאחיין',50],
+  [287,'c5','"ומוראכם וחיתתכם יהיה" - הרב, הרועה, נמר הקרקס והמאלף',50],
+  [288,'c5','"ונהנים ממנו עצה" - הצוואה באמריקה - הכייסים בפולין - השודדים מ"שום מקום"',50],
+  [289,'c5','תושיה - שקיק הזהב - קרקעות זהב - פירורי עוגה',50],
+  [290,'c5','חכמת הרב - הסוחר הגנב - מכירת החמץ - העיתונאי האמריקאי',50],
+  [291,'c5','"החוזה מלובלין" - חכם עדיף מנביא בירושלים',50],
+  [292,'c5','"הפוך בה והפוך בה" - מרצפות ועץ - הרמב"ם והעוור - החזו"א והרופאים',50],
+  [293,'c5','תפילה - הצלה בים כנרת - "ונצעק" - המציל שלא ידע לשחות',50],
+  [294,'c5','השגחה - הכל בגלל דלי מים - חיים ללא מתח - המפוטר - נחש ההצלה באפגניסטן',50],
+  [295,'c5','הכל לטובה - תאונה לטובה - ההצלה בעיר בריסל - משל הרקמה ההפוכה',50],
+  [296,'c5','מה אפשר ללמוד מהקוף ומפוח האש, מהנמלה, מהכלב, הזבוב ומהחמור',50],
+  [297,'c5','מידה כנגד מידה - החסד שחזר - הקדוש מבלז - רכב ההצלה, האופה והחמאה',50],
+  [298,'c5','עמלק, התאונה ור\' חיים קנייבסקי שליט"א - הטיטניק ונתן שטראוס',50],
+  [299,'c5','"עצת ה\' היא תקום" - ה"טרמפ" בהליקופטר - ההגה הכפול - סדרן התנועה המשוגע',50],
+  [300,'c5','אקדמות א\' - ר\' דן מעשרת השבטים וסופו של הכומר המכשף',50],
+  [301,'c5','אקדמות ב\' - ר\' דן מעשרת השבטים וסופו של הכומר המכשף',50],
+  [302,'c5','הכומר שדגר על ביצים - הדב וכוורת הדבש ברוסיה',50],
+  [303,'c5','הציפיה למשיח - מרור ושולחן עורך - אור השמש והנר - "הוא בא"!',50],
+  [304,'c5','מידת עין טובה - עשרה סנדקים לתנוק אחד - שלום בין שכנים',50],
+  [305,'c5','אדם עושה לעצמו - זוג הנעליים - העוגה המורעלת - שק הבצק והאניה',50],
+  [306,'c5','מידת הבינה - שלשת הצדיקים ונס חטיפת היתום',50],
+  [307,'c5','מידת התבונה - הרב רוזנבלט והגביר - הגרי"ח זוננפלד, האברך ההונגרי',50],
+  [308,'c5','מידת היושר - שקיות ניילון - סיכת יהלומים - סוחר התרופות - הבנין הסדוק',50],
+  [309,'c5','חסד לגוי - היהודי שהציל את נשיא פולין והסטייפלר זצ"ל - הצלת ילדי סטייפץ\'',50],
+  [310,'c5','שמיטה - ברכת הפילפלים - "קדילק" של שביעית - תפוח של שביעית',50],
+  [311,'c5','הכיפה והציצית שהרגיזו את המתאגרף שהפך למגדלור רוחני - הציצית שהצילה',50],
+  [312,'c5','מצות ציצית, קשר של אהבה - חלום הטלית של המלבי"ם',50],
+  [313,'c5','ר\' שמואל "שטן" - השבת אבידה שהצילה קהילה',50],
+  [314,'c5','ברית מילה - ברית קודש - "עיניך יונים" - "אני ה\'" - הבבא סאלי זי"ע',50],
+  [315,'c5','ראש השנה - ניסים המשומד, בעל התוקע בקושטא',50],
+  [316,'c5','סוכה של מסירות נפש - על הנהר - גן עדן - הסוכה שנעלמה',50],
+  [317,'c5','אתרוג עם ריח גן עדן - בית תמורת אתרוג',50],
+  [318,'c5','פסח, חג הגאולה - קוף הכספת - "דיינו" - הגנב שלא גנב - גר הויסקי',50],
+  [319,'c5','מצה שמורה במאה אלף דולר - מכירת העולם הבא - הגרביים',50],
+  [320,'c5','פיקחות יהודית - הגניבה בלייפניק - ה"ראשון לציון" - ר\' חיים פרחי והפקייה',50],
+  [321,'c5','אהבת התורה של הרב מפוניבז\' - האדמו"ר מ"שומרי אמונים" וקצין המשטרה',50],
+  [322,'c5','אהבת תורה - אדון יוסף שרת ביה"ס - גר הצדק בארה"ב',50],
+  [323,'c5','כבוד ספר התורה א\' - אש בתהלוכה - החזו"א וס"ת של המהר"י אבוהב',50],
+  [324,'c5','כבוד ספר התורה ב\' - אריות של אש - "פורים סרגוסא" - גירסא דינקותא',50],
+  [325,'c5','לומדי התורה ומחזיקיה - ר\' חיים מוולוז\'ין בבית דין של מעלה - ישיבת המהרש"א',50],
+  [326,'c6','שמות, וארא, בא, בשלח - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [327,'c6','יתרו, משפטים, תרומה, תצוה - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [328,'c6','כי תשא, ויקהל פקודי, ויקרא, צו - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [329,'c6','שמיני, תזריע-מצורע, אחרי מות, קדושים, אמור - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [330,'c6','בהר-בחוקותי, במדבר, נשא, בהעלותך - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [331,'c6','שלח לך, קרח, חוקת, בלק - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [332,'c6','פנחס, מטות-מסעי, דברים, ואתחנן - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [333,'c6','עקב, ראה, שופטים, כי תצא - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [334,'c6','כי תבוא, ניצבים וילך, האזינו וזאת הברכה - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [335,'c6','בראשית, נח, לך לך, וירא - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [336,'c6','חיי שרה, תולדות, ויצא, וישלח - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [337,'c6','וישב, מקץ, ויגש, ויחי - ילדים מספרים בשולחן שבת סדרה א\'',45],
+  [338,'c6','שמות, וארא, בא, בשלח - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [339,'c6','יתרו, משפטים, תרומה, תצוה - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [340,'c6','כי תשא, ויקהל פקודי, ויקרא - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [341,'c6','צו, שמיני, תזריע מצורע - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [342,'c6','אחרי מות, קדושים, אמור, בהר, בחוקותי - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [343,'c6','במדבר, נשא, בהעלותך - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [344,'c6','שלח לך, קרח, חוקת, בלק - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [345,'c6','פנחס, מטות, מסעי, דברים - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [346,'c6','ואתחנן, עקב, ראה, שופטים - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [347,'c6','כי תצא, כי תבוא, ניצבים וילך, האזינו - ילדים מספרים בשולחן שבת סדרה ב\'',45],
+  [348,'c6','המגדלור - בן שלש עשרה',20],
+  [349,'c6','השמיעה - בן שלש עשרה',20],
+  [350,'c6','"אני כאן" - בן שלש עשרה',20],
+  [351,'c6','מה שיש "לי" ומה שיש "בי" - בן שלש עשרה',20],
+  [352,'c6','"השלום לך" - בן שלש עשרה',20],
+  [353,'c6','קצין המשטרה והאמונה - בן שלש עשרה',20],
+  [354,'c6','"בר" מצוה ולא "בעל" מצוה',20],
+  [355,'c6','האש השחורה והלבנה - בן שלש עשרה',20],
+  [356,'c6','השוקולד - בן שלש עשרה',20],
+  [357,'c6','האושר שבפנים - בן שלש עשרה',20],
+  [358,'c6','צידה לדרך - בן שלש עשרה',20],
+  [359,'c3','ספר במדבר פרק א\' - הקדמה, חביבות וספירת עם ישראל',50],
+  [360,'c3','ספר במדבר פרק ב\' - הדגלים, מנין שבט לוי',50],
+  [361,'c3','ספר במדבר פרקים ב\'-ג\' - החניה סביב המשכן, עבודת בני קהת',50],
+  [362,'c3','ספר במדבר פרקים ג\'-ד\' - פירוק ונשיאת המשכן',50],
+  [363,'c3','ספר במדבר פרקים ד\'-ה\' - המשך נשיאת המשכן, שילוח הטמאים, אשם',50],
+  [364,'c3','ספר במדבר פרקים ו\'-ז\' - תורת הנזיר, ברכת כהנים, הקמת המשכן',50],
+  [365,'c3','ספר במדבר פרק ז\' - קורבנות הנשיאים',50],
+  [366,'c3','ספר במדבר פרק ח\' - הדלקת המנורה, הכנת הלווים',50],
+  [367,'c3','ספר במדבר פרק ט\' - קרבן פסח, פסח שני, תנועת הענן',50],
+  [368,'c3','ספר במדבר פרק י\' - החצוצרות, הנסיעה הראשונה מהר סיני',50],
+  [369,'c3','ספר במדבר פרק י"א - המתאוננים, נס ירידת המן',50],
+  [370,'c3','ספר במדבר פרק י"א - 70 הזקנים, נס ירידת השליו',50],
+  [371,'c3','ספר במדבר פרק י"ב - מעשה מרים ואהרון, הענוה של משה רבינו',50],
+  [372,'c3','ספר במדבר פרק י"ג - שבחה של ארץ ישראל, שליחת המרגלים',50],
+  [373,'c3','ספר במדבר פרקים י"ג-י"ד - הסתת המרגלים, יהושע וכלב הצדיקים',50],
+  [374,'c3','ספר במדבר פרק י"ד - המשך פרשת המרגלים',50],
+  [375,'c3','ספר במדבר פרק י"ד - העונש, אבילות העם, המעפילים',50],
+  [376,'c3','ספר במדבר פרק ט"ו - הבטחת הכניסה לא"י, מנחה נסכים וחלה',50],
+  [377,'c3','ספר במדבר פרק ט"ז - מחלוקת קרח ועדתו',50],
+  [378,'c3','ספר במדבר פרק ט"ז - מבחן הקטורת',50],
+  [379,'c3','ספר במדבר פרק ט"ז - פי הארץ, שריפת מקריבי הקטורת',50],
+  [380,'c3','ספר במדבר פרקים י"ז-י"ח - אהרן עוצר מגיפה, פריחת מטה אהרן',50],
+  [381,'c3','ספר במדבר פרק י"ח - מתנות כהונה ולוויה',50],
+  [382,'c3','ספר במדבר פרק י"ט - מצות פרה אדומה',50],
+  [383,'c3','ספר במדבר פרק כ\' - פטירת מרים, נס הסלע, מטה הפלא של משה',50],
+  [384,'c3','ספר במדבר פרק כ\' - מי מריבה',50],
+  [385,'c3','ספר במדבר פרקים כ\'-כא\' - אדום, פטירת אהרן הכהן, נצחון על הכנעני',50],
+  [386,'c3','ספר במדבר פרקים כ\'-כא\' - נחש הנחושת, נס נחל ארנון, השירה',50],
+  [387,'c3','ספר במדבר פרק כ"א - משה והנצחון על סיחון מלך האמורי',50],
+  [388,'c3','ספר במדבר פרק כ"א - משה והנצחון על עוג מלך הבשן',50],
+  [389,'c3','ספר במדבר פרק כ"ב - בלק מלך מואב ובלעם',50],
+  [390,'c3','ספר במדבר פרק כ"ב - בלעם יוצא למואב',50],
+  [391,'c3','ספר במדבר פרק כ"ב - מלאך ה\', פי האתון',50],
+  [392,'c3','ספר במדבר פרקים כ"ב-כ"ג - הברכה הראשונה והשניה של בלעם',50],
+  [393,'c3','ספר במדבר פרקים כ"ג-כ"ד - הברכה השלישית, הנבואה לעתיד',50],
+  [394,'c3','ספר במדבר פרק כ"ה - עצת בלעם הרשע, בעל פעור',50],
+  [395,'c3','ספר במדבר פרקים כ"ה-כ"ו - ברית השלום לפנחס, חלוקת א"י לפי מנין',50],
+  [396,'c3','ספר במדבר פרקים כ"ז-כ"ט - בנות צלפחד, מינוי יהושע, קורבנות המועדים',50],
+  [397,'c3','ספר במדבר פרקים ל\'-ל"א - נדרים, מלחמת מדין',50],
+  [398,'c3','ספר במדבר פרקים ל"א-ל"ב - הגעלת כלים, חלוקת השלל, בני גד ובני ראובן',50],
+  [399,'c3','ספר במדבר פרק ל"ג - מסעי בני ישראל',50],
+  [400,'c3','ספר במדבר פרקים ל"ד-ל"ה - גבולות הארץ והנשיאים, ערי הלווים, סיכום',50],
+  [401,'c5','"איזהו עשיר" - "יש" או "אין" - מעגל ה-99 מטבעות זהב - תפילין מהודרות',50],
+  [402,'c5','שמחת חיים - שדה הברכה - "המשקפת המתהפכת" - חגורת היהלומים',50],
+  [403,'c5','הבטחון המושלם בה\' - יהודי גוי ו-100 מטבעות זהב - הסבא מנוברדוק',50],
+  [404,'c5','הגאון והשדוך - "עשירי" "עשירי" למנין שהציל ממות',50],
+  [405,'c5','השגחה פרטית - נס מספר 86042 - נס "יזכור" ביום כפור',50],
+  [406,'c5','קידוש ה\' - "והייתם נקיים", סדר ונקיון ואיכות הסביבה',50],
+  [407,'c5','תפילה טהורה - בתיה מבת ים - 4 מינים מהודרים לסוכות - חנן הנחבא',50],
+  [408,'c5','היצר הרע - הדמיון והמציאות - "אספן הקופים" - החקלאי והטוחן',50],
+  [409,'c5','בעל "מחצית השקל" וסכין הרצח - התפילין שהצילו כעשרת אלפים איש',50],
+  [410,'c5','טובה לגוי - השוטר הכושי וישיבת ליקווד - הצדיק מליסקא ומפקד הכלא',50],
+  [411,'c5','הרב הופמן ושליט גרמניה - בעל "השפע חיים" ונשיא ארצות הברית',50],
+  [412,'c5','"אור לגויים" - אורו של פנצ\'ר - אורו של ר\' נתן צבי פינקל ראש ישיבת מיר',50],
+  [413,'c5','"די מחסורו" - ר\' משה פיינשטיין והכלה - מלכודת עכברים - קלמן מתגרד בעץ',50],
+  [414,'c5','להיות אדם - הכרטיס ברכבת - משפט בייליס - ר\' חיים מבריסק מתערב עם מושל וולוזין',50],
+  [415,'c5','הפרוכת שהפכה קמצן לנדיב לב - בתי וויטברג - אשת חיל חכמה - "בכל מאודך"',50],
+  [416,'c5','מידת החמדנות - הגבירים בוולוזין והמגרש - הנסיך והאכרים - הפרופסור בטיסה',50],
+  [417,'c5','מלוותר לא מפסידים - מוכר הספרים בירושלים - המרפאות בלונדון והרב שטיינמן',50],
+  [418,'c5','להאמין בעצמינו - האוצר של אייזיק יקלס - 2 קבצנים וברווז צלוי',50],
+  [419,'c5','שמיטה - אונית הבצל - פרחי ה"סייפן" - "צביקה סלרי"',50],
+  [420,'c5','יעקב "הקמצן מקראקא" - ר\' דוד לייב שוורץ מבני ברק',50],
+  [421,'c5','מצוות הצדקה - מנדל העשיר מפסיד בשלושה דיני תורה אצל ר\' לוי יצחק מברדיצ\'ב',50],
+  [422,'c5','מצוות הלואה - הקופה במרוקו - ר\' עקיבא אייגר וקבר המלווה בריבית',50],
+  [423,'c5','כוחה של מצוה אחת - שרוכים ונעליים - גלות ב-9 הימים - 2 סופרי סת"ם בלוויה של גוי',50],
+  [424,'c5','ערכה של מצוה - מכירת עולם הבא ברובל אחד - איש "הצלה" שהציל את הרב אלישיב',50],
+  [425,'c5','"סור מרע ועשה טוב" - החמור "הצדיק" - "עם הדומה לחמור" "החמור הקדוש"',50],
+  [426,'c5','שבת - הרב הרמן והמזוודות בנמל חיפה - מתווך הדירות מרמת גן',50],
+  [427,'c5','ברכת שבת המלכה - הרב זלמן גרוסמן זצ"ל והברון רוטשילד - השבת לא למכירה',50],
+  [428,'c5','חנוכה - הספרן בניו יורק ואור נרות חנוכה - השפוצניק בקנדה - הלוטו והחנוכיה',50],
+  [429,'c5','שבת קודש ומדות הצניעות והיהירות - רוטשילד והגביר שלא היה גביר',50],
+  [430,'c5','מסירות נפש לתורה - ארבעת היהלומים של הקב"ה באמריקה - המשפחה הגדולה ביותר במנצ\'סטר',50],
+  [431,'c5','למה כל כך חשוב ללמוד תורה - נתן שטראוס - אונית הטיטניק ולומדי התורה בירושלים',50],
+  [432,'c5','רוח הקודש - ריח גן עדן - מבגד של כומר - שמן זית וחנוכית החזו"א',50],
+  [433,'c5','ה"נודע ביהודה" והמשוגע - ה"סוחר המדומה" - ר\' שמואל מסלנט והגנב',50],
+];
+
+const STORIES = _RAW.map(([num, catId, title, dur]) => ({
+  id: `s${num}`,
+  storyCode: `YT-${String(num).padStart(4,'0')}`,
+  categoryId: catId,
+  title,
+  duration: dur,
+  isActive: true,
+}));
+
+// Gemara — 5 files (YT-G001..G005)
+const _GEMARA = [
+  ['G001','הקדמה לתורה שבע"פ - פסיעות ראשונות בפרק "אלו מציאות"',55],
+  ['G002','גמרא אלו מציאות - דפים כא. כג: כד.',55],
+  ['G003','גמרא אלו מציאות - דפים כד. כד: כה.',55],
+  ['G004','גמרא אלו מציאות - דפים כה.: כו.:',55],
+  ['G005','גמרא אלו מציאות - דפים כו: כז.: כח.',55],
+];
+_GEMARA.forEach(([code, title, dur]) => {
+  STORIES.push({ id:`sg${code}`, storyCode:`YT-${code}`, categoryId:'c7', title, duration:dur, isActive:true });
+});
+
+// Sample orders for admin dashboard
+const ORDERS = [
+  { id:'o1', orderNumber:'YT-2026-001', customerName:'שרה לוי', email:'sarah@example.com', phone:'050-1234567', amount:320, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'SELECTED_STORIES', fulfillmentStatus:'COMPLETED', filesCount:40, usb:false, createdAt:'2026-06-18 09:15', folderUrl:'https://drive.google.com/xxx', notes:'' },
+  { id:'o2', orderNumber:'YT-2026-002', customerName:'יוסף כהן', email:'yosef@example.com', phone:'052-9876543', amount:1550, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'MASTER_LIBRARY', fulfillmentStatus:'COMPLETED', filesCount:428, usb:true, createdAt:'2026-06-18 10:02', folderUrl:'https://drive.google.com/yyy', notes:'' },
+  { id:'o3', orderNumber:'YT-2026-003', customerName:'רחל גולדברג', email:'rachel@example.com', phone:'054-1112222', amount:480, paymentType:'BANK_TRANSFER', paymentStatus:'PENDING', processingStatus:'WAITING_PAYMENT', deliveryType:'SELECTED_STORIES', fulfillmentStatus:null, filesCount:64, usb:false, createdAt:'2026-06-18 11:30', folderUrl:'', notes:'ממתין להעברה בנקאית' },
+  { id:'o4', orderNumber:'YT-2026-004', customerName:'דוד ברגר', email:'david@example.com', phone:'058-3334444', amount:0, paymentType:'CALLBACK', paymentStatus:'PENDING', processingStatus:'CREATED', deliveryType:'GIFT_STORY', fulfillmentStatus:'PENDING', filesCount:1, usb:false, createdAt:'2026-06-18 12:45', folderUrl:'', notes:'' },
+  { id:'o5', orderNumber:'YT-2026-005', customerName:'מרים שפירא', email:'miriam@example.com', phone:'053-5556666', amount:700, paymentType:'CREDIT_CARD', paymentStatus:'FAILED', processingStatus:'FAILED', deliveryType:'SELECTED_STORIES', fulfillmentStatus:null, filesCount:100, usb:false, createdAt:'2026-06-17 16:20', folderUrl:'', notes:'תשלום נכשל' },
+  { id:'o6', orderNumber:'YT-2026-006', customerName:'אברהם ויס', email:'avraham@example.com', phone:'050-7778888', amount:360, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'ADULT_COLLECTION', fulfillmentStatus:'COMPLETED', filesCount:0, usb:false, createdAt:'2026-06-17 14:10', folderUrl:'https://drive.google.com/zzz', notes:'' },
+  { id:'o7', orderNumber:'YT-2026-007', customerName:'חנה רוזנברג', email:'hana@example.com', phone:'052-9990000', amount:1200, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'PROCESSING', deliveryType:'SELECTED_STORIES', fulfillmentStatus:'SENT', filesCount:200, usb:true, createdAt:'2026-06-18 13:55', folderUrl:'', notes:'' },
+];
+
+const LEADS = [
+  { id:'l1', name:'תמר אדלר', email:'tamar@ex.com', phone:'054-1231231', source:'GIFT_STORY', giftSent:true, createdAt:'2026-06-18 08:00' },
+  { id:'l2', name:'נחמה פרידמן', email:'nahama@ex.com', phone:'050-9879876', source:'CALLBACK', giftSent:false, createdAt:'2026-06-17 17:00' },
+];
+
+const KPI = {
+  ordersToday: 5, requiresAttention: 2, failedPayments: 1, leadsOnly: 2,
+  paidCreditOrders: 3, monthlyRevenue: 4830, usbOrders: 2, systemErrors: 0,
+};
+
+</script>
+<script>
+// ========== LOGIN ==========
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-pass').value;
+  if (!email || !pass) { document.getElementById('login-err').textContent = 'יש למלא שם משתמש וסיסמה'; return; }
+  // MVP: accept any credentials for demo
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display = '';
+  initAdmin();
+}
+
+// Allow pressing Enter in login fields
+document.querySelectorAll('#login-email,#login-pass').forEach(el => {
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+});
+
+// ========== INIT ==========
+function initAdmin() {
+  renderKPI();
+  renderRecentOrders();
+  renderPricingTable();
+  renderOrders();
+  renderFulfillment();
+  renderLeads();
+  renderCatalog('');
+  renderPricingSmall();
+  populateCategorySelect();
+}
+
+// ========== PANELS ==========
+function showPanel(name) {
+  const titles = {
+    dashboard:'לוח בקרה', orders:'הזמנות',
+    fulfillment:'מעקב משלוחים', leads:'לידים', catalog:'קטלוג סיפורים'
+  };
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('menu-'+name).classList.add('active');
+  document.getElementById('panel-title').textContent = titles[name];
+}
+
+// ========== KPI ==========
+function renderKPI() {
+  const cards = [
+    { label:'הזמנות היום',       value:KPI.ordersToday,       type:'',       icon:'🛒' },
+    { label:'דורשות טיפול',      value:KPI.requiresAttention, type:'warning', icon:'⚠️' },
+    { label:'תשלומים שנכשלו',   value:KPI.failedPayments,    type:'danger',  icon:'❌' },
+    { label:'לידים בלבד',        value:KPI.leadsOnly,         type:'',        icon:'👤' },
+    { label:'אשראי שולם',        value:KPI.paidCreditOrders,  type:'success', icon:'✅' },
+    { label:'הכנסה חודשית',      value:'₪'+KPI.monthlyRevenue.toLocaleString(), type:'gold', icon:'💰' },
+    { label:'הזמנות דיסק און קי', value:KPI.usbOrders,         type:'pink',   icon:'💾' },
+    { label:'שגיאות מערכת',       value:KPI.systemErrors,      type:KPI.systemErrors>0?'danger':'success', icon:'🔧' },
+  ];
+  document.getElementById('kpi-grid').innerHTML = cards.map(c => `
+    <div class="kpi-card ${c.type}">
+      <div class="kpi-icon">${c.icon}</div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+    </div>
+  `).join('');
+}
+
+// ========== RECENT ORDERS ==========
+function renderRecentOrders() {
+  const recent = [...ORDERS].slice(0,5);
+  document.getElementById('recent-orders').innerHTML = recent.map(o => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:700;font-size:.88rem">${o.orderNumber}</div>
+        <div style="font-size:.78rem;color:var(--muted)">${o.customerName} · ${o.createdAt}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-weight:700;color:var(--teal-dk)">₪${o.amount.toLocaleString()}</div>
+        ${payStatusBadge(o.paymentStatus)}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== PRICING TABLE ==========
+function renderPricingTable() {
+  document.getElementById('pricing-table').innerHTML = `
+    <thead>
+      <tr>
+        <th>כמות מינימלית</th><th>כמות מקסימלית</th><th>מחיר לקובץ</th><th>דוגמה (50 קבצים)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${PRICING_RULES.map(r => `
+        <tr>
+          <td>${r.min}</td>
+          <td>${r.max===Infinity?'+∞':r.max}</td>
+          <td><strong>₪${r.unitPrice}</strong></td>
+          <td style="color:var(--muted)">₪${calcTotal(Math.min(50,r.max===Infinity?315:Math.floor((r.min+r.max)/2)))}</td>
+        </tr>
+      `).join('')}
+      <tr style="background:var(--gold);font-weight:700">
+        <td colspan="3">ספרייה מלאה (428 קבצים)</td>
+        <td>₪1,550</td>
+      </tr>
+    </tbody>`;
+}
+
+// ========== ORDERS TABLE ==========
+let ordersFilter = 'all';
+function filterOrdersTab(btn, f) {
+  ordersFilter = f;
+  document.querySelectorAll('#panel-orders .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function renderOrders() {
+  const q = (document.getElementById('order-search')?.value || '').toLowerCase();
+  const rows = ORDERS.filter(o => {
+    const matchStatus = ordersFilter === 'all' || o.paymentStatus === ordersFilter;
+    const matchSearch = !q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q) || o.email.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+  document.getElementById('orders-tbody').innerHTML = rows.map(o => `
+    <tr>
+      <td><a href="#" onclick="openOrderDetail('${o.id}')" style="color:var(--teal);font-weight:700;text-decoration:none">${o.orderNumber}</a></td>
+      <td style="white-space:nowrap;font-size:.82rem">${o.createdAt}</td>
+      <td>${o.customerName}</td>
+      <td style="font-size:.82rem">${o.email}</td>
+      <td style="font-size:.82rem">${o.phone}</td>
+      <td style="font-weight:700">₪${o.amount.toLocaleString()}</td>
+      <td>${payTypeBadge(o.paymentType)}</td>
+      <td>${payStatusBadge(o.paymentStatus)}</td>
+      <td>${procStatusBadge(o.processingStatus)}</td>
+      <td>${deliveryBadge(o.deliveryType)}</td>
+      <td>${ffBadge(o.fulfillmentStatus)}</td>
+      <td>${o.usb ? '<span class="badge badge-blue">💾 כן</span>' : '<span class="badge badge-gray">לא</span>'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="openOrderDetail('${o.id}')">פרטים</button>
+        <button class="btn btn-sm btn-outline" onclick="openNotes('${o.id}')" style="margin-right:4px">📝</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ========== FULFILLMENT ==========
+function renderFulfillment() {
+  const completed = ORDERS.filter(o => o.fulfillmentStatus === 'COMPLETED').length;
+  const pending   = ORDERS.filter(o => o.fulfillmentStatus === 'SENT' || o.fulfillmentStatus === 'PENDING').length;
+  const failed    = ORDERS.filter(o => o.fulfillmentStatus === null && o.paymentStatus === 'PAID').length;
+  document.getElementById('ff-completed').textContent = completed;
+  document.getElementById('ff-pending').textContent   = pending;
+  document.getElementById('ff-failed').textContent    = failed;
+
+  document.getElementById('fulfillment-tbody').innerHTML = ORDERS.map(o => `
+    <tr>
+      <td><strong>${o.orderNumber}</strong></td>
+      <td>${o.customerName}</td>
+      <td>${deliveryBadge(o.deliveryType)}</td>
+      <td>${o.filesCount > 0 ? o.filesCount + ' קבצים' : '–'}</td>
+      <td>${ffBadge(o.fulfillmentStatus)}</td>
+      <td>
+        ${o.folderUrl
+          ? `<a href="${o.folderUrl}" target="_blank" style="color:var(--teal);font-size:.82rem">🔗 פתח תיקייה</a>`
+          : '<span style="color:var(--muted);font-size:.82rem">–</span>'
+        }
+      </td>
+      <td style="font-size:.82rem">${o.createdAt}</td>
+      <td>
+        ${o.fulfillmentStatus !== 'COMPLETED'
+          ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}')">↺ שלח מחדש</button>`
+          : '<span style="color:var(--green);font-size:.82rem">✅ הושלם</span>'
+        }
+      </td>
+    </tr>
+  `).join('');
+}
+
+function retryFulfillment(id) {
+  showToast('בקשת פולפילמנט נשלחה מחדש', 'info');
+}
+
+// ========== LEADS ==========
+function renderLeads() {
+  document.getElementById('leads-tbody').innerHTML = LEADS.map(l => `
+    <tr>
+      <td><strong>${l.name}</strong></td>
+      <td>${l.email}</td>
+      <td>${l.phone || '–'}</td>
+      <td>${l.source === 'GIFT_STORY' ? '<span class="badge badge-pink">🎁 מתנה</span>' : '<span class="badge badge-blue">📞 התקשרות</span>'}</td>
+      <td>${l.giftSent ? '<span class="badge badge-green">✅ נשלח</span>' : '<span class="badge badge-yellow">⏳ ממתין</span>'}</td>
+      <td style="font-size:.82rem">${l.createdAt}</td>
+      <td>
+        ${!l.giftSent ? `<button class="btn btn-sm btn-pink" onclick="sendGift('${l.id}')">🎁 שלח מתנה</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function sendGift(id) {
+  const lead = LEADS.find(l => l.id === id);
+  if (lead) { lead.giftSent = true; renderLeads(); showToast('סיפור מתנה נשלח!', 'success'); }
+}
+
+// ========== CATALOG ==========
+function renderCatalog(q) {
+  const search = (q || '').toLowerCase();
+  const filtered = STORIES.filter(s =>
+    !search || s.title.toLowerCase().includes(search) || s.storyCode.toLowerCase().includes(search)
+  ).slice(0, 50);
+
+  document.getElementById('catalog-tbody').innerHTML = filtered.map(s => `
+    <tr>
+      <td style="font-family:monospace;font-size:.82rem">${s.storyCode}</td>
+      <td>${s.title}</td>
+      <td><span style="font-size:.82rem;color:var(--teal-dk)">${getCategoryName(s.categoryId)}</span></td>
+      <td>${s.duration} דק'</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('adult-catalog-tbody').innerHTML = ADULT_DISCS.map(d => `
+    <tr>
+      <td style="font-weight:700;color:var(--teal-dk)">${d.cat}</td>
+      <td>${d.catName}</td>
+      <td style="text-align:center">${d.disc}</td>
+      <td style="text-align:center">${d.count}</td>
+    </tr>
+  `).join('');
+}
+
+function getCategoryName(id) {
+  return CATEGORIES.find(c => c.id === id)?.name || '';
+}
+
+function populateCategorySelect() {
+  const sel = document.getElementById('new-cat');
+  if (!sel) return;
+  CATEGORIES.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+function renderPricingSmall() {
+  document.getElementById('pricing-table-small').innerHTML = PRICING_RULES.map(r => `
+    <div class="price-row">
+      <span>${r.min}${r.max===Infinity?'+':'–'+r.max} קבצים</span>
+      <span class="fw-700">₪${r.unitPrice}</span>
+    </div>
+  `).join('') + `<div class="price-row" style="background:var(--gold);margin-top:8px;border-radius:6px;padding:6px 8px"><span>ספרייה מלאה</span><span class="fw-700">₪1,550</span></div>`;
+}
+
+// ========== ORDER DETAIL MODAL ==========
+function openOrderDetail(id) {
+  const o = ORDERS.find(o => o.id === id);
+  if (!o) return;
+  document.getElementById('order-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      ${[
+        ['מספר הזמנה', o.orderNumber],
+        ['תאריך', o.createdAt],
+        ['שם לקוח', o.customerName],
+        ['דוא"ל', o.email],
+        ['טלפון', o.phone],
+        ['סכום', '₪'+o.amount.toLocaleString()],
+      ].map(([l,v]) => `
+        <div>
+          <div style="font-size:.78rem;color:var(--muted)">${l}</div>
+          <div style="font-weight:700">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${payTypeBadge(o.paymentType)} ${payStatusBadge(o.paymentStatus)}
+      ${procStatusBadge(o.processingStatus)} ${ffBadge(o.fulfillmentStatus)}
+      ${o.usb?'<span class="badge badge-blue">💾 דיסק און קי</span>':''}
+    </div>
+    ${o.folderUrl ? `<div style="margin-bottom:16px">
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:4px">תיקיית Google Drive</div>
+      <a href="${o.folderUrl}" target="_blank" style="color:var(--teal);word-break:break-all">${o.folderUrl}</a>
+    </div>` : ''}
+    ${o.notes ? `<div style="background:var(--teal-lt);padding:12px;border-radius:8px">
+      <div style="font-weight:700;margin-bottom:4px">הערות משרד</div>
+      <div style="font-size:.9rem">${o.notes}</div>
+    </div>` : ''}
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-sm btn-outline" onclick="closeModal('order-modal')">סגור</button>
+      ${o.fulfillmentStatus !== 'COMPLETED' && o.paymentStatus === 'PAID'
+        ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}');closeModal('order-modal')">📦 שלח פולפילמנט</button>`
+        : ''}
+    </div>`;
+  openModal('order-modal');
+}
+
+// ========== NOTES MODAL ==========
+let notesOrderId = null;
+function openNotes(id) {
+  notesOrderId = id;
+  const o = ORDERS.find(o => o.id === id);
+  document.getElementById('notes-text').value = o?.notes || '';
+  openModal('notes-modal');
+}
+function saveNotes() {
+  const o = ORDERS.find(o => o.id === notesOrderId);
+  if (o) { o.notes = document.getElementById('notes-text').value; showToast('ההערה נשמרה', 'success'); }
+  closeModal('notes-modal');
+  renderOrders();
+}
+
+// ========== ADD STORY ==========
+function openAddStory() { openModal('story-modal'); }
+function saveStory() {
+  const code  = document.getElementById('new-code').value.trim();
+  const title = document.getElementById('new-title').value.trim();
+  const catId = document.getElementById('new-cat').value;
+  const drive = document.getElementById('new-driveid').value.trim();
+  if (!code || !title || !catId || !drive) { showToast('יש למלא את כל השדות החובה', 'error'); return; }
+  if (STORIES.find(s => s.storyCode === code)) { showToast('קוד הסיפור כבר קיים', 'error'); return; }
+  STORIES.push({ id:'new-'+Date.now(), storyCode:code, categoryId:catId, title, duration:10, isActive:true });
+  closeModal('story-modal');
+  renderCatalog('');
+  showToast('הסיפור נוסף לקטלוג', 'success');
+}
+
+// ========== MODAL HELPERS ==========
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ========== BADGES ==========
+function payTypeBadge(t) {
+  const map = { CREDIT_CARD:'badge-blue', BANK_TRANSFER:'badge-yellow', CALLBACK:'badge-gray' };
+  const lbl = { CREDIT_CARD:'💳 אשראי', BANK_TRANSFER:'🏦 בנקאי', CALLBACK:'📞 התקשרות' };
+  return `<span class="badge ${map[t]||'badge-gray'}">${lbl[t]||t}</span>`;
+}
+function payStatusBadge(s) {
+  const map = { PAID:'badge-green', PENDING:'badge-yellow', FAILED:'badge-red', CANCELLED:'badge-gray' };
+  const lbl = { PAID:'✅ שולם', PENDING:'⏳ ממתין', FAILED:'❌ נכשל', CANCELLED:'🚫 בוטל' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${lbl[s]||s}</span>`;
+}
+function procStatusBadge(s) {
+  const map = { CREATED:'badge-gray', WAITING_PAYMENT:'badge-yellow', READY_FOR_FULFILLMENT:'badge-blue', PROCESSING:'badge-blue', COMPLETED:'badge-green', FAILED:'badge-red' };
+  const lbl = { CREATED:'נוצר', WAITING_PAYMENT:'ממתין תשלום', READY_FOR_FULFILLMENT:'מוכן', PROCESSING:'בתהליך', COMPLETED:'הושלם', FAILED:'נכשל' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${lbl[s]||s}</span>`;
+}
+function ffBadge(s) {
+  if (!s) return '<span class="badge badge-gray">–</span>';
+  const map = { COMPLETED:'badge-green', SENT:'badge-blue', PENDING:'badge-yellow', FAILED:'badge-red' };
+  const lbl = { COMPLETED:'✅ הושלם', SENT:'📤 נשלח', PENDING:'⏳ ממתין', FAILED:'❌ נכשל' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${lbl[s]||s}</span>`;
+}
+function deliveryBadge(t) {
+  const map = { SELECTED_STORIES:'badge-blue', MASTER_LIBRARY:'badge-green', ADULT_COLLECTION:'badge-pink', GIFT_STORY:'badge-yellow' };
+  const lbl = { SELECTED_STORIES:'סיפורים נבחרים', MASTER_LIBRARY:'ספרייה מלאה', ADULT_COLLECTION:'מבוגרים', GIFT_STORY:'🎁 מתנה' };
+  return `<span class="badge ${map[t]||'badge-gray'}">${lbl[t]||t}</span>`;
+}
+
+// ========== REFRESH ==========
+function refreshData() {
+  renderKPI(); renderRecentOrders(); renderOrders(); renderFulfillment(); renderLeads(); renderCatalog('');
+  showToast('הנתונים עודכנו', 'success');
+}
+
+// ========== TOAST ==========
+function showToast(msg, type = 'info') {
+  const div = document.createElement('div');
+  div.className = `toast toast-${type}`;
+  div.textContent = msg;
+  document.getElementById('toast-container').appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+</script>
+</body>
+</html>

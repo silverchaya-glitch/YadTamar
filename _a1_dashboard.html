@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>יד תמר – לוח ניהול</title>
+<link rel="stylesheet" href="css/main.css"/>
+<style>
+  .panel { display:none; }
+  .panel.active { display:block; }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon-sm">🌴</div>
+      <span>יד תמר</span>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-item active" id="menu-dashboard"   onclick="go('dashboard')">  <span class="menu-icon">📊</span> לוח בקרה</div>
+      <div class="menu-item"       id="menu-orders"       onclick="go('orders')">     <span class="menu-icon">🛒</span> הזמנות</div>
+      <div class="menu-item"       id="menu-fulfillment"  onclick="go('fulfillment')"><span class="menu-icon">📦</span> משלוחים</div>
+      <div class="menu-item"       id="menu-leads"        onclick="go('leads')">      <span class="menu-icon">👤</span> לידים</div>
+      <div class="menu-item"       id="menu-catalog"      onclick="go('catalog')">    <span class="menu-icon">🎵</span> קטלוג</div>
+    </nav>
+    <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);margin-top:auto">
+      <div style="font-size:.8rem;opacity:.7;margin-bottom:4px">admin@yadtamar.co.il</div>
+      <a href="YadTamar_Store.html" style="font-size:.82rem;color:rgba(255,255,255,.7);text-decoration:none">← לחנות</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h2 id="page-title">לוח בקרה</h2>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:.85rem;color:var(--muted)">📅 18.06.2026</span>
+        <button class="btn btn-sm btn-outline">🔄 רענן</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ══════════════════════════════════════
+           PANEL: לוח בקרה
+      ══════════════════════════════════════ -->
+      <div class="panel active" id="panel-dashboard">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">        <div class="kpi-icon">🛒</div><div class="kpi-label">הזמנות היום</div>   <div class="kpi-value">5</div></div>
+          <div class="kpi-card warning"><div class="kpi-icon">⚠️</div><div class="kpi-label">דורשות טיפול</div>  <div class="kpi-value">2</div></div>
+          <div class="kpi-card danger"> <div class="kpi-icon">❌</div><div class="kpi-label">תשלומים שנכשלו</div><div class="kpi-value">1</div></div>
+          <div class="kpi-card">        <div class="kpi-icon">👤</div><div class="kpi-label">לידים בלבד</div>    <div class="kpi-value">9</div></div>
+          <div class="kpi-card success"><div class="kpi-icon">✅</div><div class="kpi-label">אשראי שולם</div>    <div class="kpi-value">4</div></div>
+          <div class="kpi-card gold">   <div class="kpi-icon">💰</div><div class="kpi-label">הכנסה חודשית</div>  <div class="kpi-value">₪4,830</div></div>
+          <div class="kpi-card pink">   <div class="kpi-icon">💾</div><div class="kpi-label">הזמנות USB</div>    <div class="kpi-value">2</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+          <!-- הזמנות אחרונות – לחיצה מרחיבה טבלה -->
+          <div class="summary-card">
+            <h3 style="justify-content:space-between;cursor:pointer" onclick="toggleFullOrders()">
+              <span>📈 הזמנות אחרונות</span>
+              <span id="orders-btn" style="font-size:.78rem;color:var(--teal);background:var(--teal-lt);padding:3px 12px;border-radius:12px;border:1px solid var(--border)">הצג טבלה ▼</span>
+            </h3>
+            <!-- תקציר -->
+            <div id="orders-mini">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-weight:700;font-size:.88rem">YT-2026-001</div><div style="font-size:.78rem;color:var(--muted)">שרה לוי · 18.06.2026</div></div>
+                <div style="text-align:left"><div style="font-weight:700;color:var(--teal-dk)">₪320</div><span class="badge badge-green">✅ שולם</span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-weight:700;font-size:.88rem">YT-2026-002</div><div style="font-size:.78rem;color:var(--muted)">יוסף כהן · 18.06.2026</div></div>
+                <div style="text-align:left"><div style="font-weight:700;color:var(--teal-dk)">₪1,550</div><span class="badge badge-green">✅ שולם</span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-weight:700;font-size:.88rem">YT-2026-003</div><div style="font-size:.78rem;color:var(--muted)">רחל גולדברג · 18.06.2026</div></div>
+                <div style="text-align:left"><div style="font-weight:700;color:var(--teal-dk)">₪480</div><span class="badge badge-yellow">⏳ ממתין</span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-weight:700;font-size:.88rem">YT-2026-004</div><div style="font-size:.78rem;color:var(--muted)">דוד ברגר · 18.06.2026</div></div>
+                <div style="text-align:left"><div style="font-weight:700;color:var(--teal-dk)">₪0</div><span class="badge badge-yellow">⏳ ממתין</span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+                <div><div style="font-weight:700;font-size:.88rem">YT-2026-005</div><div style="font-size:.78rem;color:var(--muted)">מרים שפירא · 17.06.2026</div></div>
+                <div style="text-align:left"><div style="font-weight:700;color:var(--teal-dk)">₪700</div><span class="badge badge-red">❌ נכשל</span></div>
+              </div>
+            </div>
+            <!-- טבלה מלאה (מוסתרת) -->
+            <div id="orders-full" style="display:none;margin-top:12px;overflow-x:auto">
+              <table class="data-table">
+                <thead><tr><th>מספר הזמנה</th><th>תאריך</th><th>לקוח</th><th>סכום</th><th>תשלום</th><th>סטטוס</th><th>פולפילמנט</th></tr></thead>
+                <tbody>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-001</strong></td><td>18.06.2026 09:15</td><td>שרה לוי</td><td>₪320</td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-002</strong></td><td>18.06.2026 10:02</td><td>יוסף כהן</td><td>₪1,550</td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-003</strong></td><td>18.06.2026 11:30</td><td>רחל גולדברג</td><td>₪480</td><td><span class="badge badge-yellow">🏦 בנקאי</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span class="badge badge-gray">–</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-004</strong></td><td>18.06.2026 12:45</td><td>דוד ברגר</td><td>₪0</td><td><span class="badge badge-gray">📞 התקשרות</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span class="badge badge-gray">–</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-005</strong></td><td>17.06.2026 16:20</td><td>מרים שפירא</td><td>₪700</td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-red">❌ נכשל</span></td><td><span class="badge badge-gray">–</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-006</strong></td><td>17.06.2026 14:10</td><td>אברהם ויס</td><td>₪360</td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td></tr>
+                  <tr><td><strong style="color:var(--teal)">YT-2026-007</strong></td><td>18.06.2026 13:55</td><td>חנה רוזנברג</td><td>₪1,200</td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-blue">📤 נשלח</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- פעולות מהירות -->
+          <div class="summary-card">
+            <h3>⚡ פעולות מהירות</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-outline" onclick="go('orders')">🛒 כל ההזמנות</button>
+              <button class="btn btn-outline" onclick="go('fulfillment')">📦 משלוחים תלויים</button>
+              <button class="btn btn-outline" onclick="go('leads')">👤 ניהול לידים</button>
+              <button class="btn btn-outline" onclick="go('catalog')">🎵 עדכן קטלוג</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /dashboard -->
+
+
+      <!-- ══════════════════════════════════════
+           PANEL: הזמנות
+      ══════════════════════════════════════ -->
+      <div class="panel" id="panel-orders">
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <button class="chip active" onclick="filterOrders('all',this)">הכל (7)</button>
+          <button class="chip" onclick="filterOrders('paid',this)">שולמו (4)</button>
+          <button class="chip" onclick="filterOrders('pending',this)">ממתינים (2)</button>
+          <button class="chip" onclick="filterOrders('failed',this)">נכשלו (1)</button>
+          <input class="search-input" placeholder="🔍 חיפוש שם / מספר הזמנה..." style="flex:1;min-width:200px;padding:8px 16px"/>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><h3>הזמנות</h3></div>
+          <div class="table-scroll">
+            <table class="data-table" id="orders-table">
+              <thead><tr>
+                <th>מספר הזמנה</th><th>תאריך</th><th>שם לקוח</th><th>דוא"ל</th><th>טלפון</th>
+                <th>סכום</th><th>תשלום</th><th>סטטוס תשלום</th><th>סטטוס עיבוד</th>
+                <th>סוג מסירה</th><th>פולפילמנט</th><th>USB</th><th>פעולות</th>
+              </tr></thead>
+              <tbody>
+                <tr><td><strong style="color:var(--teal)">YT-2026-001</strong></td><td>18.06.2026 09:15</td><td>שרה לוי</td><td style="font-size:.82rem">sarah@example.com</td><td>050-1234567</td><td><strong>₪320</strong></td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td><span class="badge badge-green">✅ הושלם</span></td><td><span class="badge badge-gray">לא</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-o1')">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-002</strong></td><td>18.06.2026 10:02</td><td>יוסף כהן</td><td style="font-size:.82rem">yosef@example.com</td><td>052-9876543</td><td><strong>₪1,550</strong></td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td><td><span class="badge badge-green">ספרייה מלאה</span></td><td><span class="badge badge-green">✅ הושלם</span></td><td><span class="badge badge-blue">💾 כן</span></td><td><button class="btn btn-sm btn-outline" onclick="openModal('modal-o2')">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-003</strong></td><td>18.06.2026 11:30</td><td>רחל גולדברג</td><td style="font-size:.82rem">rachel@example.com</td><td>054-1112222</td><td><strong>₪480</strong></td><td><span class="badge badge-yellow">🏦 בנקאי</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span class="badge badge-yellow">ממתין תשלום</span></td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td><span class="badge badge-gray">–</span></td><td><span class="badge badge-gray">לא</span></td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-004</strong></td><td>18.06.2026 12:45</td><td>דוד ברגר</td><td style="font-size:.82rem">david@example.com</td><td>058-3334444</td><td><strong>₪0</strong></td><td><span class="badge badge-gray">📞 התקשרות</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span class="badge badge-gray">נוצר</span></td><td><span class="badge badge-yellow">🎁 מתנה</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span class="badge badge-gray">לא</span></td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-005</strong></td><td>17.06.2026 16:20</td><td>מרים שפירא</td><td style="font-size:.82rem">miriam@example.com</td><td>053-5556666</td><td><strong>₪700</strong></td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-red">❌ נכשל</span></td><td><span class="badge badge-red">נכשל</span></td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td><span class="badge badge-gray">–</span></td><td><span class="badge badge-gray">לא</span></td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-006</strong></td><td>17.06.2026 14:10</td><td>אברהם ויס</td><td style="font-size:.82rem">avraham@example.com</td><td>050-7778888</td><td><strong>₪360</strong></td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-green">הושלם</span></td><td><span class="badge badge-pink">מבוגרים</span></td><td><span class="badge badge-green">✅ הושלם</span></td><td><span class="badge badge-gray">לא</span></td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-007</strong></td><td>18.06.2026 13:55</td><td>חנה רוזנברג</td><td style="font-size:.82rem">hana@example.com</td><td>052-9990000</td><td><strong>₪1,200</strong></td><td><span class="badge badge-blue">💳 אשראי</span></td><td><span class="badge badge-green">✅ שולם</span></td><td><span class="badge badge-blue">בתהליך</span></td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td><span class="badge badge-blue">📤 נשלח</span></td><td><span class="badge badge-blue">💾 כן</span></td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /orders -->
+
+
+      <!-- ══════════════════════════════════════
+           PANEL: משלוחים
+      ══════════════════════════════════════ -->
+      <div class="panel" id="panel-fulfillment">
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+          <div class="kpi-card success"><div class="kpi-icon">✅</div><div class="kpi-label">הושלמו</div><div class="kpi-value">3</div></div>
+          <div class="kpi-card warning"><div class="kpi-icon">⏳</div><div class="kpi-label">בתהליך</div><div class="kpi-value">2</div></div>
+          <div class="kpi-card danger"> <div class="kpi-icon">❌</div><div class="kpi-label">נכשלו / ממתין</div><div class="kpi-value">2</div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><h3>📦 מעקב משלוחים</h3></div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>מספר הזמנה</th><th>לקוח</th><th>סוג מסירה</th><th>קבצים</th><th>סטטוס</th><th>קישור תיקייה</th><th>תאריך</th><th>פעולות</th></tr></thead>
+              <tbody>
+                <tr><td><strong style="color:var(--teal)">YT-2026-001</strong></td><td>שרה לוי</td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td>40 קבצים</td><td><span class="badge badge-green">✅ הושלם</span></td><td><a href="#" style="color:var(--teal);font-size:.82rem">🔗 פתח</a></td><td>18.06.2026 09:15</td><td><span style="color:var(--green);font-size:.82rem">✅</span></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-002</strong></td><td>יוסף כהן</td><td><span class="badge badge-green">ספרייה מלאה</span></td><td>428 קבצים</td><td><span class="badge badge-green">✅ הושלם</span></td><td><a href="#" style="color:var(--teal);font-size:.82rem">🔗 פתח</a></td><td>18.06.2026 10:02</td><td><span style="color:var(--green);font-size:.82rem">✅</span></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-003</strong></td><td>רחל גולדברג</td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td>64 קבצים</td><td><span class="badge badge-gray">–</span></td><td><span style="color:var(--muted);font-size:.82rem">–</span></td><td>18.06.2026 11:30</td><td><button class="btn btn-sm btn-primary">↺ שלח</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-004</strong></td><td>דוד ברגר</td><td><span class="badge badge-yellow">🎁 מתנה</span></td><td>1 קבצים</td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td><span style="color:var(--muted);font-size:.82rem">–</span></td><td>18.06.2026 12:45</td><td><button class="btn btn-sm btn-primary">↺ שלח</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-005</strong></td><td>מרים שפירא</td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td>100 קבצים</td><td><span class="badge badge-gray">–</span></td><td><span style="color:var(--muted);font-size:.82rem">–</span></td><td>17.06.2026 16:20</td><td><button class="btn btn-sm btn-outline">פרטים</button></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-006</strong></td><td>אברהם ויס</td><td><span class="badge badge-pink">מבוגרים</span></td><td>–</td><td><span class="badge badge-green">✅ הושלם</span></td><td><a href="#" style="color:var(--teal);font-size:.82rem">🔗 פתח</a></td><td>17.06.2026 14:10</td><td><span style="color:var(--green);font-size:.82rem">✅</span></td></tr>
+                <tr><td><strong style="color:var(--teal)">YT-2026-007</strong></td><td>חנה רוזנברג</td><td><span class="badge badge-blue">סיפורים נבחרים</span></td><td>200 קבצים</td><td><span class="badge badge-blue">📤 נשלח</span></td><td><span style="color:var(--muted);font-size:.82rem">–</span></td><td>18.06.2026 13:55</td><td><button class="btn btn-sm btn-primary">↺ שלח</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /fulfillment -->
+
+
+      <!-- ══════════════════════════════════════
+           PANEL: לידים
+      ══════════════════════════════════════ -->
+      <div class="panel" id="panel-leads">
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+          <div class="kpi-card pink">   <div class="kpi-icon">🎁</div><div class="kpi-label">סה"כ לידים</div><div class="kpi-value">9</div></div>
+          <div class="kpi-card success"><div class="kpi-icon">✅</div><div class="kpi-label">קיבלו מתנה</div><div class="kpi-value">7</div></div>
+          <div class="kpi-card warning"><div class="kpi-icon">⏳</div><div class="kpi-label">ממתינים</div>    <div class="kpi-value">2</div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-header">
+            <h3>👤 לידים</h3>
+            <div style="display:flex;gap:8px">
+              <button class="chip active" onclick="filterLeads('all',this)">הכל</button>
+              <button class="chip" onclick="filterLeads('sent',this)">קיבלו מתנה</button>
+              <button class="chip" onclick="filterLeads('pending',this)">ממתינים</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="leads-table">
+              <thead><tr><th>שם</th><th>דוא"ל</th><th>טלפון</th><th>מקור</th><th>סטטוס מתנה</th><th>תאריך</th><th>פעולות</th></tr></thead>
+              <tbody>
+                <tr class="lead-row lead-sent"><td><strong>תמר אדלר</strong></td><td>tamar@ex.com</td><td>054-1231231</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>18.06.2026 08:00</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>נחמה פרידמן</strong></td><td>nahama@ex.com</td><td>050-9879876</td><td><span class="badge badge-blue">📞 התקשרות</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>17.06.2026 17:00</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>רבקה שטרן</strong></td><td>rivka@ex.com</td><td>052-3334455</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>17.06.2026 14:30</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>לאה מזרחי</strong></td><td>leah@ex.com</td><td>053-6667788</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>16.06.2026 11:15</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>שרית כץ</strong></td><td>sarit@ex.com</td><td>054-9990011</td><td><span class="badge badge-blue">📞 התקשרות</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>16.06.2026 09:45</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>פנינה הלוי</strong></td><td>pnina@ex.com</td><td>050-1122334</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>15.06.2026 16:20</td><td></td></tr>
+                <tr class="lead-row lead-sent"><td><strong>מריה אברמוב</strong></td><td>maria@ex.com</td><td>052-5566778</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-green">✅ קיבלה מתנה</span></td><td>15.06.2026 13:00</td><td></td></tr>
+                <tr class="lead-row lead-pending"><td><strong>דינה שרף</strong></td><td>dina@ex.com</td><td>053-7788990</td><td><span class="badge badge-blue">📞 התקשרות</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td>18.06.2026 07:30</td><td><button class="btn btn-sm btn-pink">🎁 שלח מתנה</button></td></tr>
+                <tr class="lead-row lead-pending"><td><strong>אסתר ברק</strong></td><td>esther@ex.com</td><td>054-2233441</td><td><span class="badge badge-pink">🎁 מתנה</span></td><td><span class="badge badge-yellow">⏳ ממתין</span></td><td>18.06.2026 11:00</td><td><button class="btn btn-sm btn-pink">🎁 שלח מתנה</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /leads -->
+
+
+      <!-- ══════════════════════════════════════
+           PANEL: קטלוג
+      ══════════════════════════════════════ -->
+      <div class="panel" id="panel-catalog">
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+          <div class="table-card">
+            <div class="table-header">
+              <h3>🎵 קטלוג סיפורים</h3>
+              <div class="table-toolbar">
+                <input class="search-input" placeholder="🔍 חיפוש..." style="padding:8px 14px;border-radius:20px;min-width:180px"/>
+                <button class="btn btn-sm btn-primary" onclick="openModal('modal-add-story')">+ הוסף סיפור</button>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead><tr><th>קוד</th><th>שם</th><th>קטגוריה</th><th>משך</th><th>פעיל</th><th>פעולות</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0001</td><td>הנסיך הקטן</td><td style="font-size:.82rem;color:var(--teal-dk)">סיפורים לילדים</td><td>8 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0002</td><td>אריה וכבש</td><td style="font-size:.82rem;color:var(--teal-dk)">מעשיות</td><td>9 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0003</td><td>שמש הזהב</td><td style="font-size:.82rem;color:var(--teal-dk)">סיפורים לילדים</td><td>10 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0004</td><td>ילד המדבר</td><td style="font-size:.82rem;color:var(--teal-dk)">פרשת השבוע</td><td>11 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0005</td><td>ספינת הפלא</td><td style="font-size:.82rem;color:var(--teal-dk)">חגים ומועדים</td><td>12 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0006</td><td>גן הקסמים</td><td style="font-size:.82rem;color:var(--teal-dk)">מעשיות</td><td>13 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0007</td><td>המלאך הסמוי</td><td style="font-size:.82rem;color:var(--teal-dk)">סיפורים לילדים</td><td>14 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0008</td><td>כוכב הצפון</td><td style="font-size:.82rem;color:var(--teal-dk)">פרשת השבוע</td><td>15 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0009</td><td>חלום הלילה</td><td style="font-size:.82rem;color:var(--teal-dk)">סיפורים לילדים</td><td>16 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0010</td><td>נר חנוכה</td><td style="font-size:.82rem;color:var(--teal-dk)">חגים ומועדים</td><td>17 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0011</td><td>עץ התמר</td><td style="font-size:.82rem;color:var(--teal-dk)">מעשיות</td><td>18 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                  <tr><td style="font-family:monospace;font-size:.82rem">YT-0012</td><td>הנחל הקטן</td><td style="font-size:.82rem;color:var(--teal-dk)">סיפורים לילדים</td><td>19 דק'</td><td><span class="badge badge-green">פעיל</span></td><td><button class="btn btn-sm btn-outline">השבת</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="summary-card">
+              <h3>📊 נתוני קטלוג</h3>
+              <div class="price-row"><span>סה"כ סיפורים</span><span class="fw-700">428</span></div>
+              <div class="price-row"><span>סיפורי ילדים</span><span class="fw-700">423</span></div>
+              <div class="price-row"><span>קבצי גמרא</span><span class="fw-700">5</span></div>
+              <div class="price-row"><span>קטגוריות</span><span class="fw-700">5</span></div>
+              <hr class="divider"/>
+              <div class="price-row"><span>ספרייה מלאה</span><span class="fw-700">₪1,550</span></div>
+              <div class="price-row"><span>אוסף מבוגרים</span><span class="fw-700">₪360</span></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /catalog -->
+
+    </div><!-- /admin-content -->
+  </main>
+</div><!-- /admin-layout -->
+
+<!-- ══════ MODALS ══════ -->
+<div class="modal-overlay" id="modal-o1" onclick="if(event.target===this)closeModal('modal-o1')">
+  <div class="modal">
+    <div class="modal-header"><h3>📋 הזמנה YT-2026-001</h3><button class="close-btn" onclick="closeModal('modal-o1')">✕</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><div style="font-size:.78rem;color:var(--muted)">שם לקוח</div><div style="font-weight:700">שרה לוי</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">דוא"ל</div><div style="font-weight:700">sarah@example.com</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">טלפון</div><div style="font-weight:700">050-1234567</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">סכום</div><div style="font-weight:700">₪320</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">תאריך</div><div style="font-weight:700">18.06.2026 09:15</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">קבצים</div><div style="font-weight:700">40 סיפורים</div></div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge badge-blue">💳 אשראי</span>
+      <span class="badge badge-green">✅ שולם</span>
+      <span class="badge badge-green">הושלם</span>
+    </div>
+    <div style="margin-bottom:16px"><div style="font-size:.82rem;color:var(--muted);margin-bottom:4px">תיקיית Google Drive</div><a href="https://drive.google.com/xxx" target="_blank" style="color:var(--teal)">https://drive.google.com/xxx</a></div>
+    <button class="btn btn-sm btn-outline" onclick="closeModal('modal-o1')">סגור</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-o2" onclick="if(event.target===this)closeModal('modal-o2')">
+  <div class="modal">
+    <div class="modal-header"><h3>📋 הזמנה YT-2026-002</h3><button class="close-btn" onclick="closeModal('modal-o2')">✕</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><div style="font-size:.78rem;color:var(--muted)">שם לקוח</div><div style="font-weight:700">יוסף כהן</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">דוא"ל</div><div style="font-weight:700">yosef@example.com</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">סוג</div><div style="font-weight:700">ספרייה מלאה</div></div>
+      <div><div style="font-size:.78rem;color:var(--muted)">סכום</div><div style="font-weight:700">₪1,550</div></div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge badge-blue">💳 אשראי</span><span class="badge badge-green">✅ שולם</span><span class="badge badge-blue">💾 USB</span>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="closeModal('modal-o2')">סגור</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-story" onclick="if(event.target===this)closeModal('modal-add-story')">
+  <div class="modal">
+    <div class="modal-header"><h3>➕ הוספת סיפור חדש</h3><button class="close-btn" onclick="closeModal('modal-add-story')">✕</button></div>
+    <div class="form-grid">
+      <div class="form-group"><label>קוד סיפור *</label><input class="form-input" placeholder="YT-0429"/></div>
+      <div class="form-group"><label>שם הסיפור *</label><input class="form-input" placeholder="שם הסיפור"/></div>
+      <div class="form-group"><label>קטגוריה *</label>
+        <select class="form-select">
+          <option>בחר קטגוריה</option>
+          <option>סיפורים לילדים</option><option>גמרא ולימוד</option>
+          <option>מעשיות</option><option>פרשת השבוע</option><option>חגים ומועדים</option>
+        </select>
+      </div>
+      <div class="form-group"><label>משך (דקות)</label><input class="form-input" type="number" placeholder="10"/></div>
+      <div class="form-group full"><label>Google Drive File ID *</label><input class="form-input" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs..."/></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-story')">ביטול</button>
+      <button class="btn btn-primary">💾 שמור</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ── ניווט בין פאנלים ──
+var TITLES = { dashboard:'לוח בקרה', orders:'הזמנות', fulfillment:'משלוחים', leads:'לידים', catalog:'קטלוג סיפורים' };
+function go(name) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.menu-item').forEach(function(m){ m.classList.remove('active'); });
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('menu-'+name).classList.add('active');
+  document.getElementById('page-title').textContent = TITLES[name];
+}
+
+// ── הצג / הסתר טבלת הזמנות ──
+function toggleFullOrders() {
+  var f = document.getElementById('orders-full');
+  var m = document.getElementById('orders-mini');
+  var b = document.getElementById('orders-btn');
+  var open = f.style.display !== 'none';
+  f.style.display = open ? 'none' : '';
+  m.style.display = open ? ''     : 'none';
+  b.textContent   = open ? 'הצג טבלה ▼' : 'סגור ▲';
+}
+
+// ── סינון הזמנות ──
+function filterOrders(f, btn) {
+  document.querySelectorAll('#panel-orders .chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('#orders-table tbody tr').forEach(function(tr) {
+    if (f === 'all') { tr.style.display = ''; return; }
+    var paid    = tr.textContent.includes('שולם')  && !tr.textContent.includes('ממתין') && !tr.textContent.includes('נכשל');
+    var pending = tr.textContent.includes('ממתין');
+    var failed  = tr.textContent.includes('נכשל');
+    if (f==='paid')    tr.style.display = paid    ? '' : 'none';
+    if (f==='pending') tr.style.display = pending ? '' : 'none';
+    if (f==='failed')  tr.style.display = failed  ? '' : 'none';
+  });
+}
+
+// ── סינון לידים ──
+function filterLeads(f, btn) {
+  document.querySelectorAll('#panel-leads .chip').forEach(function(c){ c.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.lead-row').forEach(function(tr) {
+    if (f === 'all') { tr.style.display = ''; return; }
+    tr.style.display = tr.classList.contains('lead-'+f) ? '' : 'none';
+  });
+}
+
+// ── מודלים ──
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Toast ──
+function toast(msg, t) {
+  var d = document.createElement('div');
+  d.className = 'toast toast-'+(t||'info');
+  d.textContent = msg;
+  document.getElementById('toast-container').appendChild(d);
+  setTimeout(function(){ d.remove(); }, 3000);
+}
+</script>
+</body>
+</html>
