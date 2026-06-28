@@ -1,0 +1,7 @@
+## PROGRESS LOG — יד תמר
+## Append-only. Never rewrite. Rotate to PROGRESS_OLD_<date>.txt when large.
+## Format: [YYYY-MM-DD] session-id | what changed | files touched | result
+
+[2026-06-28] scaffold | Applied claude-md-arch scaffold to project | CLAUDE.md (upgraded), CLAUDE/architecture.md, CLAUDE/decisions.md, CLAUDE/conventions.md, CLAUDE/tasks.md, PROGRESS.txt, FOLLOWUPS.md, BACKLOG.md | All scaffold files created. CLAUDE.md restructured as index with golden rules and detail-doc pointers.
+
+[2026-06-24] initial | Initial commit: YadTamar digital stories store | index.html, admin.html, js/data.js, css/main.css, all snapshot/wireframe files | MVP v1.1 — store wizard, admin panel, 428 children's stories + 24 adult discs, tiered pricing engine.

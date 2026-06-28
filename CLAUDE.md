@@ -1,69 +1,40 @@
-# CLAUDE.md
+# CLAUDE.md — יד תמר
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Repo Summary
 
-## Project Overview
+יד תמר — חנות דיגיטלית לסיפורי שמע לילדים. 428 סיפורים לילדים (c1–c7) ו-24 דיסקים לאוסף מבוגרים. אתר סטטי לחלוטין: HTML/CSS/JS בלבד, ללא backend, ללא build system, ללא package manager. שתי דפים: חנות (`index.html`) ופאנל ניהול (`admin.html`), שניהם משתפים שכבת נתונים ב-`js/data.js`. גרסה נוכחית: MVP 1.1.
 
-יד תמר — חנות דיגיטלית למכירת 428 סיפורי שמע לילדים (ועוד 24 דיסקים לאוסף מבוגרים). אתר סטטי לחלוטין — HTML/CSS/JS בלבד, ללא backend, ללא build system, ללא package manager.
-
-## Running the Project
-
-No build step. Open files directly in a browser or serve with any static server:
+## Running
 
 ```bash
 python3 -m http.server 8080 --directory /www/YadTamar
-# then open http://localhost:8080
+# http://localhost:8080 → store   |   http://localhost:8080/admin.html → admin
 ```
 
-Main pages:
-- `index.html` — Store (customer-facing)
-- `admin.html` — Admin panel
+## Golden Rules
 
-Snapshot/wireframe files prefixed with `_` or `_snap_` are reference designs, not active pages.
+1. **אל תוסיף build step או package manager** — האתר סטטי במכוון. npm/webpack/TypeScript אסורים.
+2. **index.html ו-admin.html משתמשים בצבעים שונים לאותם שמות משתנים** — קרא `CLAUDE/architecture.md` לפני כל עריכת CSS.
+3. **JS inline בכל HTML** — לוגיקה של החנות נשמרת ב-index.html, לוגיקה של הניהול ב-admin.html. `js/data.js` בלבד הוא קובץ JS חיצוני.
+4. **כל טקסט למשתמש בעברית** — `dir="rtl"` על `<html>`, `direction: rtl` על `body`.
+5. **הוספת סיפור = שורה ב-`_RAW` ב-data.js בלבד** — אל תשנה מבנה נתונים אחר.
+6. **PROGRESS.txt הוא append-only** — לעולם אל תמחק שם תוכן; רק הוסף בסוף.
+7. **לפני שינוי ב-data.js** — בדוק שההשפעה על שני הדפים נבדקה (שניהם טוענים את הקובץ).
+8. **login של admin הוא stub MVP** — אל תסמוך עליו לאבטחה; ראה BACKLOG.
 
-## Architecture
+## Detail-Doc Index
 
-**Two-page app sharing a single data layer:**
+| נושא | קובץ | מתי לקרוא |
+|---|---|---|
+| מבנה האפליקציה, שכבת הנתונים, שני ה-CSS themes | `CLAUDE/architecture.md` | לפני כל שינוי מבני או שינוי CSS |
+| החלטות ארכיטקטורה (ADR-001–005) | `CLAUDE/decisions.md` | כשתוהה "למה הדברים כך?" |
+| קונבנציות: IDs, שמות קבצים, הוספת סיפור | `CLAUDE/conventions.md` | לפני הוספת תוכן או קובץ חדש |
+| מצב משימות ו-roadmap | `CLAUDE/tasks.md` | לפני התחלת feature חדש |
+| באגים וחוסרים שנמצאו בדרך | `FOLLOWUPS.md` | בתחילת כל session |
+| features נדחים | `BACKLOG.md` | כשמציעים רעיון חדש |
+| יומן שינויים | `PROGRESS.txt` | אחרי כל שינוי משמעותי — הוסף שורה |
 
-```
-js/data.js      ← global constants + mock data (loaded by both pages via <script>)
-css/main.css    ← shared stylesheet (RTL Hebrew, Heebo font, CSS variables)
-index.html      ← store wizard + all store JS inline
-admin.html      ← admin panel + all admin JS inline
-```
-
-All JavaScript is inline `<script>` inside each HTML file — there are no separate JS modules.
-
-### Data Layer (`js/data.js`)
-
-Exports globals consumed by both pages:
-- `PRICING_RULES` — tiered unit prices (₪8 → ₪7.5 → ₪7 → ₪6 → ₪4.3)
-- `STORIES` — 433 items built from `_RAW` (children, ids `s1`–`s433`) + `_GEMARA` (5 Gemara files, ids `sgG001`–`sgG005`)
-- `CATEGORIES` — 7 category objects (`c1`–`c7`)
-- `ADULT_DISCS` — 24 adult collection discs
-- `ORDERS`, `LEADS`, `KPI` — sample/mock data for admin dashboard
-- `calcUnitPrice(qty)`, `calcTotal(qty)` — pricing engine
-
-### Store (`index.html`)
-
-4-step purchase wizard managed by a single `state` object:
-1. Catalog — filter/select individual stories or choose a bundle
-2. Order summary — delivery options (Drive / USB)
-3. Customer details + payment method selection
-4. Confirmation
-
-On submit, orders are saved to `localStorage` key `yadtamar_orders`. Payment processing (HYP) is a placeholder UI — no real API integration yet.
-
-Products: `STORY_SELECTION`, `FULL_LIBRARY` (₪1,550), `ADULT_COLLECTION` (₪360), gift story (free lead).
-USB add-on: ₪15, free when ≥50 files; always bundled with `ADULT_COLLECTION`.
-
-### Admin (`admin.html`)
-
-5 panels: Dashboard, Orders, Fulfillment, Leads, Catalog.
-Login is MVP-only — any credentials are accepted (no real auth).
-Admin data (KPI, orders, leads) is static mock data in `data.js`; changes made in the admin panel are in-memory only and reset on page reload.
-
-## Key Constants
+## Key Constants (quick ref)
 
 | Constant | Value |
 |---|---|
@@ -73,17 +44,6 @@ Admin data (KPI, orders, leads) is static mock data in `data.js`; changes made i
 | `FREE_USB_MIN_FILES` | 50 |
 | `TOTAL_STORIES` | 428 |
 
-## Language & Styling
+## Snapshot Files
 
-- Interface is Hebrew RTL (`dir="rtl"`, `direction: rtl`)
-- Font: Heebo from Google Fonts
-- CSS variables defined in `:root` in `main.css` — use `var(--teal)`, `var(--pink)`, `var(--gold)`, etc.
-- All user-facing strings are in Hebrew
-
-## Adding Stories
-
-Add a row to `_RAW` in `data.js`:
-```js
-[429, 'c1', 'שם הסיפור', 50],  // [channelNum, categoryId, title, durationMin]
-```
-Story code is auto-generated as `YT-XXXX` from the channel number.
+קבצים עם prefix `_` או `_snap_` הם עיצובי ייחוס בלבד — לא דפים פעילים.
