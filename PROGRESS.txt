@@ -4,4 +4,14 @@
 
 [2026-06-28] scaffold | Applied claude-md-arch scaffold to project | CLAUDE.md (upgraded), CLAUDE/architecture.md, CLAUDE/decisions.md, CLAUDE/conventions.md, CLAUDE/tasks.md, PROGRESS.txt, FOLLOWUPS.md, BACKLOG.md | All scaffold files created. CLAUDE.md restructured as index with golden rules and detail-doc pointers.
 
+[2026-06-28] auth | Real admin authentication via JWT + httpOnly cookie | server/index.js, server/routes/admin.js, admin.html, admin-login.html (new), .env, .env.example, package.json | Route guard on server protects /admin.html; /api/admin/login issues 8h JWT cookie; Basic Auth stub replaced; hardcoded credentials removed from HTML.
+
+[2026-06-28] db-connect | Connected frontend to SQLite DB | server/routes/orders.js (POST /api/orders added), index.html (submitOrder + submitGift send fetch to API) | Orders and leads now persisted in yadtamar.db; localStorage kept as backup; fire-and-forget pattern preserves UX.
+
+[2026-06-29] admin-live-data | Admin panel now reads live data from DB | server/db/index.js (mapOrder/mapLead/getKPI + new cols: notes, fulfillment_status, gift_sent), server/routes/admin.js (GET /kpi, PATCH /leads/:id, extended PATCH /orders/:id), admin.html (loadAdminData fetches ORDERS/LEADS/KPI from API; saveNotes/sendGift/retryFulfillment persist via PATCH), js/data.js (removed mock ORDERS/LEADS/KPI) | FOLLOWUPS P2 "Admin data is static mock" resolved.
+
+[2026-06-29] bugfix-admin-lists | Fixed empty admin lists + order not saved | index.html (removed inner JSON.stringify on items — was double-stringifying), server/db/index.js (mapOrder: double-parse guard for existing bad rows), admin.html (loadAdminData: redirect on 401; DOMContentLoaded: redirect on /api/admin/me failure), server/index.js (cors with credentials:true) | Admin tables now show real data; orders persist correctly with proper product/filesCount/paymentType fields.
+
+[2026-06-29] p2-fixes | Fixed both P2 issues: (1) CSS theme warning comments added to :root in index.html and css/main.css; (2) submitOrder + submitGift made async — await API before advancing to step 4, error toast on failure, localStorage as cache only | index.html, css/main.css, CLAUDE/architecture.md, FOLLOWUPS.md | All P2 items resolved.
+
 [2026-06-24] initial | Initial commit: YadTamar digital stories store | index.html, admin.html, js/data.js, css/main.css, all snapshot/wireframe files | MVP v1.1 — store wizard, admin panel, 428 children's stories + 24 adult discs, tiered pricing engine.

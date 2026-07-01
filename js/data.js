@@ -516,23 +516,3 @@ _GEMARA.forEach(([code, title, dur]) => {
   STORIES.push({ id:`sg${code}`, storyCode:`YT-${code}`, categoryId:'c7', title, duration:dur, isActive:true });
 });
 
-// Sample orders for admin dashboard
-const ORDERS = [
-  { id:'o1', orderNumber:'YT-2026-001', customerName:'שרה לוי', email:'sarah@example.com', phone:'050-1234567', amount:320, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'SELECTED_STORIES', fulfillmentStatus:'COMPLETED', filesCount:40, usb:false, createdAt:'2026-06-18 09:15', folderUrl:'https://drive.google.com/xxx', notes:'' },
-  { id:'o2', orderNumber:'YT-2026-002', customerName:'יוסף כהן', email:'yosef@example.com', phone:'052-9876543', amount:1550, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'MASTER_LIBRARY', fulfillmentStatus:'COMPLETED', filesCount:428, usb:true, createdAt:'2026-06-18 10:02', folderUrl:'https://drive.google.com/yyy', notes:'' },
-  { id:'o3', orderNumber:'YT-2026-003', customerName:'רחל גולדברג', email:'rachel@example.com', phone:'054-1112222', amount:480, paymentType:'BANK_TRANSFER', paymentStatus:'PENDING', processingStatus:'WAITING_PAYMENT', deliveryType:'SELECTED_STORIES', fulfillmentStatus:null, filesCount:64, usb:false, createdAt:'2026-06-18 11:30', folderUrl:'', notes:'ממתין להעברה בנקאית' },
-  { id:'o4', orderNumber:'YT-2026-004', customerName:'דוד ברגר', email:'david@example.com', phone:'058-3334444', amount:0, paymentType:'CALLBACK', paymentStatus:'PENDING', processingStatus:'CREATED', deliveryType:'GIFT_STORY', fulfillmentStatus:'PENDING', filesCount:1, usb:false, createdAt:'2026-06-18 12:45', folderUrl:'', notes:'' },
-  { id:'o5', orderNumber:'YT-2026-005', customerName:'מרים שפירא', email:'miriam@example.com', phone:'053-5556666', amount:700, paymentType:'CREDIT_CARD', paymentStatus:'FAILED', processingStatus:'FAILED', deliveryType:'SELECTED_STORIES', fulfillmentStatus:null, filesCount:100, usb:false, createdAt:'2026-06-17 16:20', folderUrl:'', notes:'תשלום נכשל' },
-  { id:'o6', orderNumber:'YT-2026-006', customerName:'אברהם ויס', email:'avraham@example.com', phone:'050-7778888', amount:360, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'COMPLETED', deliveryType:'ADULT_COLLECTION', fulfillmentStatus:'COMPLETED', filesCount:0, usb:false, createdAt:'2026-06-17 14:10', folderUrl:'https://drive.google.com/zzz', notes:'' },
-  { id:'o7', orderNumber:'YT-2026-007', customerName:'חנה רוזנברג', email:'hana@example.com', phone:'052-9990000', amount:1200, paymentType:'CREDIT_CARD', paymentStatus:'PAID', processingStatus:'PROCESSING', deliveryType:'SELECTED_STORIES', fulfillmentStatus:'SENT', filesCount:200, usb:true, createdAt:'2026-06-18 13:55', folderUrl:'', notes:'' },
-];
-
-const LEADS = [
-  { id:'l1', name:'תמר אדלר', email:'tamar@ex.com', phone:'054-1231231', source:'GIFT_STORY', giftSent:true, createdAt:'2026-06-18 08:00' },
-  { id:'l2', name:'נחמה פרידמן', email:'nahama@ex.com', phone:'050-9879876', source:'CALLBACK', giftSent:false, createdAt:'2026-06-17 17:00' },
-];
-
-const KPI = {
-  ordersToday: 5, requiresAttention: 2, failedPayments: 1, leadsOnly: 2,
-  paidCreditOrders: 3, monthlyRevenue: 4830, usbOrders: 2, systemErrors: 0,
-};

@@ -1,6 +1,7 @@
 /* ===== Yad Tamar – Main Stylesheet (RTL Hebrew) ===== */
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
 
+/* ⚠️  ADMIN THEME — ערכים שונים מה-inline style של index.html (STORE THEME). לפני עריכת CSS ראה CLAUDE/architecture.md */
 :root {
   --teal:     #00B4CC;
   --teal-dk:  #007A8C;
@@ -459,10 +460,9 @@ body {
 }
 .sidebar-logo .logo-icon-sm {
   width: 40px; height: 40px;
-  background: var(--gold);
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+  object-fit: cover;
+  object-position: center top;
 }
 .sidebar-logo span { font-size: 1.05rem; font-weight: 800; }
 

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>יד תמר – כניסה לניהול</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+<div style="
+  min-height:100vh;
+  background:linear-gradient(135deg,#007A8C 0%,#00B4CC 50%,#4DC9E6 100%);
+  display:flex;align-items:center;justify-content:center;
+">
+  <div style="background:#fff;border-radius:20px;padding:48px 40px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center">
+    <img src="גלופה%20001.jpg" alt="יד תמר" style="width:70px;height:70px;border-radius:50%;object-fit:cover;object-position:center top;margin:0 auto 20px;display:block;box-shadow:0 4px 12px rgba(0,0,0,.15)" />
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--teal-dk);margin-bottom:4px">יד תמר</h2>
+    <p style="color:var(--muted);margin-bottom:28px">לוח ניהול</p>
+    <div style="text-align:right;margin-bottom:14px">
+      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">דוא"ל מנהל</label>
+      <input type="email" id="login-email" class="form-input" style="width:100%" placeholder='הכנס דוא"ל' autocomplete="email" />
+    </div>
+    <div style="text-align:right;margin-bottom:24px">
+      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">סיסמה</label>
+      <input type="password" id="login-pass" class="form-input" style="width:100%" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div id="login-err" style="color:#e53e3e;font-size:.88rem;text-align:center;margin-bottom:10px;min-height:1.2em"></div>
+    <button id="login-btn" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1.05rem" onclick="doLogin()">
+      כניסה לניהול
+    </button>
+    <div style="margin-top:20px;font-size:.8rem;color:var(--muted)">
+      <a href="index.html" style="color:var(--teal);text-decoration:none">← חזרה לחנות</a>
+    </div>
+  </div>
+</div>
+<script>
+async function doLogin() {
+  const email  = document.getElementById('login-email').value.trim();
+  const pass   = document.getElementById('login-pass').value;
+  const errEl  = document.getElementById('login-err');
+  const btn    = document.getElementById('login-btn');
+  errEl.textContent = '';
+
+  if (!email || !pass) {
+    errEl.textContent = 'יש למלא דוא"ל וסיסמה';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'מתחבר...';
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+      credentials: 'include'
+    });
+
+    if (res.ok) {
+      location.href = '/admin.html';
+    } else {
+      const data = await res.json().catch(() => ({}));
+      errEl.textContent = data.error || 'שגיאת כניסה — נסה שוב';
+    }
+  } catch {
+    errEl.textContent = 'שגיאת חיבור לשרת — נסה שוב';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'כניסה לניהול';
+  }
+}
+
+['login-email', 'login-pass'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+</script>
+</body>
+</html>

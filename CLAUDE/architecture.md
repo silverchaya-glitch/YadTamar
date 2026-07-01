@@ -79,6 +79,7 @@ index.html does NOT load `css/main.css`.
 
 ## Persistence
 
-- Customer orders → `localStorage` key `yadtamar_orders`
-- No database, no server-side persistence
-- Admin data (KPI, orders, leads) → static mock in `data.js`
+- Customer orders → SQLite (`yadtamar.db`) via `POST /api/orders` (Express server). `localStorage` key `yadtamar_orders` kept as cache after confirmed server response.
+- Gift story leads → SQLite via `POST /api/leads`. `localStorage` key `yadtamar_leads` kept as cache.
+- Admin data (KPI, orders, leads) → live from `/api/admin/*` endpoints backed by SQLite.
+- If the server is unreachable, `submitOrder` / `submitGift` show an error toast and do NOT advance — the order is never shown as "confirmed" until the DB write succeeds.

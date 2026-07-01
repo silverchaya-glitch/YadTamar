@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" />
   <style>
+/* ⚠️  STORE THEME — ערכים שונים מ-css/main.css (ADMIN THEME). לפני עריכת CSS ראה CLAUDE/architecture.md */
 :root {
   --bg:      #F5F7FF;
   --bg2:     #ECEFFE;
@@ -1045,7 +1046,7 @@ function selectPayment(type) {
 }
 
 // ========== SUBMIT ==========
-function submitOrder() {
+async function submitOrder() {
   const name  = document.getElementById('c-name').value.trim();
   const email = document.getElementById('c-email').value.trim();
   const phone = document.getElementById('c-phone').value.trim();
@@ -1081,50 +1082,74 @@ function submitOrder() {
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ מעבד...';
+  btn.textContent = '⏳ שולח...';
 
-  setTimeout(() => {
-    const payLabels = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
-    let msg = '';
-    if (state.paymentType === 'CREDIT_CARD') {
-      msg = `אישור הזמנה ישלח אל ${email}. התוכן יועבר אוטומטית לאחר אישור התשלום.`;
-    } else if (state.paymentType === 'BANK_TRANSFER') {
-      msg = `נוצרה הזמנה ממתינה. צוות יד תמר יצור אתכם קשר לסיום ההעברה הבנקאית.`;
-    } else {
-      msg = `צוות יד תמר יתקשר אליכם בהקדם לסיום ההזמנה.`;
-    }
+  const payLabels = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
+  let msg = '';
+  if (state.paymentType === 'CREDIT_CARD') {
+    msg = `אישור הזמנה ישלח אל ${email}. התוכן יועבר אוטומטית לאחר אישור התשלום.`;
+  } else if (state.paymentType === 'BANK_TRANSFER') {
+    msg = `נוצרה הזמנה ממתינה. צוות יד תמר יצור אתכם קשר לסיום ההעברה הבנקאית.`;
+  } else {
+    msg = `צוות יד תמר יתקשר אליכם בהקדם לסיום ההזמנה.`;
+  }
 
-    const { total } = getOrderTotal();
-    const order = {
-      id: 'ORD-' + Date.now(),
-      createdAt: new Date().toLocaleString('he-IL'),
-      customerName: name, email, phone,
-      paymentType: state.paymentType,
-      product: state.product,
-      filesCount: state.selectedStories.size,
-      useDrive: state.useDrive,
-      useUsb: state.useUsb,
-      total,
-      dedication: document.getElementById('c-dedication').value.trim(),
-      address: state.useUsb ? {
-        street: document.getElementById('c-street').value.trim(),
-        house:  document.getElementById('c-house').value.trim(),
-        apt:    document.getElementById('c-apt').value.trim(),
-        po:     document.getElementById('c-po').value.trim(),
-        city:   document.getElementById('c-city').value.trim(),
-        zip:    document.getElementById('c-zip').value.trim(),
-      } : null,
-    };
+  const { total } = getOrderTotal();
+  const order = {
+    id: 'ORD-' + Date.now(),
+    createdAt: new Date().toLocaleString('he-IL'),
+    customerName: name, email, phone,
+    paymentType: state.paymentType,
+    product: state.product,
+    filesCount: state.selectedStories.size,
+    useDrive: state.useDrive,
+    useUsb: state.useUsb,
+    total,
+    dedication: document.getElementById('c-dedication').value.trim(),
+    address: state.useUsb ? {
+      street: document.getElementById('c-street').value.trim(),
+      house:  document.getElementById('c-house').value.trim(),
+      apt:    document.getElementById('c-apt').value.trim(),
+      po:     document.getElementById('c-po').value.trim(),
+      city:   document.getElementById('c-city').value.trim(),
+      zip:    document.getElementById('c-zip').value.trim(),
+    } : null,
+  };
+
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_name: order.customerName,
+        phone:         order.phone,
+        email:         order.email,
+        delivery_type: order.useUsb ? 'USB' : 'DRIVE',
+        items:         {
+                         product:    state.product,
+                         stories:    Array.from(state.selectedStories),
+                         dedication: order.dedication,
+                         paymentType: order.paymentType,
+                         address:    order.address
+                       },
+        total:         order.total
+      }),
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(res.status);
     const stored = JSON.parse(localStorage.getItem('yadtamar_orders') || '[]');
     stored.unshift(order);
     localStorage.setItem('yadtamar_orders', JSON.stringify(stored));
-
     document.getElementById('confirm-msg').textContent = msg;
     btn.disabled = false;
     btn.textContent = '🛒 בצע הזמנה';
     goToStep(4);
     showToast('ההזמנה נקלטה בהצלחה!', 'success');
-  }, 1200);
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '🛒 בצע הזמנה';
+    showToast('שגיאה בשליחת ההזמנה — אנא נסה שוב', 'error');
+  }
 }
 
 function resetOrder() {
@@ -1149,19 +1174,34 @@ function resetOrder() {
 }
 
 // ========== GIFT ==========
-function submitGift() {
+async function submitGift() {
   const name  = document.getElementById('gift-name').value.trim();
   const email = document.getElementById('gift-email').value.trim();
+  const phone = document.getElementById('gift-phone').value.trim();
   const errEl = document.getElementById('gift-error');
   if (!name || !email) { errEl.textContent = 'שם ודוא"ל הם שדות חובה'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'כתובת דוא"ל לא תקינה'; return; }
   errEl.textContent = '';
-  const storedLeads = JSON.parse(localStorage.getItem('yadtamar_leads') || '[]');
-  storedLeads.unshift({ id: 'L-' + Date.now(), name, email, phone: document.getElementById('gift-phone').value.trim(), source: 'GIFT_STORY', giftSent: false, createdAt: new Date().toLocaleString('he-IL') });
-  localStorage.setItem('yadtamar_leads', JSON.stringify(storedLeads));
-  document.getElementById('gift-success').style.display = '';
-  document.querySelector('.gift-form').style.display = 'none';
-  showToast('הסיפור נשלח לדוא"ל שלכם!', 'success');
+  const giftBtn = document.querySelector('.gift-form button[onclick="submitGift()"]');
+  if (giftBtn) { giftBtn.disabled = true; giftBtn.textContent = '⏳ שולח...'; }
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone: phone || null, gift_story_id: null }),
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error(res.status);
+    const storedLeads = JSON.parse(localStorage.getItem('yadtamar_leads') || '[]');
+    storedLeads.unshift({ id: 'L-' + Date.now(), name, email, phone, source: 'GIFT_STORY', giftSent: false, createdAt: new Date().toLocaleString('he-IL') });
+    localStorage.setItem('yadtamar_leads', JSON.stringify(storedLeads));
+    document.getElementById('gift-success').style.display = '';
+    document.querySelector('.gift-form').style.display = 'none';
+    showToast('הסיפור נשלח לדוא"ל שלכם!', 'success');
+  } catch {
+    if (giftBtn) { giftBtn.disabled = false; giftBtn.textContent = '🎁 שלחו לי סיפור מתנה!'; }
+    showToast('שגיאה בשליחת הבקשה — אנא נסה שוב', 'error');
+  }
 }
 
 // ========== TOAST ==========

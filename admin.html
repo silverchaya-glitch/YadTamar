@@ -8,42 +8,14 @@
 </head>
 <body>
 
-<!-- ===== LOGIN SCREEN ===== -->
-<div id="login-screen" style="
-  min-height:100vh;
-  background:linear-gradient(135deg,#007A8C 0%,#00B4CC 50%,#4DC9E6 100%);
-  display:flex;align-items:center;justify-content:center;
-">
-  <div style="background:#fff;border-radius:20px;padding:48px 40px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center">
-    <div style="width:70px;height:70px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;box-shadow:0 4px 12px rgba(0,0,0,.15)">🌴</div>
-    <h2 style="font-size:1.6rem;font-weight:800;color:var(--teal-dk);margin-bottom:4px">יד תמר</h2>
-    <p style="color:var(--muted);margin-bottom:28px">לוח ניהול</p>
-    <div style="text-align:right;margin-bottom:14px">
-      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">דוא"ל מנהל</label>
-      <input type="email" id="login-email" class="form-input" style="width:100%" placeholder="yadtamar613@gmail.com" value="yadtamar613@gmail.com" />
-    </div>
-    <div style="text-align:right;margin-bottom:24px">
-      <label style="font-size:.88rem;font-weight:600;display:block;margin-bottom:6px">סיסמה</label>
-      <input type="password" id="login-pass" class="form-input" style="width:100%" placeholder="••••••••" value="admin123" />
-    </div>
-    <div id="login-err" class="error-msg" style="text-align:center;margin-bottom:10px"></div>
-    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1.05rem" onclick="doLogin()">
-      כניסה לניהול
-    </button>
-    <div style="margin-top:20px;font-size:.8rem;color:var(--muted)">
-      <a href="index.html" style="color:var(--teal);text-decoration:none">← חזרה לחנות</a>
-    </div>
-  </div>
-</div>
-
 <!-- ===== ADMIN LAYOUT ===== -->
-<div id="admin-app" style="display:none">
+<div id="admin-app">
   <div class="admin-layout">
 
     <!-- Sidebar -->
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-logo">
-        <div class="logo-icon-sm">🌴</div>
+        <img src="גלופה%20001.jpg" alt="יד תמר" class="logo-icon-sm" />
         <span>יד תמר</span>
       </div>
       <nav class="sidebar-menu">
@@ -66,7 +38,8 @@
       <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);margin-top:auto">
         <div id="sidebar-user" style="font-size:.8rem;opacity:.7;margin-bottom:8px">מחובר:</div>
         <a href="index.html" style="font-size:.82rem;color:rgba(255,255,255,.7);text-decoration:none;display:block;margin-bottom:6px">← לחנות</a>
-        <div style="font-size:.8rem;opacity:.5">גרסה 1.1 MVP</div>
+        <button onclick="doLogout()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.82rem;cursor:pointer;padding:0;margin-top:4px;text-align:right;width:100%">🚪 התנתקות</button>
+        <div style="font-size:.8rem;opacity:.5;margin-top:6px">גרסה 1.1 MVP</div>
       </div>
     </aside>
 
@@ -368,26 +341,39 @@
 
 <script src="js/data.js"></script>
 <script>
-// ========== LOGIN ==========
-function doLogin() {
-  const email = document.getElementById('login-email').value;
-  const pass  = document.getElementById('login-pass').value;
-  if (!email || !pass) { document.getElementById('login-err').textContent = 'יש למלא שם משתמש וסיסמה'; return; }
-  // MVP: accept any credentials for demo
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('admin-app').style.display = 'block';
-  document.getElementById('sidebar-user').textContent = 'מחובר: ' + email;
-  initAdmin();
+// ========== LIVE DATA (fetched from API) ==========
+let ORDERS = [];
+let LEADS  = [];
+let KPI    = { ordersToday:0, requiresAttention:0, failedPayments:0, leadsOnly:0, paidCreditOrders:0, monthlyRevenue:0, usbOrders:0, systemErrors:0 };
+
+async function loadAdminData() {
+  try {
+    const [oRes, lRes, kRes] = await Promise.all([
+      fetch('/api/admin/orders', { credentials: 'include' }),
+      fetch('/api/admin/leads',  { credentials: 'include' }),
+      fetch('/api/admin/kpi',    { credentials: 'include' }),
+    ]);
+    if ([oRes, lRes, kRes].some(r => r.status === 401)) {
+      location.href = '/admin-login.html';
+      return;
+    }
+    if (oRes.ok) ORDERS = await oRes.json();
+    if (lRes.ok) LEADS  = await lRes.json();
+    if (kRes.ok) KPI    = await kRes.json();
+  } catch {
+    showToast('שגיאה בטעינת נתונים', 'error');
+  }
 }
 
-// Allow pressing Enter in login fields
-document.querySelectorAll('#login-email,#login-pass').forEach(el => {
-  el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-});
+// ========== LOGOUT ==========
+async function doLogout() {
+  try { await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }); } finally {
+    location.href = '/admin-login.html';
+  }
+}
 
 // ========== INIT ==========
 function initAdmin() {
-  document.getElementById('admin-date').textContent = '📅 ' + new Date().toLocaleDateString('he-IL');
   renderKPI();
   renderRecentOrders();
   renderPricingTable();
@@ -550,8 +536,21 @@ function renderFulfillment() {
   `).join('');
 }
 
-function retryFulfillment(id) {
-  showToast('בקשת פולפילמנט נשלחה מחדש', 'info');
+async function retryFulfillment(id) {
+  try {
+    await fetch('/api/admin/orders/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ fulfillment_status: 'PENDING' }),
+    });
+    const o = ORDERS.find(o => o.id === id);
+    if (o) o.fulfillmentStatus = 'PENDING';
+    renderFulfillment();
+    showToast('בקשת פולפילמנט נשלחה מחדש', 'info');
+  } catch {
+    showToast('שגיאה בשליחת הפולפילמנט', 'error');
+  }
 }
 
 // ========== LEADS ==========
@@ -571,9 +570,22 @@ function renderLeads() {
   `).join('');
 }
 
-function sendGift(id) {
+async function sendGift(id) {
   const lead = LEADS.find(l => l.id === id);
-  if (lead) { lead.giftSent = true; renderLeads(); showToast('סיפור מתנה נשלח!', 'success'); }
+  if (!lead) return;
+  try {
+    await fetch('/api/admin/leads/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ gift_sent: 1 }),
+    });
+    lead.giftSent = true;
+    renderLeads();
+    showToast('סיפור מתנה נשלח!', 'success');
+  } catch {
+    showToast('שגיאה בשליחת המתנה', 'error');
+  }
 }
 
 // ========== CATALOG ==========
@@ -674,9 +686,22 @@ function openNotes(id) {
   document.getElementById('notes-text').value = o?.notes || '';
   openModal('notes-modal');
 }
-function saveNotes() {
+async function saveNotes() {
   const o = ORDERS.find(o => o.id === notesOrderId);
-  if (o) { o.notes = document.getElementById('notes-text').value; showToast('ההערה נשמרה', 'success'); }
+  if (!o) { closeModal('notes-modal'); return; }
+  const notes = document.getElementById('notes-text').value;
+  try {
+    await fetch('/api/admin/orders/' + notesOrderId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ notes }),
+    });
+    o.notes = notes;
+    showToast('ההערה נשמרה', 'success');
+  } catch {
+    showToast('שגיאה בשמירת ההערה', 'error');
+  }
   closeModal('notes-modal');
   renderOrders();
 }
@@ -732,7 +757,8 @@ function deliveryBadge(t) {
 }
 
 // ========== REFRESH ==========
-function refreshData() {
+async function refreshData() {
+  await loadAdminData();
   renderKPI(); renderRecentOrders(); renderOrders(); renderFulfillment(); renderLeads(); renderCatalog(''); renderPricingTable(); renderPricingSmall();
   showToast('הנתונים עודכנו', 'success');
 }
@@ -745,6 +771,19 @@ function showToast(msg, type = 'info') {
   document.getElementById('toast-container').appendChild(div);
   setTimeout(() => div.remove(), 3500);
 }
+
+// ========== AUTO INIT ==========
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('admin-date').textContent = new Date().toLocaleDateString('he-IL');
+  try {
+    const r = await fetch('/api/admin/me', { credentials: 'include' });
+    if (!r.ok) { location.href = '/admin-login.html'; return; }
+    const { email } = await r.json();
+    document.getElementById('sidebar-user').textContent = 'מחובר: ' + email;
+  } catch { location.href = '/admin-login.html'; return; }
+  await loadAdminData();
+  initAdmin();
+});
 </script>
 </body>
 </html>
