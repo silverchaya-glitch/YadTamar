@@ -79,7 +79,11 @@ index.html does NOT load `css/main.css`.
 
 ## Persistence
 
-- Customer orders → SQLite (`yadtamar.db`) via `POST /api/orders` (Express server). `localStorage` key `yadtamar_orders` kept as cache after confirmed server response.
-- Gift story leads → SQLite via `POST /api/leads`. `localStorage` key `yadtamar_leads` kept as cache.
-- Admin data (KPI, orders, leads) → live from `/api/admin/*` endpoints backed by SQLite.
+- **DB engine: PostgreSQL** (`server/db/schema.sql`, 11 normalized tables per `CLAUDE/erd.md`: customers, categories, stories, pricing_rules, orders, order_items, payments, fulfillment_requests, email_logs, leads, admin_users). Replaces the earlier flat SQLite schema (`yadtamar.db` is no longer used but kept on disk).
+- Customer orders → Postgres via `POST /api/orders` (Express server, `server/db/index.js` using `pg`). `localStorage` key `yadtamar_orders` kept as cache after confirmed server response.
+- Gift story leads → Postgres via `POST /api/leads`. `localStorage` key `yadtamar_leads` kept as cache.
+- Admin data (KPI, orders, leads) → live from `/api/admin/*` endpoints backed by Postgres.
+- Admin login (`POST /api/admin/login`) checks email + bcrypt hash against `admin_users` table (single MVP admin row, seeded from `.env` via `server/db/seed-admin.js`), no longer plaintext `.env` comparison.
 - If the server is unreachable, `submitOrder` / `submitGift` show an error toast and do NOT advance — the order is never shown as "confirmed" until the DB write succeeds.
+- **Catalog seeding**: `server/db/seed-catalog.js` loads `CATEGORIES`/`STORIES`/`PRICING_RULES` from `js/data.js` (via Node's `vm` module, without modifying the file) and joins each story to a real `google_drive_file_id` from `files/list_from_drive.csv` by story number. 433/438 stories have a real Drive ID this way; the 5 `_GEMARA` stories (G001–G005) have no matching file in that CSV and get a `PENDING-DRIVE-ID-*` placeholder until a source is provided.
+- **⚠️ Demo/fake data**: `server/db/seed-fake-data.js` inserts temporary demo customers/orders/leads (identifiable by `order_number LIKE 'DEMO-%'` / email `LIKE 'demo.%'`) for end-to-end testing. **Must be deleted before real customer data goes live** — see `FOLLOWUPS.md`.

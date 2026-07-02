@@ -1,14 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
 const db = require('../db');
 
+const pool = new Pool();
+
 // POST /api/admin/login — ציבורי
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'יש למלא דוא"ל וסיסמה' });
-  if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD)
-    return res.status(401).json({ error: 'שם משתמש או סיסמה שגויים' });
+
+  const { rows } = await pool.query(
+    'SELECT id, password_hash, is_active FROM admin_users WHERE email = $1',
+    [email]
+  );
+  const admin = rows[0];
+  if (!admin || !admin.is_active) return res.status(401).json({ error: 'שם משתמש או סיסמה שגויים' });
+
+  const valid = await bcrypt.compare(password, admin.password_hash);
+  if (!valid) return res.status(401).json({ error: 'שם משתמש או סיסמה שגויים' });
+
+  await pool.query('UPDATE admin_users SET last_login_at = now() WHERE id = $1', [admin.id]);
+
   const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '8h' });
   res.cookie('admin_token', token, {
     httpOnly: true,
@@ -43,35 +58,35 @@ router.use(auth);
 router.get('/me', (_req, res) => res.json({ email: process.env.ADMIN_EMAIL }));
 
 // GET /api/admin/kpi
-router.get('/kpi', (_req, res) => res.json(db.getKPI()));
+router.get('/kpi', async (_req, res) => res.json(await db.getKPI()));
 
 // GET /api/admin/orders?status=...
-router.get('/orders', (req, res) => {
-  res.json(db.getOrders(req.query.status));
+router.get('/orders', async (req, res) => {
+  res.json(await db.getOrders(req.query.status));
 });
 
 // PATCH /api/admin/orders/:id
-router.patch('/orders/:id', (req, res) => {
+router.patch('/orders/:id', async (req, res) => {
   const allowed = ['status', 'drive_folder_url', 'notes', 'fulfillment_status'];
   const fields = Object.fromEntries(
     Object.entries(req.body).filter(([k]) => allowed.includes(k))
   );
   if (!Object.keys(fields).length) return res.status(400).json({ error: 'אין שדות לעדכון' });
-  db.updateOrder(Number(req.params.id), fields);
+  await db.updateOrder(req.params.id, fields);
   res.json({ success: true });
 });
 
 // GET /api/admin/leads
-router.get('/leads', (_req, res) => res.json(db.getLeads()));
+router.get('/leads', async (_req, res) => res.json(await db.getLeads()));
 
 // PATCH /api/admin/leads/:id
-router.patch('/leads/:id', (req, res) => {
+router.patch('/leads/:id', async (req, res) => {
   const allowed = ['gift_sent'];
   const fields = Object.fromEntries(
     Object.entries(req.body).filter(([k]) => allowed.includes(k))
   );
   if (!Object.keys(fields).length) return res.status(400).json({ error: 'אין שדות לעדכון' });
-  db.updateLead(Number(req.params.id), fields);
+  await db.updateLead(req.params.id, fields);
   res.json({ success: true });
 });
 
