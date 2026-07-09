@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { triggerFulfillment } = require('../services/fulfillment');
 
 // POST /api/orders — יצירת הזמנה חדשה
 router.post('/', async (req, res) => {
@@ -11,7 +12,8 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'delivery_type לא תקין' });
   try {
     const id = await db.createOrder({ customer_name, phone, email, delivery_type, items, total });
-    res.status(201).json({ success: true, id });
+    const fulfillment = await triggerFulfillment(id);
+    res.status(201).json({ success: true, id, fulfillment });
   } catch (e) {
     res.status(500).json({ error: 'שגיאת שרת' });
   }

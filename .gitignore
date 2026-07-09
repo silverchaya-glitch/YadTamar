@@ -3,4 +3,5 @@
 node_modules/
 .env
 .env.save
+*.swp
 *.db

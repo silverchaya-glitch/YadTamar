@@ -6,10 +6,15 @@
 
 ## Running
 
+**עדכון (2026-07-02):** מאז המעבר ל-PostgreSQL, index.html טוען את הקטלוג מ-`GET /api/catalog` — `python3 -m http.server` הישן **לא מספיק יותר** (אין לו את ה-API, ותופיע השגיאה "שגיאה בטעינת הקטלוג"). יש להריץ את שרת ה-Express, שגם מגיש את הקבצים הסטטיים וגם את ה-API:
+
 ```bash
-python3 -m http.server 8080 --directory /www/YadTamar
-# http://localhost:8080 → store   |   http://localhost:8080/admin.html → admin
+cd /www/YadTamar
+node server/index.js
+# http://localhost:3000 → store   |   http://localhost:3000/admin.html → admin
 ```
+
+דורש PostgreSQL רץ ומאותחל (`server/db/schema.sql` + `server/db/seed-*.js`) ו-`.env` מוגדר (ראה `.env.example`). בפריסת production יש להריץ את השרת תחת מפקח תהליכים (pm2/systemd) כדי שיקום לבד אחרי קריסה/ריסטרט — ראה `FOLLOWUPS.md`.
 
 ## Golden Rules
 
@@ -17,7 +22,7 @@ python3 -m http.server 8080 --directory /www/YadTamar
 2. **index.html ו-admin.html משתמשים בצבעים שונים לאותם שמות משתנים** — קרא `CLAUDE/architecture.md` לפני כל עריכת CSS.
 3. **JS inline בכל HTML** — לוגיקה של החנות נשמרת ב-index.html, לוגיקה של הניהול ב-admin.html. `js/data.js` בלבד הוא קובץ JS חיצוני.
 4. **כל טקסט למשתמש בעברית** — `dir="rtl"` על `<html>`, `direction: rtl` על `body`.
-5. **הוספת סיפור = שורה ב-`_RAW` ב-data.js בלבד** — אל תשנה מבנה נתונים אחר.
+5. **הוספת סיפור = שורה ב-`_RAW` ב-data.js בלבד** — אל תשנה מבנה נתונים אחר. **עדכון (2026-07-02):** מאז שקטלוג החנות (`index.html`) עבר לטעון מ-`GET /api/catalog` (Postgres, לא `js/data.js`), שורה חדשה ב-`_RAW` מעדכנת את `admin.html` מיד אך **לא** מופיעה בחנות עד שירוץ שוב `node server/db/seed-catalog.js`. ראה `FOLLOWUPS.md`.
 6. **PROGRESS.txt הוא append-only** — לעולם אל תמחק שם תוכן; רק הוסף בסוף.
 7. **לפני שינוי ב-data.js** — בדוק שההשפעה על שני הדפים נבדקה (שניהם טוענים את הקובץ).
 8. **login של admin הוא stub MVP** — אל תסמוך עליו לאבטחה; ראה BACKLOG.

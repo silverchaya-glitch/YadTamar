@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const db = require('../db');
+const { triggerFulfillment } = require('../services/fulfillment');
 
 const pool = new Pool();
 
@@ -73,7 +74,12 @@ router.patch('/orders/:id', async (req, res) => {
   );
   if (!Object.keys(fields).length) return res.status(400).json({ error: 'אין שדות לעדכון' });
   await db.updateOrder(req.params.id, fields);
-  res.json({ success: true });
+
+  let fulfillment;
+  if (fields.status === 'paid' || fields.fulfillment_status !== undefined) {
+    fulfillment = await triggerFulfillment(req.params.id);
+  }
+  res.json({ success: true, fulfillment });
 });
 
 // GET /api/admin/leads

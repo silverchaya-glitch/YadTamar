@@ -17,15 +17,6 @@ function mapProductToDeliveryType(product) {
   return 'SELECTED_STORIES';
 }
 
-// ממיר מזהה סיפור בצד לקוח (למשל 's5' / 'sgG001', לפי js/data.js) ל-story_code (YT-0005 / YT-G001)
-function clientStoryIdToCode(id) {
-  let m = /^s(\d+)$/.exec(id);
-  if (m) return 'YT-' + m[1].padStart(4, '0');
-  m = /^sg(.+)$/.exec(id);
-  if (m) return 'YT-' + m[1];
-  return null;
-}
-
 // גוזר סטטוס מאוחד (legacy) מתוך payment_status/processing_status/payment_type —
 // נשמר עבור GET /api/orders/:id (מסלול ציבורי ישן, לא בשימוש כרגע ע"י אף עמוד חי)
 function deriveLegacyStatus(row) {
@@ -116,11 +107,11 @@ module.exports = {
       );
       const orderId = orderRows[0].id;
 
-      const codes = stories.map(clientStoryIdToCode).filter(Boolean);
-      if (codes.length) {
+      const storyIds = stories.filter(id => /^[0-9a-f-]{36}$/i.test(id));
+      if (storyIds.length) {
         const { rows: storyRows } = await client.query(
-          'SELECT id, story_code, title FROM stories WHERE story_code = ANY($1)',
-          [codes]
+          'SELECT id, story_code, title FROM stories WHERE id = ANY($1::uuid[])',
+          [storyIds]
         );
         const unitPrice = storyRows.length ? +(subtotalAmount / storyRows.length).toFixed(2) : 0;
         for (const s of storyRows) {
@@ -180,6 +171,93 @@ module.exports = {
     } finally {
       client.release();
     }
+  },
+
+  async getOrderForFulfillment(id) {
+    const { rows } = await pool.query(
+      `SELECT o.id, o.order_type, o.payment_type, c.email
+       FROM orders o JOIN customers c ON c.id = o.customer_id
+       WHERE o.id = $1`,
+      [id]
+    );
+    if (!rows.length) return null;
+    const order = rows[0];
+
+    let fileIds = [];
+    if (order.order_type === 'STORY_SELECTION') {
+      const { rows: fileRows } = await pool.query(
+        `SELECT s.google_drive_file_id FROM order_items oi
+         JOIN stories s ON s.id = oi.story_id
+         WHERE oi.order_id = $1 AND s.google_drive_file_id NOT LIKE 'PENDING%'`,
+        [id]
+      );
+      fileIds = fileRows.map(r => r.google_drive_file_id);
+    }
+    // FULL_LIBRARY -> fileIds נשאר [] (PRD §13: משתפים Master folder קבוע, לא מכפילים 428 קבצים)
+    // ADULT_COLLECTION -> fileIds נשאר [] (אין מיפוי Drive לדיסקים — ראה FOLLOWUPS.md)
+
+    return {
+      orderType: order.order_type,
+      paymentType: order.payment_type,
+      recipientEmail: order.email,
+      fileIds,
+    };
+  },
+
+  async recordFulfillmentAttempt(orderId, requestSentAt) {
+    await pool.query(
+      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, attempts_count, request_sent_at)
+       VALUES ($1, 'SENT', 'PENDING', 1, $2)
+       ON CONFLICT (order_id) DO UPDATE SET
+         request_status = 'SENT',
+         attempts_count = fulfillment_requests.attempts_count + 1,
+         request_sent_at = EXCLUDED.request_sent_at,
+         updated_at = now()`,
+      [orderId, requestSentAt]
+    );
+  },
+
+  async recordFulfillmentSuccess(orderId, { externalFolderUrl, responseReceivedAt }) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(
+        `UPDATE fulfillment_requests SET
+           request_status = 'COMPLETED', sharing_status = 'SHARED',
+           external_folder_url = $2, error_code = NULL, error_message = NULL,
+           response_received_at = $3, updated_at = now()
+         WHERE order_id = $1`,
+        [orderId, externalFolderUrl, responseReceivedAt]
+      );
+      await client.query('UPDATE orders SET folder_url = $2 WHERE id = $1', [orderId, externalFolderUrl]);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  },
+
+  // UPSERT (לא UPDATE רגיל) — חייב לעבוד גם אם נקרא לפני recordFulfillmentAttempt
+  // (למשל FULFILLMENT_WEBHOOK_URL/SECRET חסרים — אין עדיין שורה להזמנה הזו)
+  async recordFulfillmentFailure(orderId, { errorCode, errorMessage, responseReceivedAt }) {
+    await pool.query(
+      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, response_received_at)
+       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4)
+       ON CONFLICT (order_id) DO UPDATE SET
+         request_status = 'FAILED', sharing_status = 'FAILED', error_code = $2, error_message = $3,
+         response_received_at = $4, updated_at = now()`,
+      [orderId, errorCode, errorMessage, responseReceivedAt]
+    );
+  },
+
+  async logEmail({ orderId = null, customerId = null, emailType, recipientEmail, sendStatus, sentAt = null }) {
+    await pool.query(
+      `INSERT INTO email_logs (order_id, customer_id, email_type, recipient_email, send_status, sent_at)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [orderId, customerId, emailType, recipientEmail, sendStatus, sentAt]
+    );
   },
 
   async updateLead(id, fields) {
@@ -246,6 +324,29 @@ module.exports = {
       giftSent:  Boolean(row.gift_sent),
       createdAt: row.created_at ? new Date(row.created_at).toLocaleString('he-IL') : '',
     }));
+  },
+
+  async getCatalog() {
+    const [{ rows: categories }, { rows: stories }] = await Promise.all([
+      pool.query('SELECT id, name, display_order FROM categories WHERE is_active = true ORDER BY display_order'),
+      pool.query(`
+        SELECT s.id, s.story_code, s.category_id, s.title, s.duration_seconds
+        FROM stories s
+        JOIN categories c ON c.id = s.category_id
+        WHERE s.is_active = true AND c.is_active = true
+        ORDER BY c.display_order, s.story_code
+      `),
+    ]);
+    return {
+      categories: categories.map(c => ({ id: c.id, name: c.name, displayOrder: c.display_order })),
+      stories: stories.map(s => ({
+        id:              s.id,
+        storyCode:       s.story_code,
+        categoryId:      s.category_id,
+        title:           s.title,
+        durationMinutes: s.duration_seconds ? Math.round(s.duration_seconds / 60) : null,
+      })),
+    };
   },
 
   async getKPI() {

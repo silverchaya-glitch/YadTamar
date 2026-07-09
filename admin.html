@@ -538,16 +538,23 @@ function renderFulfillment() {
 
 async function retryFulfillment(id) {
   try {
-    await fetch('/api/admin/orders/' + id, {
+    const res = await fetch('/api/admin/orders/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ fulfillment_status: 'PENDING' }),
     });
+    const { fulfillment } = await res.json();
     const o = ORDERS.find(o => o.id === id);
-    if (o) o.fulfillmentStatus = 'PENDING';
+    if (o && fulfillment) {
+      o.fulfillmentStatus = fulfillment.success ? 'COMPLETED' : 'FAILED';
+      if (fulfillment.externalFolderUrl) o.folderUrl = fulfillment.externalFolderUrl;
+    }
     renderFulfillment();
-    showToast('בקשת פולפילמנט נשלחה מחדש', 'info');
+    showToast(
+      fulfillment?.success ? 'התיקייה שותפה בהצלחה' : 'שליחת הפולפילמנט נכשלה — נדרש טיפול ידני',
+      fulfillment?.success ? 'success' : 'error'
+    );
   } catch {
     showToast('שגיאה בשליחת הפולפילמנט', 'error');
   }

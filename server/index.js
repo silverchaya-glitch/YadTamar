@@ -29,6 +29,7 @@ app.get('/admin.html', (req, res, next) => {
 app.use(express.static(path.join(__dirname, '..')));
 
 // Routes
+app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api/admin', require('./routes/admin'));

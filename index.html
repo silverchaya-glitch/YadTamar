@@ -134,6 +134,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .btn-select-all:hover, .btn-select-cat:hover { background: var(--teal); color: #fff; }
 
 .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.catalog-status { grid-column: 1 / -1; text-align: center; padding: 32px 16px; color: var(--muted); font-size: .95rem; }
 .story-item { background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: all .2s; display: flex; align-items: flex-start; gap: 10px; }
 .story-item:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(99,102,241,.12); }
 .story-item.checked { border-color: var(--teal); background: var(--teal-lt); box-shadow: 0 0 0 2px rgba(99,102,241,.2); }
@@ -719,16 +720,34 @@ let state = {
   search: '',
 };
 
+// קטלוג חי מה-DB (Postgres, דרך /api/catalog) — לא js/data.js הסטטי
+let liveCategories = [];
+let liveStories = [];
+
 // ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-  buildCategoryChips();
-  renderStories();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCatalog();
   renderPricingTiers();
-  updateSelectButtons();
   selectProduct('STORY_SELECTION');
   document.getElementById('usb-free-note').textContent =
     `✅ הזמנות מ-${FREE_USB_MIN_FILES} קבצים ומעלה – דיסק און קי חינם!`;
 });
+
+async function loadCatalog() {
+  const grid = document.getElementById('stories-grid');
+  grid.innerHTML = '<div class="catalog-status">⏳ טוען קטלוג...</div>';
+  try {
+    const res = await fetch('/api/catalog');
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    liveCategories = data.categories || [];
+    liveStories = data.stories || [];
+    buildCategoryChips();
+    renderStories();
+  } catch {
+    grid.innerHTML = '<div class="catalog-status">⚠️ שגיאה בטעינת הקטלוג — נסו לרענן את הדף</div>';
+  }
+}
 
 // ========== TABS ==========
 function showTab(t) {
@@ -810,7 +829,7 @@ function selectProduct(type) {
 // ========== CATALOG ==========
 function buildCategoryChips() {
   const chips = document.getElementById('category-chips');
-  CATEGORIES.forEach(cat => {
+  liveCategories.forEach(cat => {
     const b = document.createElement('button');
     b.className = 'chip';
     b.dataset.cat = cat.id;
@@ -833,17 +852,17 @@ function filterStories() {
 }
 
 function getCategoryName(id) {
-  return CATEGORIES.find(c => c.id === id)?.name || '';
+  return liveCategories.find(c => c.id === id)?.name || '';
 }
 
 function renderStories() {
   const grid = document.getElementById('stories-grid');
-  const filtered = STORIES.filter(s => {
+  const filtered = liveStories.filter(s => {
     const matchCat    = state.filterCat === 'all' || s.categoryId === state.filterCat;
     const matchSearch = !state.search ||
       s.title.toLowerCase().includes(state.search) ||
       s.storyCode.toLowerCase().includes(state.search);
-    return matchCat && matchSearch && s.isActive;
+    return matchCat && matchSearch;
   });
   grid.innerHTML = filtered.map(s => {
     const checked = state.selectedStories.has(s.id);
@@ -854,7 +873,7 @@ function renderStories() {
         <div class="story-code">${s.storyCode}</div>
         <div class="story-title">${s.title}</div>
         <div class="story-cat">${getCategoryName(s.categoryId)}</div>
-        <div class="story-dur">⏱ ${s.duration} דקות</div>
+        <div class="story-dur">⏱ ${s.durationMinutes} דקות</div>
       </div>
     </div>`;
   }).join('');
@@ -869,7 +888,7 @@ function toggleStory(id) {
 }
 
 function toggleSelectAll() {
-  const all = STORIES.filter(s => s.isActive);
+  const all = liveStories;
   const allSelected = all.every(s => state.selectedStories.has(s.id));
   all.forEach(s => allSelected ? state.selectedStories.delete(s.id) : state.selectedStories.add(s.id));
   renderStories();
@@ -877,7 +896,7 @@ function toggleSelectAll() {
 }
 
 function toggleSelectCategory() {
-  const cats = STORIES.filter(s => s.isActive && s.categoryId === state.filterCat);
+  const cats = liveStories.filter(s => s.categoryId === state.filterCat);
   const allSelected = cats.every(s => state.selectedStories.has(s.id));
   cats.forEach(s => allSelected ? state.selectedStories.delete(s.id) : state.selectedStories.add(s.id));
   renderStories();
@@ -885,7 +904,7 @@ function toggleSelectCategory() {
 }
 
 function updateSelectButtons() {
-  const all = STORIES.filter(s => s.isActive);
+  const all = liveStories;
   const allSel = all.length > 0 && all.every(s => state.selectedStories.has(s.id));
   document.getElementById('select-all-btn').textContent = allSel ? '✗ בטל הכל' : '✓ בחר הכל';
   const catBtn = document.getElementById('select-cat-btn');
@@ -982,7 +1001,7 @@ function buildSummary(autoSet = false) {
 
   const list = document.getElementById('order-items-list');
   if (state.product === 'STORY_SELECTION') {
-    const stories = STORIES.filter(s => state.selectedStories.has(s.id));
+    const stories = liveStories.filter(s => state.selectedStories.has(s.id));
     list.innerHTML = stories.map(s =>
       `<li><span>${s.storyCode} – ${s.title}</span><span style="color:var(--muted);font-size:.8rem">₪${calcUnitPrice(state.selectedStories.size)}</span></li>`
     ).join('');
