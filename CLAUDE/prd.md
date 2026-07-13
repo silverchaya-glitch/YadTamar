@@ -210,29 +210,43 @@ Each story shall contain:
 - Order created
 - Office staff performs manual follow-up
 
-# 12. External Fulfillment Service
+# 12. External Fulfillment Services
 
-The platform integrates with an external Google Apps Script fulfillment service.
+**Updated 2026-07-13:** the platform integrates with two separate external Google Apps Script services,
+not one unified service as previously documented — see `CLAUDE/erd.md` §16 for full responsibilities.
 
-### Fulfillment Request
+**Updated 2026-07-13 (later same day):** Stage 2 ("shareLib") is now actually deployed and verified
+end-to-end (real file share + real notification email), not just a reference copy. It runs as an
+independent Apps Script Web App under the store's own Google account (yadtamar613@gmail.com) — not
+under a separate multi-client account as earlier drafts assumed — per explicit decision that the whole
+integration stays under one account. Per-customer authentication (email + pre-shared token) still applies
+even though there is currently only one "customer" (the store itself).
 
-The platform sends:
+### Stage 1 — Folder Creation
+
+The platform sends (for STORY_SELECTION orders only — FULL_LIBRARY skips this stage, see §13):
 
 - Order ID
 - Customer Email
 - List of Google Drive File IDs
 
-### External Service Responsibilities
+Stage 1 responsibilities:
 
-- Create delivery folders
-- Copy files
-- Share content with customer
-- Return fulfillment status
+- Create a delivery folder and copy files into it
+- Decide, from payment type, whether sharing can happen immediately or must wait for manual payment
+  confirmation
+- Return the folder ID/URL and that decision
+
+### Stage 2 — Sharing ("shareLib", source at `apps-script/share-lib.gs`)
+
+Called by the platform only when stage 1's decision is not "wait for manual confirmation". The platform
+sends the folder ID (from stage 1, or the predefined Master Library folder ID for FULL_LIBRARY) and the
+customer email; shareLib grants Drive access and sends the notification email itself.
 
 ### Platform Responsibilities
 
-- Send fulfillment requests
-- Receive fulfillment results
+- Send fulfillment requests to both stages, in order
+- Receive and combine both stages' results
 - Record fulfillment history
 - Display fulfillment status in administration screens
 
@@ -242,9 +256,12 @@ The platform does not directly manage Google Drive resources.
 
 For Full Library purchases:
 
-- The platform submits a fulfillment request of type "Full Library".
-- The external service shares the predefined Master Library folder.
+- The platform skips stage 1 entirely (no files to copy) and calls the sharing service (stage 2) directly
+  with a predefined Master Library folder ID.
 - No duplication of the 428 files occurs.
+- **Open item (2026-07-13):** the Master Library folder ID has not been supplied yet — see FOLLOWUPS.md.
+  Until it is, FULL_LIBRARY orders fail fulfillment with a clear `CONFIG_MISSING` error rather than
+  silently doing nothing.
 
 # 14. Fulfillment Tracking
 

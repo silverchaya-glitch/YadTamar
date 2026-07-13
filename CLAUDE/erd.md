@@ -251,7 +251,10 @@ Stores payment attempts and payment confirmations.
 
 **Purpose**
 
-Tracks communication with the external Google Apps Script fulfillment service.
+Tracks communication with the external Google Apps Script fulfillment services. As of 2026-07-13 this is
+two separate external services, not one — see §16. Fields on this record are populated by combining both
+calls: `external_folder_id`/`external_folder_url`/`item_results` come from the folder-creation service,
+`sharing_status`/`shared_email`/`shared_at` come from the sharing service (shareLib).
 
 **Fields**
 
@@ -266,6 +269,7 @@ Tracks communication with the external Google Apps Script fulfillment service.
 - external_folder_url
 - error_code
 - error_message
+- item_results (JSONB)
 - request_sent_at
 - response_received_at
 - created_at
@@ -283,6 +287,9 @@ Tracks communication with the external Google Apps Script fulfillment service.
 - PENDING
 - SHARED
 - FAILED
+- WAITING_MANUAL — folder created by stage 1, but the payment type requires manual confirmation before
+  the platform calls the sharing service (stage 2). Decision is made by the folder-creation service based
+  on payment type; the platform does not duplicate that logic.
 
 **Constraints**
 
@@ -412,22 +419,38 @@ Future versions may support multiple administrators.
 
 # 16. External System Boundaries
 
-**External Fulfillment Service**
+**External Fulfillment Services** (two, as of 2026-07-13 — previously documented as one unified service)
 
-Technology: Google Apps Script
+**1. Folder Creation Service**
 
-**Responsibilities:**
+Technology: Google Apps Script (existing Web App, source not held in this repo)
 
-- Create Google Drive folders
-- Copy files
-- Share folders
-- Return fulfillment results
+Responsibilities:
+
+- Create a Google Drive folder per order and copy the relevant files into it (STORY_SELECTION only —
+  FULL_LIBRARY skips this service entirely and shares a predefined Master Library folder instead, see
+  prd.md §13)
+- Decide, based on payment type, whether the order can be shared immediately or must wait for manual
+  payment confirmation (`sharingStatus`: immediate vs `WAITING_MANUAL`)
+- Return the created folder ID/URL and that decision
+
+**2. Sharing Service ("shareLib")**
+
+Technology: Google Apps Script Web App, source kept at `apps-script/share-lib.gs` in this repo (reference
+copy — deployed separately under the store owner's Google account)
+
+Responsibilities:
+
+- Grant Drive permission (viewer/editor) on an existing file or folder ID to a recipient email
+- Send the recipient a notification email
+- Per-customer authentication (email + pre-shared MD5 token), independent of the folder creation service
 
 **Platform Responsibilities:**
 
-- Build fulfillment requests
-- Send file identifiers
-- Track fulfillment status
+- Build fulfillment requests for both services
+- Send file/folder identifiers
+- Call the sharing service only when the folder creation service's decision is not `WAITING_MANUAL`
+- Track fulfillment status across both calls
 - Store fulfillment outcomes
 
 The platform does not directly manage Google Drive operations.
