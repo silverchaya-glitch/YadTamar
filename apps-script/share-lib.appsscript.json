@@ -1,0 +1,11 @@
+{
+  "_comment": "עותק-ייחוס של appsscript.json הפרוס בפועל תחת yadtamar613@gmail.com (scriptId 1sf1LDC0eaSm67nlE633-GJqwxUCs59Ck-9Q1RNBiBXAYsDXITeZnkh9b). ראה share-lib.gs לפרטים.",
+  "timeZone": "Asia/Jerusalem",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "ANYONE_ANONYMOUS"
+  }
+}
