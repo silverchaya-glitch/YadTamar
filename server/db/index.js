@@ -217,17 +217,29 @@ module.exports = {
     );
   },
 
-  async recordFulfillmentSuccess(orderId, { externalFolderUrl, responseReceivedAt }) {
+  // עדכון 2026-07-13: השדות מקורם כעת בשתי קריאות webhook נפרדות שמאוחדות
+  // ע"י server/services/fulfillment.js לפני הקריאה הזו — external_folder_id/url
+  // ו-item_results משלב 1 (יצירת התיקייה, הסקריפט הקיים), sharing_status/shared_email
+  // משלב 2 (shareLib, apps-script/share-lib.gs) — לא קריאה אחת כמו קודם.
+  // sharing_status יכול להיות 'SHARED' (shareLib שיתף בפועל) או 'WAITING_MANUAL' (העברה
+  // בנקאית/מזומן — שלב 1 קבע שממתינים לאישור תשלום ידני, שלב 2 לא נקרא כלל).
+  // shared_at מתעדכן רק כש-sharing_status === 'SHARED'.
+  async recordFulfillmentSuccess(orderId, {
+    requestStatus, sharingStatus, externalFolderId, externalFolderUrl, sharedEmail, itemResults, responseReceivedAt,
+  }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+      const sharedAt = sharingStatus === 'SHARED' ? responseReceivedAt : null;
       await client.query(
         `UPDATE fulfillment_requests SET
-           request_status = 'COMPLETED', sharing_status = 'SHARED',
-           external_folder_url = $2, error_code = NULL, error_message = NULL,
-           response_received_at = $3, updated_at = now()
+           request_status = $2, sharing_status = $3,
+           external_folder_id = $4, external_folder_url = $5, shared_email = $6, shared_at = $7,
+           item_results = $8, error_code = NULL, error_message = NULL,
+           response_received_at = $9, updated_at = now()
          WHERE order_id = $1`,
-        [orderId, externalFolderUrl, responseReceivedAt]
+        [orderId, requestStatus, sharingStatus, externalFolderId, externalFolderUrl, sharedEmail, sharedAt,
+         itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
       );
       await client.query('UPDATE orders SET folder_url = $2 WHERE id = $1', [orderId, externalFolderUrl]);
       await client.query('COMMIT');
@@ -241,14 +253,14 @@ module.exports = {
 
   // UPSERT (לא UPDATE רגיל) — חייב לעבוד גם אם נקרא לפני recordFulfillmentAttempt
   // (למשל FULFILLMENT_WEBHOOK_URL/SECRET חסרים — אין עדיין שורה להזמנה הזו)
-  async recordFulfillmentFailure(orderId, { errorCode, errorMessage, responseReceivedAt }) {
+  async recordFulfillmentFailure(orderId, { errorCode, errorMessage, externalFolderId = null, itemResults = null, responseReceivedAt }) {
     await pool.query(
-      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, response_received_at)
-       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4)
+      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, external_folder_id, item_results, response_received_at)
+       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4, $5, $6)
        ON CONFLICT (order_id) DO UPDATE SET
          request_status = 'FAILED', sharing_status = 'FAILED', error_code = $2, error_message = $3,
-         response_received_at = $4, updated_at = now()`,
-      [orderId, errorCode, errorMessage, responseReceivedAt]
+         external_folder_id = $4, item_results = $5, response_received_at = $6, updated_at = now()`,
+      [orderId, errorCode, errorMessage, externalFolderId, itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
     );
   },
 
