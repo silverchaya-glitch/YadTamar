@@ -27,6 +27,19 @@ node server/index.js
 7. **לפני שינוי ב-data.js** — בדוק שההשפעה על שני הדפים נבדקה (שניהם טוענים את הקובץ).
 8. **login של admin הוא stub MVP** — אל תסמוך עליו לאבטחה; ראה BACKLOG.
 
+## Git Push
+
+בסביבה הזו (השרת בפועל) אין credential helper/SSH key מוגדר ל-GitHub. האימות נמצא ב-`GITHUB_TOKEN` בקובץ `/www/YadTamar/.env` (הקובץ ב-`.gitignore`, לא נכנס ל-repo). `GITHUB_USER` באותו קובץ ריק בכוונה — לא בשימוש; ה-token עצמו משמש כ-username מול GitHub, בלי סיסמה.
+
+לדחוף בלי להדפיס את הטוקן לצ'אט:
+
+```bash
+set -a; source /www/YadTamar/.env; set +a
+git push "https://${GITHUB_TOKEN}@github.com/silverchaya-glitch/YadTamar.git" main
+```
+
+אל תשתמשי ב-`git remote set-url` עם הטוקן משובץ (זה משאיר את הסוד קבוע ב-`.git/config`) — תמיד להעביר את ה-URL עם הטוקן inline לפקודת ה-push עצמה, חד-פעמי.
+
 ## Detail-Doc Index
 
 | נושא | קובץ | מתי לקרוא |
