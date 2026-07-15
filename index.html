@@ -73,7 +73,8 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
   0%, 100% { text-shadow: 0 0 24px rgba(245,158,11,.55), 0 2px 8px rgba(0,0,0,.3); }
   50%       { text-shadow: 0 0 48px rgba(245,158,11,.95), 0 0 90px rgba(245,158,11,.35), 0 2px 8px rgba(0,0,0,.3); }
 }
-.hero-illustration { width: 210px; height: 210px; min-width: 180px; border-radius: 24px; overflow: hidden; border: 4px solid rgba(255,255,255,.3); box-shadow: 0 16px 48px rgba(0,0,0,.25); flex-shrink: 0; transform: rotate(-3deg); }
+.hero-illustration { width: 210px; height: 210px; min-width: 180px; border-radius: 24px; overflow: hidden; border: 4px solid rgba(255,255,255,.3); box-shadow: 0 16px 48px rgba(0,0,0,.25); flex-shrink: 0; transform: rotate(-3deg); transition: transform .35s ease; }
+.hero-illustration:hover { transform: rotate(0deg) scale(1.05); }
 .hero-illustration img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 
 .product-cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
@@ -88,7 +89,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .product-card .card-desc { font-size: .8rem; color: var(--muted); line-height: 1.55; }
 .product-card.card-gift { border: 2px dashed rgba(245,158,11,.6); background: rgba(255,253,235,.95); }
 .card-gift-badge { position: absolute; top: -13px; right: 50%; transform: translateX(50%); background: var(--gold); color: #fff; font-size: .72rem; font-weight: 800; padding: 3px 14px; border-radius: 20px; white-space: nowrap; }
-.product-card.card-about { border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.75); }
+.product-card.card-about { border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.95); }
 .product-card.card-about h3 { color: var(--teal-dk); }
 .product-card.card-about .card-price { color: var(--teal-dk) !important; }
 .card-usb-note { display: inline-block; margin-top: 6px; font-size: .76rem; color: var(--green); font-weight: 600; }
@@ -238,6 +239,32 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .about-badge { background: var(--teal-lt); border: 1.5px solid rgba(99,102,241,.2); color: var(--teal-dk); font-size: .85rem; font-weight: 600; padding: 7px 16px; border-radius: 20px; }
 .about-copyright { text-align: center; font-size: .8rem; color: var(--muted); margin-top: 8px; padding: 16px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
 
+/* ===== Catalog Tab ===== */
+.product-card.card-catalog { border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.95); }
+.product-card.card-catalog h3 { color: var(--teal-dk); }
+.catalog-tab { background: var(--bg2); min-height: 60vh; padding: 56px 32px; }
+.catalog-tab-inner { max-width: 960px; margin: 0 auto; }
+.catalog-info-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 28px; margin-bottom: 20px; }
+.catalog-info-list { list-style: none; margin: 0; padding: 0; }
+.catalog-info-list li { position: relative; font-size: .9rem; color: var(--muted); line-height: 1.8; margin: 0 0 10px; padding-right: 18px; }
+.catalog-info-list li:last-child { margin-bottom: 0; }
+.catalog-info-list li::before { content: '•'; position: absolute; right: 0; color: var(--teal); font-weight: 900; }
+.catalog-info-block .catalog-copyright { text-align: center; font-size: .8rem; color: var(--muted); padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--border); }
+.catalog-cat-group { margin-bottom: 28px; }
+.catalog-cat-header { all: unset; box-sizing: border-box; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%; cursor: pointer; margin-bottom: 12px; padding: 6px 10px 8px; margin-right: -10px; margin-left: -10px; border-bottom: 2px solid var(--teal-lt); border-radius: 10px; transition: background .2s ease; }
+.catalog-cat-header:hover { background: var(--teal-lt); }
+.catalog-cat-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--teal-dk); }
+.catalog-cat-count { font-size: .85rem; font-weight: 700; color: var(--teal-dk); }
+.catalog-cat-toggle-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--teal-lt); color: var(--teal-dk); font-size: 1.1rem; font-weight: 900; flex-shrink: 0; }
+.catalog-cat-group.collapsed .catalog-table-wrap { display: none; }
+.catalog-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.catalog-table { width: 100%; border-collapse: collapse; }
+.catalog-table thead { background: var(--teal-lt); }
+.catalog-table th { color: var(--teal-dk); font-size: .82rem; font-weight: 800; text-align: right; padding: 10px 14px; white-space: nowrap; }
+.catalog-table td { font-size: .88rem; color: var(--text); padding: 9px 14px; border-top: 1px solid var(--border); }
+.catalog-table td:first-child, .catalog-table th:first-child { color: var(--teal-dk); font-weight: 700; white-space: nowrap; }
+.catalog-table tbody tr:nth-child(even) { background: var(--bg2); }
+
 /* ===== Toast ===== */
 #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
 .toast { padding: 12px 24px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: .9rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.15); animation: slideUp .3s ease; white-space: nowrap; }
@@ -302,7 +329,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <div class="hero-badge">✨ ספורי חז"ל ותנ"ך לילדים</div>
         <div class="hero-rabbi">הרב עמנואל תהילה</div>
         <h2>428 סיפורי שמע<br>לכל המשפחה</h2>
-        <p>מפי הרב – בחרו, שלמו, קבלו מיד</p>
       </div>
       <div class="hero-illustration">
         <img src="גלופה%20001.jpg" alt="רב מספר סיפורים לילדים" />
@@ -314,19 +340,20 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <div class="card-icon">📖</div>
         <h3>אודות</h3>
       </div>
+      <div class="product-card card-catalog" id="card-catalog" onclick="showCatalogSection()">
+        <div class="card-icon">📚</div>
+        <h3>קטלוג</h3>
+      </div>
       <div class="product-card" id="card-selection" onclick="selectProduct('STORY_SELECTION')">
         <div class="card-icon">🎧</div>
-        <h3>סיפורים לבחירה</h3>
-        <div class="card-price" id="price-indicator">₪8 לסיפור</div>
-        <div class="card-price-sub">עד ₪3.8 לסיפור</div>
-        <div class="card-desc">ברשותינו כ-423 קבצי שמע לילדים<br>כל קובץ כ-45–60 דקות<br>ניתן לרכוש כל כמות<br><span class="card-usb-note">💾 גם על דיסק און קי באריזת מתנה – משלוח חינם</span></div>
+        <h3>מאגר סיפורים לילדים</h3>
+        <div class="card-desc">428 סיפורי שמע<br>החל מ־₪3.8 לסיפור</div>
       </div>
       <div class="product-card" id="card-adult" onclick="selectProduct('ADULT_COLLECTION')">
-        <div class="card-icon">🎓</div>
+        <div class="card-icon">📕</div>
         <h3>אוסף מבוגרים</h3>
         <div class="card-price">₪360</div>
-        <div class="card-price-sub">24 אוספי MP3</div>
-        <div class="card-desc">כ-283 שיעורים<br>כולל דיסק און קי</div>
+        <div class="card-desc">24 אוספים | 283 שיעורים</div>
       </div>
       <div class="product-card card-gift" id="card-gift" onclick="showTab('gift')">
         <div class="card-gift-badge">ללא תשלום</div>
@@ -334,7 +361,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <h3>סיפור מתנה</h3>
         <div class="card-price card-price-free">חינם!</div>
         <div class="card-price-sub">&nbsp;</div>
-        <div class="card-desc">השאירו פרטים בלבד<br>קבלו סיפור נבחר במתנה</div>
+        <div class="card-desc">השאירו פרטים וקבלו סיפור במתנה</div>
       </div>
     </div>
   </section>
@@ -675,6 +702,30 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
     </div>
   </div>
 
+  <div id="store-catalog-section" style="display:none">
+    <div class="catalog-tab">
+      <div class="catalog-tab-inner">
+
+        <div class="catalog-info-block">
+          <ul class="catalog-info-list">
+            <li>הסיפורים בהסכמת ובהמלצת הגה"צ רבי דב יפה זצוק"ל — משגיח רוחני דישיבת "כנסת חזקיהו" כפר חסידים</li>
+            <li>הסיפורים מיועדים לגילאי 5 ומעלה, ומומלצים גם להורים, אנשי חינוך וגננות</li>
+            <li>ניתן לקבל על גבי דיסק און קי או כרטיס לנגן — כל קובץ שמע: 45–60 דקות</li>
+            <li>מכבדים כרטיסי אשראי</li>
+          </ul>
+          <p class="catalog-copyright">© כל הזכויות שמורות. אין להפיץ, לשכפל, לצרוב, לשדר, או להעביר חומר כלשהו ללא רשות מ"יד תמר"</p>
+        </div>
+
+        <div class="catalog-download-bar">
+          <a href="files/קטלוג ילדים תשפד .pdf" download class="btn-catalog-pdf">📄 לחץ כאן להורדת הקטלוג</a>
+        </div>
+
+        <div id="catalog-viewer"></div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ===== GIFT TAB ===== -->
@@ -744,6 +795,7 @@ async function loadCatalog() {
     liveStories = data.stories || [];
     buildCategoryChips();
     renderStories();
+    renderCatalogViewer();
   } catch {
     grid.innerHTML = '<div class="catalog-status">⚠️ שגיאה בטעינת הקטלוג — נסו לרענן את הדף</div>';
   }
@@ -753,7 +805,7 @@ async function loadCatalog() {
 function showTab(t) {
   document.getElementById('tab-store').style.display = t === 'store' ? 'block' : 'none';
   document.getElementById('tab-gift').style.display  = t === 'gift'  ? 'block' : 'none';
-  if (t !== 'store') hideAboutSection();
+  if (t !== 'store') { hideAboutSection(); hideCatalogSection(); }
   if (t === 'gift') {
     document.getElementById('gift-success').style.display = 'none';
     document.querySelector('.gift-form').style.display = '';
@@ -771,6 +823,7 @@ function showTab(t) {
 }
 
 function showAboutSection() {
+  hideCatalogSection();
   document.getElementById('store-about-section').style.display = '';
   document.getElementById('card-about').classList.add('selected');
   document.getElementById('steps-bar').style.display = 'none';
@@ -785,9 +838,26 @@ function hideAboutSection() {
   document.getElementById('wizard-container').style.display = '';
 }
 
+function showCatalogSection() {
+  hideAboutSection();
+  document.getElementById('store-catalog-section').style.display = '';
+  document.getElementById('card-catalog').classList.add('selected');
+  document.getElementById('steps-bar').style.display = 'none';
+  document.getElementById('wizard-container').style.display = 'none';
+  document.getElementById('store-catalog-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hideCatalogSection() {
+  document.getElementById('store-catalog-section').style.display = 'none';
+  document.getElementById('card-catalog').classList.remove('selected');
+  document.getElementById('steps-bar').style.display = '';
+  document.getElementById('wizard-container').style.display = '';
+}
+
 // ========== PRODUCT SELECTION ==========
 function selectProduct(type) {
   hideAboutSection();
+  hideCatalogSection();
   if (state.currentStep > 1) goToStep(1);
   state.product = type;
 
@@ -853,6 +923,43 @@ function filterStories() {
 
 function getCategoryName(id) {
   return liveCategories.find(c => c.id === id)?.name || '';
+}
+
+function renderCatalogViewer() {
+  const container = document.getElementById('catalog-viewer');
+  if (!container) return;
+  container.innerHTML = liveCategories.map(cat => {
+    const stories = liveStories.filter(s => s.categoryId === cat.id);
+    if (!stories.length) return '';
+    return `
+      <div class="catalog-cat-group">
+        <button type="button" class="catalog-cat-header" onclick="toggleCatalogCategory(this)">
+          <h3>${cat.name} <span class="catalog-cat-count">(${stories.length} סיפורים)</span></h3>
+          <span class="catalog-cat-toggle-icon">−</span>
+        </button>
+        <div class="catalog-table-wrap">
+          <table class="catalog-table">
+            <thead>
+              <tr><th>מס' סידורי</th><th>שם הסיפור</th><th>משך (דקות)</th></tr>
+            </thead>
+            <tbody>
+              ${stories.map(s => `
+                <tr>
+                  <td>${s.storyCode.replace(/^YT-/, '')}</td>
+                  <td>${s.title}</td>
+                  <td>${s.durationMinutes}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleCatalogCategory(headerEl) {
+  const group = headerEl.closest('.catalog-cat-group');
+  const collapsed = group.classList.toggle('collapsed');
+  headerEl.querySelector('.catalog-cat-toggle-icon').textContent = collapsed ? '+' : '−';
 }
 
 function renderStories() {
@@ -928,7 +1035,6 @@ function updatePricingBar() {
   document.getElementById('unit-price').textContent  = '₪' + up;
   document.getElementById('total-price').textContent = '₪' + tot.toLocaleString();
   document.getElementById('continue-btn').disabled   = qty === 0;
-  if (qty > 0) document.getElementById('price-indicator').textContent = '₪' + up + ' לסיפור';
   renderPricingTiers(qty);
 }
 

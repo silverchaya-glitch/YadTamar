@@ -39,6 +39,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', project: 'יד תמר', version: '1.0.0' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '127.0.0.1', () => {
   console.log(`יד תמר שרת פועל על פורט ${PORT}`);
 });
