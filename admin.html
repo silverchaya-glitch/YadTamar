@@ -20,25 +20,25 @@
       </div>
       <nav class="sidebar-menu">
         <div class="menu-item active" id="menu-dashboard" onclick="showPanel('dashboard')">
-          <span class="menu-icon">📊</span> לוח בקרה
+          לוח בקרה
         </div>
         <div class="menu-item" id="menu-orders" onclick="showPanel('orders')">
-          <span class="menu-icon">🛒</span> הזמנות
+          הזמנות
         </div>
         <div class="menu-item" id="menu-fulfillment" onclick="showPanel('fulfillment')">
-          <span class="menu-icon">📦</span> משלוחים
+          משלוחים
         </div>
         <div class="menu-item" id="menu-leads" onclick="showPanel('leads')">
-          <span class="menu-icon">👤</span> לידים
+          לידים
         </div>
         <div class="menu-item" id="menu-catalog" onclick="showPanel('catalog')">
-          <span class="menu-icon">🎵</span> קטלוג
+          קטלוג
         </div>
       </nav>
       <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);margin-top:auto">
         <div id="sidebar-user" style="font-size:.8rem;opacity:.7;margin-bottom:8px">מחובר:</div>
         <a href="index.html" style="font-size:.82rem;color:rgba(255,255,255,.7);text-decoration:none;display:block;margin-bottom:6px">← לחנות</a>
-        <button onclick="doLogout()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.82rem;cursor:pointer;padding:0;margin-top:4px;text-align:right;width:100%">🚪 התנתקות</button>
+        <button onclick="doLogout()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.82rem;cursor:pointer;padding:0;margin-top:4px;text-align:right;width:100%">התנתקות</button>
         <div style="font-size:.8rem;opacity:.5;margin-top:6px">גרסה 1.1 MVP</div>
       </div>
     </aside>
@@ -51,8 +51,12 @@
           <h2 id="panel-title">לוח בקרה</h2>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
+          <nav class="header-nav">
+            <button class="nav-btn" onclick="window.location='index.html'">חנות</button>
+            <button class="nav-btn active">ניהול</button>
+          </nav>
           <span id="admin-date" style="font-size:.85rem;color:var(--muted)"></span>
-          <button class="btn btn-sm btn-outline" onclick="refreshData()">🔄 רענן</button>
+          <button class="btn btn-sm btn-outline" onclick="refreshData()">רענן</button>
         </div>
       </div>
 
@@ -67,22 +71,22 @@
           <!-- Quick stats -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
             <div class="summary-card">
-              <h3>📈 הזמנות אחרונות</h3>
+              <h3>הזמנות אחרונות</h3>
               <div id="recent-orders"></div>
             </div>
             <div class="summary-card">
-              <h3>⚡ פעולות מהירות</h3>
+              <h3>פעולות מהירות</h3>
               <div style="display:flex;flex-direction:column;gap:10px">
-                <button class="btn btn-outline" onclick="showPanel('orders')">🛒 צפה בכל ההזמנות</button>
-                <button class="btn btn-outline" onclick="showPanel('fulfillment')">📦 בדוק משלוחים תלויים</button>
-                <button class="btn btn-outline" onclick="showPanel('leads')">👤 ניהול לידים</button>
+                <button class="btn btn-outline" onclick="showPanel('orders')">צפה בכל ההזמנות</button>
+                <button class="btn btn-outline" onclick="showPanel('fulfillment')">בדוק משלוחים תלויים</button>
+                <button class="btn btn-outline" onclick="showPanel('leads')">ניהול לידים</button>
               </div>
             </div>
           </div>
 
           <!-- Pricing reference -->
           <div class="summary-card">
-            <h3>💰 טבלת מחירים נוכחית</h3>
+            <h3>טבלת מחירים נוכחית</h3>
             <div class="table-scroll">
               <table class="data-table" id="pricing-table"></table>
             </div>
@@ -154,7 +158,7 @@
           </div>
           <div class="table-card">
             <div class="table-header">
-              <h3>📦 מעקב פולפילמנט</h3>
+              <h3>מעקב פולפילמנט</h3>
             </div>
             <div class="table-scroll">
               <table class="data-table">
@@ -180,7 +184,7 @@
         <div id="panel-leads" class="tab-panel">
           <div class="table-card">
             <div class="table-header">
-              <h3>👤 לידים</h3>
+              <h3>לידים</h3>
             </div>
             <div class="table-scroll">
               <table class="data-table">
@@ -206,12 +210,12 @@
           <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
             <div class="table-card">
               <div class="table-header">
-                <h3>🎵 קטלוג סיפורים</h3>
+                <h3>קטלוג סיפורים</h3>
                 <div class="table-toolbar">
                   <input type="text" class="search-input"
                          style="padding:8px 14px;border-radius:20px;min-width:180px"
                          placeholder="🔍 חיפוש..." oninput="renderCatalog(this.value)" />
-                  <button class="btn btn-sm btn-primary" onclick="openAddStory()">➕ הוסף סיפור</button>
+                  <button class="btn btn-sm btn-primary" onclick="openAddStory()">הוסף סיפור</button>
                 </div>
               </div>
               <div class="table-scroll">
@@ -221,7 +225,6 @@
                       <th>קוד</th>
                       <th>שם</th>
                       <th>קטגוריה</th>
-                      <th>משך</th>
                     </tr>
                   </thead>
                   <tbody id="catalog-tbody"></tbody>
@@ -231,7 +234,7 @@
             <!-- Stats sidebar -->
             <div>
               <div class="summary-card">
-                <h3>📊 סטטיסטיקות קטלוג</h3>
+                <h3>סטטיסטיקות קטלוג</h3>
                 <div class="price-row"><span>סה"כ סיפורים</span><span class="fw-700" id="stat-total">—</span></div>
                 <div class="price-row"><span>סיפורי ילדים</span><span class="fw-700" id="stat-kids">—</span></div>
                 <div class="price-row"><span>קבצי גמרא</span><span class="fw-700" id="stat-gemara">—</span></div>
@@ -241,7 +244,7 @@
                 <div class="price-row"><span>אוסף מבוגרים</span><span class="fw-700">₪360</span></div>
               </div>
               <div class="summary-card mt-16">
-                <h3>🏷 טבלת מחירים</h3>
+                <h3>טבלת מחירים</h3>
                 <div id="pricing-table-small"></div>
               </div>
             </div>
@@ -250,7 +253,7 @@
           <!-- Adult collection table -->
           <div class="table-card mt-16">
             <div class="table-header">
-              <h3>🎓 קטלוג מבוגרים – 24 דיסקים, 283 הרצאות</h3>
+              <h3>קטלוג מבוגרים – 24 דיסקים, 283 הרצאות</h3>
             </div>
             <div class="table-scroll">
               <table class="data-table">
@@ -277,7 +280,7 @@
 <div class="modal-overlay" id="order-modal">
   <div class="modal" style="max-width:640px">
     <div class="modal-header">
-      <h3>📋 פרטי הזמנה</h3>
+      <h3>פרטי הזמנה</h3>
       <button class="close-btn" onclick="closeModal('order-modal')">✕</button>
     </div>
     <div id="order-modal-body"></div>
@@ -288,7 +291,7 @@
 <div class="modal-overlay" id="story-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>➕ הוספת סיפור חדש</h3>
+      <h3>הוספת סיפור חדש</h3>
       <button class="close-btn" onclick="closeModal('story-modal')">✕</button>
     </div>
     <div class="form-grid">
@@ -306,10 +309,6 @@
           <option value="">בחר קטגוריה</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>משך (דקות)</label>
-        <input type="number" class="form-input" id="new-dur" placeholder="10" min="1" max="120" />
-      </div>
       <div class="form-group full">
         <label>Google Drive File ID *</label>
         <input type="text" class="form-input" id="new-driveid" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs..." />
@@ -317,7 +316,7 @@
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
       <button class="btn btn-outline" onclick="closeModal('story-modal')">ביטול</button>
-      <button class="btn btn-primary" onclick="saveStory()">💾 שמור סיפור</button>
+      <button class="btn btn-primary" onclick="saveStory()">שמור סיפור</button>
     </div>
   </div>
 </div>
@@ -326,13 +325,13 @@
 <div class="modal-overlay" id="notes-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>📝 הערות משרד</h3>
+      <h3>הערות משרד</h3>
       <button class="close-btn" onclick="closeModal('notes-modal')">✕</button>
     </div>
     <textarea class="form-textarea" id="notes-text" rows="5" style="width:100%;margin-bottom:16px" placeholder="הוספת הערה..."></textarea>
     <div style="display:flex;justify-content:flex-end;gap:10px">
       <button class="btn btn-outline" onclick="closeModal('notes-modal')">ביטול</button>
-      <button class="btn btn-primary" onclick="saveNotes()">💾 שמור</button>
+      <button class="btn btn-primary" onclick="saveNotes()">שמור</button>
     </div>
   </div>
 </div>
@@ -383,7 +382,7 @@ function initAdmin() {
   renderCatalog('');
   renderPricingSmall();
   populateCategorySelect();
-  const gemara = STORIES.filter(s => s.categoryId === 'c7').length;
+  const gemara = STORIES.filter(s => s.categoryId === 'c18').length;
   document.getElementById('stat-total').textContent   = STORIES.length;
   document.getElementById('stat-kids').textContent    = STORIES.length - gemara;
   document.getElementById('stat-gemara').textContent  = gemara;
@@ -406,18 +405,17 @@ function showPanel(name) {
 // ========== KPI ==========
 function renderKPI() {
   const cards = [
-    { label:'הזמנות היום',       value:KPI.ordersToday,       type:'',       icon:'🛒' },
-    { label:'דורשות טיפול',      value:KPI.requiresAttention, type:'warning', icon:'⚠️' },
-    { label:'תשלומים שנכשלו',   value:KPI.failedPayments,    type:'danger',  icon:'❌' },
-    { label:'לידים בלבד',        value:KPI.leadsOnly,         type:'',        icon:'👤' },
-    { label:'אשראי שולם',        value:KPI.paidCreditOrders,  type:'success', icon:'✅' },
-    { label:'הכנסה חודשית',      value:'₪'+KPI.monthlyRevenue.toLocaleString(), type:'gold', icon:'💰' },
-    { label:'הזמנות דיסק און קי', value:KPI.usbOrders,         type:'pink',   icon:'💾' },
-    { label:'שגיאות מערכת',       value:KPI.systemErrors,      type:KPI.systemErrors>0?'danger':'success', icon:'🔧' },
+    { label:'הזמנות היום',       value:KPI.ordersToday,       type:'' },
+    { label:'דורשות טיפול',      value:KPI.requiresAttention, type:'warning' },
+    { label:'תשלומים שנכשלו',   value:KPI.failedPayments,    type:'danger' },
+    { label:'לידים בלבד',        value:KPI.leadsOnly,         type:'' },
+    { label:'אשראי שולם',        value:KPI.paidCreditOrders,  type:'success' },
+    { label:'הכנסה חודשית',      value:'₪'+KPI.monthlyRevenue.toLocaleString(), type:'gold' },
+    { label:'הזמנות דיסק און קי', value:KPI.usbOrders,         type:'pink' },
+    { label:'שגיאות מערכת',       value:KPI.systemErrors,      type:KPI.systemErrors>0?'danger':'success' },
   ];
   document.getElementById('kpi-grid').innerHTML = cards.map(c => `
     <div class="kpi-card ${c.type}">
-      <div class="kpi-icon">${c.icon}</div>
       <div class="kpi-label">${c.label}</div>
       <div class="kpi-value">${c.value}</div>
     </div>
@@ -459,7 +457,7 @@ function renderPricingTable() {
         </tr>
       `).join('')}
       <tr style="background:var(--gold);font-weight:700">
-        <td colspan="3">ספרייה מלאה (428 קבצים)</td>
+        <td colspan="3">ספרייה מלאה (438 קבצים)</td>
         <td>₪1,550</td>
       </tr>
     </tbody>`;
@@ -521,14 +519,14 @@ function renderFulfillment() {
       <td>${ffBadge(o.fulfillmentStatus)}</td>
       <td>
         ${o.folderUrl
-          ? `<a href="${o.folderUrl}" target="_blank" style="color:var(--teal);font-size:.82rem">🔗 פתח תיקייה</a>`
+          ? `<a href="${o.folderUrl}" target="_blank" style="color:var(--teal);font-size:.82rem">פתח תיקייה</a>`
           : '<span style="color:var(--muted);font-size:.82rem">–</span>'
         }
       </td>
       <td style="font-size:.82rem">${o.createdAt}</td>
       <td>
         ${o.fulfillmentStatus !== 'COMPLETED'
-          ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}')">↺ שלח מחדש</button>`
+          ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}')">שלח מחדש</button>`
           : '<span style="color:var(--green);font-size:.82rem">✅ הושלם</span>'
         }
       </td>
@@ -571,7 +569,7 @@ function renderLeads() {
       <td>${l.giftSent ? '<span class="badge badge-green">✅ נשלח</span>' : '<span class="badge badge-yellow">⏳ ממתין</span>'}</td>
       <td style="font-size:.82rem">${l.createdAt}</td>
       <td>
-        ${!l.giftSent ? `<button class="btn btn-sm btn-pink" onclick="sendGift('${l.id}')">🎁 שלח מתנה</button>` : ''}
+        ${!l.giftSent ? `<button class="btn btn-sm btn-pink" onclick="sendGift('${l.id}')">שלח מתנה</button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -607,7 +605,6 @@ function renderCatalog(q) {
       <td style="font-family:monospace;font-size:.82rem">${s.storyCode}</td>
       <td>${s.title}</td>
       <td><span style="font-size:.82rem;color:var(--teal-dk)">${getCategoryName(s.categoryId)}</span></td>
-      <td>${s.duration} דק'</td>
     </tr>
   `).join('');
 
@@ -679,7 +676,7 @@ function openOrderDetail(id) {
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-sm btn-outline" onclick="closeModal('order-modal')">סגור</button>
       ${o.fulfillmentStatus !== 'COMPLETED' && o.paymentStatus === 'PAID'
-        ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}');closeModal('order-modal')">📦 שלח פולפילמנט</button>`
+        ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}');closeModal('order-modal')">שלח פולפילמנט</button>`
         : ''}
     </div>`;
   openModal('order-modal');
@@ -722,7 +719,7 @@ function saveStory() {
   const drive = document.getElementById('new-driveid').value.trim();
   if (!code || !title || !catId || !drive) { showToast('יש למלא את כל השדות החובה', 'error'); return; }
   if (STORIES.find(s => s.storyCode === code)) { showToast('קוד הסיפור כבר קיים', 'error'); return; }
-  STORIES.push({ id:'new-'+Date.now(), storyCode:code, categoryId:catId, title, duration: parseInt(document.getElementById('new-dur').value) || 10, driveId: drive, isActive:true });
+  STORIES.push({ id:'new-'+Date.now(), storyCode:code, categoryId:catId, title, driveId: drive, isActive:true });
   closeModal('story-modal');
   renderCatalog('');
   showToast('הסיפור נוסף לקטלוג', 'success');

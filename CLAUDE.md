@@ -2,7 +2,7 @@
 
 ## Repo Summary
 
-יד תמר — חנות דיגיטלית לסיפורי שמע לילדים. 428 סיפורים לילדים (c1–c7) ו-24 דיסקים לאוסף מבוגרים. אתר סטטי לחלוטין: HTML/CSS/JS בלבד, ללא backend, ללא build system, ללא package manager. שתי דפים: חנות (`index.html`) ופאנל ניהול (`admin.html`), שניהם משתפים שכבת נתונים ב-`js/data.js`. גרסה נוכחית: MVP 1.1.
+יד תמר — חנות דיגיטלית לסיפורי שמע לילדים. 433 סיפורים לילדים (c1–c17, מתואם במדויק לקובץ המקור `files/list_from_drive.csv`) + 5 קבצי גמרא (c18) = 438 סיפורים בסה"כ, ו-24 דיסקים לאוסף מבוגרים. אתר סטטי לחלוטין: HTML/CSS/JS בלבד, ללא backend, ללא build system, ללא package manager. שתי דפים: חנות (`index.html`) ופאנל ניהול (`admin.html`), שניהם משתפים שכבת נתונים ב-`js/data.js`. גרסה נוכחית: MVP 1.1.
 
 ## Running
 
@@ -60,7 +60,7 @@ git push "https://${GITHUB_TOKEN}@github.com/silverchaya-glitch/YadTamar.git" ma
 | `ADULT_COLLECTION_PRICE` | 360 |
 | `USB_PRICE` | 15 |
 | `FREE_USB_MIN_FILES` | 50 |
-| `TOTAL_STORIES` | 428 |
+| `TOTAL_STORIES` | 438 |
 
 ## Snapshot Files
 

@@ -61,21 +61,36 @@ Payment: HYP gateway — **placeholder UI only, no real API integration**.
 Login: MVP stub — `doLogin()` accepts any credentials.
 Admin data is static mock from `data.js`; in-memory only, resets on reload.
 
-## CRITICAL: Two CSS Themes
+## CSS Theme (unified — ADR-007, 2026-07-15)
 
-**index.html and admin.html use different CSS variable values for the same names.**
+**index.html and admin.html now share the same CSS variable values.** They still live in two separate places (index.html does NOT load `css/main.css` — it keeps its own inline `<style>` per ADR-002/Golden Rule #3), but the `:root` values below are kept identical between the two:
 
-| Variable | index.html (inline `<style>`) | admin.html via `css/main.css` |
-|---|---|---|
-| `--teal` | `#6366F1` (indigo/purple) | `#00B4CC` (actual teal) |
-| `--teal-dk` | `#4338CA` | `#007A8C` |
-| `--teal-lt` | `#EEF2FF` | `#E0F7FA` |
-| `--gold` | `#F59E0B` | `#F5C518` |
-| `--pink` | `#EC4899` | `#E91E8C` |
-| `--bg` | `#F5F7FF` | `#F4FAFB` |
+| Variable | Value |
+|---|---|
+| `--teal` | `#00B4CC` |
+| `--teal-dk` | `#007A8C` |
+| `--teal-lt` | `#E0F7FA` |
+| `--gold` | `#F5C518` |
+| `--pink` | `#E91E8C` |
+| `--bg` | `#F4FAFB` |
+| `--bg2` | `#EAF7F5` |
+| `--radius` | `16px` |
 
-When editing styles: check WHICH page you are editing. Never assume the same hex values.
-index.html does NOT load `css/main.css`.
+Buttons (`.btn`) are pill-shaped (`border-radius: 999px`) in both files.
+
+Previously (before ADR-007) the two pages used deliberately different palettes — index.html an indigo/purple theme, admin.html an actual-teal theme (see superseded ADR-003 in `CLAUDE/decisions.md`). If you ever see the two `:root` blocks diverge again, check whether that was intentional (new ADR needed) or drift to be fixed.
+
+### Claymorphism layer (index.html only — ADR-008, 2026-07-15)
+
+`index.html`'s `:root` also has a Claymorphism-specific token layer that **`css/main.css` only partially shares**:
+
+| Shared with admin (same values in both files) | index.html only |
+|---|---|
+| `--fs-display/h1/h2/h3/body/body-sm/label/micro` | `--radius-sm/md/lg` |
+| `--space-1` through `--space-9` (base-8) | `--clay-shadow-sm/md/lg`, `--clay-border-tint` |
+| `--ease-clay` (applied to `.btn*` in both) | `--content-wide`/`--content-narrow` |
+
+Fredoka (display font) loads only in `index.html`, on a closed list of 9 headline selectors (see ADR-008) — never in admin.html. Clay shadows/thick tinted borders/bounce and the scroll-reveal JS (`initScrollReveal()`) are **index.html-only** — deliberately not applied to admin's `.kpi-card`/`.data-table`/forms/modals, since the installed `ui-ux-pro-max` skill data recommends against Claymorphism for data-critical/corporate UIs. If you add a new shared component, default new sizing/spacing to the shared tokens above, but keep clay depth/Fredoka/reveal scoped to the storefront unless a new ADR says otherwise.
 
 ## Persistence
 

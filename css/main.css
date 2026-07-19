@@ -1,7 +1,7 @@
 /* ===== Yad Tamar – Main Stylesheet (RTL Hebrew) ===== */
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ⚠️  ADMIN THEME — ערכים שונים מה-inline style של index.html (STORE THEME). לפני עריכת CSS ראה CLAUDE/architecture.md */
+/* עיצוב אחוד לחנות ולניהול — ראה CLAUDE/decisions.md (ADR-007) ו-CLAUDE/architecture.md */
 :root {
   --teal:     #00B4CC;
   --teal-dk:  #007A8C;
@@ -14,13 +14,38 @@
   --red:      #E74C3C;
   --orange:   #F39C12;
   --bg:       #F4FAFB;
+  --bg2:      #EAF7F5;
   --card:     #FFFFFF;
   --text:     #1A1A2E;
   --muted:    #6B7280;
   --border:   #D1E8EC;
-  --radius:   12px;
-  --shadow:   0 2px 12px rgba(0,0,0,.08);
-  --shadow-md:0 4px 24px rgba(0,0,0,.12);
+  --radius:   16px;
+  --shadow:   0 2px 12px rgba(0,50,60,.08);
+  --shadow-md:0 4px 24px rgba(0,50,60,.12);
+  --shadow-lg:0 8px 40px rgba(0,50,60,.16);
+
+  /* Typography/spacing shared with index.html (Claymorphism pass) — buttons only get --ease-clay,
+     no clay shadows/Fredoka here: admin is data-critical, see CLAUDE/decisions.md ADR-008 */
+  --fs-display: 2.75rem;
+  --fs-h1:      2.1rem;
+  --fs-h2:      1.6rem;
+  --fs-h3:      1.15rem;
+  --fs-body:    1rem;
+  --fs-body-sm: .9rem;
+  --fs-label:   .82rem;
+  --fs-micro:   .72rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 80px;
+
+  --ease-clay: cubic-bezier(.34,1.56,.64,1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,21 +95,22 @@ body {
 .logo-text h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
 .logo-text p  { font-size: .8rem; opacity: .85; margin-top: 1px; }
 
-.header-nav { display: flex; gap: 8px; }
+.header-nav { display: flex; gap: 6px; }
 .nav-btn {
-  background: rgba(255,255,255,.15);
-  border: 1px solid rgba(255,255,255,.3);
-  color: #fff;
-  padding: 8px 18px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-family: 'Heebo', sans-serif;
-  font-size: .9rem;
+  font-size: .88rem;
   font-weight: 500;
   transition: all .2s;
+  white-space: nowrap;
 }
-.nav-btn:hover { background: rgba(255,255,255,.28); }
-.nav-btn.active { background: var(--gold); color: var(--text); border-color: var(--gold); font-weight: 700; }
+.nav-btn:hover { background: var(--teal-lt); border-color: var(--teal); color: var(--teal-dk); }
+.nav-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 700; }
 
 /* ===== Hero ===== */
 .hero {
@@ -303,13 +329,13 @@ body {
 /* ===== Buttons ===== */
 .btn {
   padding: 12px 28px;
-  border-radius: 24px;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
   font-family: 'Heebo', sans-serif;
   font-size: 1rem;
   font-weight: 700;
-  transition: all .2s;
+  transition: all .3s var(--ease-clay);
   display: inline-flex; align-items: center; gap: 8px;
 }
 .btn-primary { background: var(--teal); color: #fff; }
@@ -478,7 +504,6 @@ body {
 }
 .menu-item:hover  { background: rgba(255,255,255,.1); color: #fff; }
 .menu-item.active { background: rgba(255,255,255,.18); color: #fff; border-right-color: var(--gold); font-weight: 700; }
-.menu-item .menu-icon { font-size: 1.1rem; width: 22px; text-align: center; }
 
 .admin-main { flex: 1; background: var(--bg); overflow-y: auto; }
 .admin-topbar {
@@ -501,7 +526,7 @@ body {
 .kpi-card {
   background: #fff;
   border-radius: var(--radius);
-  padding: 20px;
+  padding: var(--space-5);
   box-shadow: var(--shadow);
   border-right: 4px solid var(--teal);
   transition: transform .2s;
@@ -512,8 +537,8 @@ body {
 .kpi-card.success { border-right-color: var(--green); }
 .kpi-card.gold    { border-right-color: var(--gold); }
 .kpi-card.pink    { border-right-color: var(--pink); }
-.kpi-card .kpi-label { font-size: .82rem; color: var(--muted); margin-bottom: 6px; }
-.kpi-card .kpi-value { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }
+.kpi-card .kpi-label { font-size: var(--fs-label); color: var(--muted); margin-bottom: 6px; }
+.kpi-card .kpi-value { font-size: var(--fs-h1); font-weight: 800; color: var(--text); line-height: 1; }
 .kpi-card .kpi-icon  { font-size: 1.6rem; float: left; opacity: .25; }
 
 /* ===== Data Table ===== */
