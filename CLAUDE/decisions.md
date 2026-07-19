@@ -110,3 +110,19 @@
 - Scroll-reveal (`initScrollReveal()` in `index.html`'s `<script>`) targets only static elements (`.hero-text`, `.hero-illustration`, `.product-card`, `.summary-card`, `.about-card`, `.gift-section`) queried once at `DOMContentLoaded`, never `.story-item`/catalog rows (rebuilt on every search keystroke by `renderStories()`). The hiding CSS is scoped under `.js-reveal-ready [data-reveal]`, a class added only after JS confirms `IntersectionObserver` support — if JS is blocked/fails, `.js-reveal-ready` is never added and all content stays fully visible (verified with DevTools "Disable JavaScript").
 - `css/main.css` (admin) received **only** the same-valued `--fs-*`/`--space-*` tokens and `--ease-clay` (applied solely to `.btn*` transitions) — no clay shadows, no thick tinted borders, no Fredoka, no scroll-reveal on `.kpi-card`/`.data-table`/`.modal`/forms, per the skill's own "avoid for data-critical" guidance. `css/main.css`'s `.product-card` rules are confirmed dead CSS (not referenced by any `admin.html` markup) and were left untouched.
 - The unused `גלופה 2.jpg` asset was deliberately **not** used this round — it's a closed composition (not a croppable icon/texture) saved as CMYK JPEG (cross-browser color-rendering risk); decorative shapes are pure CSS instead.
+
+---
+
+## ADR-009: Admin Visual Refresh — Refines, Does Not Reverse, ADR-008
+
+**Status:** Accepted (2026-07-19)
+
+**Decision:** Partially supersedes ADR-008's "admin stays untouched" stance. The user explicitly asked for `admin.html`/`css/main.css` to get "a new design" rather than keep the plain look ADR-008 chose. `css/main.css` gained a moderate refresh — rounder cards (`--radius-admin: 18px`), softer layered shadows (`--shadow-admin`/`--shadow-admin-hover`) with a hover lift on `.kpi-card`, zebra-striped + sticky-header `.data-table`, a polished `.search-input` (shadow + focus ring matching the store's), and a rounded pill-style active state with emoji icons on `.menu-item`. Design ideas were sourced as *inspiration only* from 21st.dev's component gallery (`Progress/KPI Card`, `UltraQualityDataTable`, `Modern sideBar` — React/Tailwind components, never copied as code) and hand-translated into the existing token system.
+
+**Why:** ADR-008's underlying reasoning — that heavy clay depth, bounce easing, and playful motion don't suit a data-dense admin panel — still holds and was not challenged. What the user wanted fixed was admin looking dated/plain next to the storefront, not admin becoming equally playful. This ADR narrows the gap without crossing into clay territory.
+
+**Consequence:**
+- Admin still has **no** Fredoka, **no** `--clay-shadow-*`, **no** `--ease-clay` bounce beyond what `.btn*` already had, **no** scroll-reveal, **no** conic-gradient/sparkle-trail effects — those remain storefront-only per ADR-008.
+- No fabricated data was added: KPI cards were *not* given trend sparklines, since `/api/admin/kpi` returns single current values with no historical series to chart honestly.
+- `.data-table`'s new `max-height:560px; overflow-y:auto` on `.table-scroll` only activates for genuinely long tables; short tables (e.g. the small pricing table) are unaffected since content never reaches that height.
+- Class names/structure used by `admin.html`'s inline JS (`kpi-card`, `data-table`, `badge-*`, `menu-item`, `table-card`, etc.) were left unchanged — this was a CSS-only visual pass, no JS rendering logic was touched.

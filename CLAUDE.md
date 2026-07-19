@@ -19,7 +19,7 @@ node server/index.js
 ## Golden Rules
 
 1. **אל תוסיף build step או package manager** — האתר סטטי במכוון. npm/webpack/TypeScript אסורים.
-2. **index.html ו-admin.html משתמשים בצבעים שונים לאותם שמות משתנים** — קרא `CLAUDE/architecture.md` לפני כל עריכת CSS.
+2. **index.html ו-admin.html חולקים אותה פלטת CSS (ADR-007), אך עדיין שני מיקומי CSS נפרדים** (`<style>` inline מול `css/main.css`) עם רמת "קלייממורפיזם"/אנימציה שונה בכוונה (ADR-008, מעודכן ב-ADR-009) — קרא `CLAUDE/architecture.md` לפני כל עריכת CSS.
 3. **JS inline בכל HTML** — לוגיקה של החנות נשמרת ב-index.html, לוגיקה של הניהול ב-admin.html. `js/data.js` בלבד הוא קובץ JS חיצוני.
 4. **כל טקסט למשתמש בעברית** — `dir="rtl"` על `<html>`, `direction: rtl` על `body`.
 5. **הוספת סיפור = שורה ב-`_RAW` ב-data.js בלבד** — אל תשנה מבנה נתונים אחר. **עדכון (2026-07-02):** מאז שקטלוג החנות (`index.html`) עבר לטעון מ-`GET /api/catalog` (Postgres, לא `js/data.js`), שורה חדשה ב-`_RAW` מעדכנת את `admin.html` מיד אך **לא** מופיעה בחנות עד שירוץ שוב `node server/db/seed-catalog.js`. ראה `FOLLOWUPS.md`.
@@ -45,7 +45,7 @@ git push "https://${GITHUB_TOKEN}@github.com/silverchaya-glitch/YadTamar.git" ma
 | נושא | קובץ | מתי לקרוא |
 |---|---|---|
 | מבנה האפליקציה, שכבת הנתונים, שני ה-CSS themes | `CLAUDE/architecture.md` | לפני כל שינוי מבני או שינוי CSS |
-| החלטות ארכיטקטורה (ADR-001–005) | `CLAUDE/decisions.md` | כשתוהה "למה הדברים כך?" |
+| החלטות ארכיטקטורה (ADR-001–009) | `CLAUDE/decisions.md` | כשתוהה "למה הדברים כך?" |
 | קונבנציות: IDs, שמות קבצים, הוספת סיפור | `CLAUDE/conventions.md` | לפני הוספת תוכן או קובץ חדש |
 | מצב משימות ו-roadmap | `CLAUDE/tasks.md` | לפני התחלת feature חדש |
 | באגים וחוסרים שנמצאו בדרך | `FOLLOWUPS.md` | בתחילת כל session |

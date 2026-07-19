@@ -46,6 +46,12 @@
   --space-9: 80px;
 
   --ease-clay: cubic-bezier(.34,1.56,.64,1);
+
+  /* Admin refresh (2026-07-19) — softer, rounder, but intentionally calmer than the
+     storefront's clay treatment (no Fredoka, no bounce/shine animation). See ADR-009. */
+  --radius-admin: 18px;
+  --shadow-admin: 0 2px 14px rgba(0,50,60,.07);
+  --shadow-admin-hover: 0 10px 28px rgba(0,50,60,.13);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -236,15 +242,17 @@ body {
 .search-input {
   flex: 1; min-width: 200px;
   padding: 10px 16px;
-  border: 2px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 24px;
   font-family: 'Heebo', sans-serif;
   font-size: .95rem;
   direction: rtl;
   outline: none;
-  transition: border-color .2s;
+  background: #fff;
+  box-shadow: var(--shadow-admin);
+  transition: all .2s;
 }
-.search-input:focus { border-color: var(--teal); }
+.search-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,180,204,.15); }
 
 .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
@@ -352,11 +360,11 @@ body {
 /* ===== Order Summary ===== */
 .summary-card {
   background: #fff;
-  border-radius: var(--radius);
-  border: 2px solid var(--border);
+  border-radius: var(--radius-admin);
+  border: 1.5px solid var(--border);
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-admin);
 }
 .summary-card h3 {
   font-size: 1.1rem; font-weight: 700; color: var(--teal-dk);
@@ -492,18 +500,18 @@ body {
 }
 .sidebar-logo span { font-size: 1.05rem; font-weight: 800; }
 
-.sidebar-menu { flex: 1; }
+.sidebar-menu { flex: 1; padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
 .menu-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 11px 20px;
+  padding: 11px 14px;
   cursor: pointer;
   font-size: .92rem;
+  border-radius: 12px;
   transition: all .18s;
-  border-right: 3px solid transparent;
   color: rgba(255,255,255,.8);
 }
 .menu-item:hover  { background: rgba(255,255,255,.1); color: #fff; }
-.menu-item.active { background: rgba(255,255,255,.18); color: #fff; border-right-color: var(--gold); font-weight: 700; }
+.menu-item.active { background: rgba(255,255,255,.18); color: #fff; font-weight: 700; box-shadow: inset 0 0 0 1.5px rgba(245,197,24,.4); }
 
 .admin-main { flex: 1; background: var(--bg); overflow-y: auto; }
 .admin-topbar {
@@ -525,13 +533,13 @@ body {
 }
 .kpi-card {
   background: #fff;
-  border-radius: var(--radius);
+  border-radius: var(--radius-admin);
   padding: var(--space-5);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-admin);
   border-right: 4px solid var(--teal);
-  transition: transform .2s;
+  transition: transform .22s var(--ease-clay), box-shadow .22s ease;
 }
-.kpi-card:hover { transform: translateY(-3px); }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-admin-hover); }
 .kpi-card.danger  { border-right-color: var(--red); }
 .kpi-card.warning { border-right-color: var(--orange); }
 .kpi-card.success { border-right-color: var(--green); }
@@ -544,8 +552,8 @@ body {
 /* ===== Data Table ===== */
 .table-card {
   background: #fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border-radius: var(--radius-admin);
+  box-shadow: var(--shadow-admin);
   overflow: hidden;
 }
 .table-header {
@@ -557,7 +565,7 @@ body {
 .table-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 .data-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-.data-table thead { background: var(--teal-lt); }
+.data-table thead { background: var(--teal-lt); position: sticky; top: 0; z-index: 1; }
 .data-table th {
   padding: 12px 14px;
   text-align: right;
@@ -570,10 +578,12 @@ body {
   padding: 11px 14px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  transition: background .15s ease;
 }
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: #F8FFFE; }
-.table-scroll { overflow-x: auto; }
+.data-table tbody tr:nth-child(even) td { background: var(--bg2); }
+.data-table tr:hover td { background: var(--teal-lt); }
+.table-scroll { overflow-x: auto; max-height: 560px; overflow-y: auto; }
 
 /* ===== Badges / Status ===== */
 .badge {
@@ -603,7 +613,7 @@ body {
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius-admin);
   padding: 28px;
   max-width: 540px; width: 90%;
   max-height: 85vh; overflow-y: auto;

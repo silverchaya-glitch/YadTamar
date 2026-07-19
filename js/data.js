@@ -1,11 +1,12 @@
 // Yad Tamar — real catalog data & pricing engine
 
 const PRICING_RULES = [
-  { min: 1,   max: 49,  unitPrice: 8.0  },
-  { min: 50,  max: 99,  unitPrice: 7.5  },
-  { min: 100, max: 149, unitPrice: 7.0  },
-  { min: 150, max: 314, unitPrice: 6.0  },
-  { min: 315, max: Infinity, unitPrice: 4.3 },
+  { min: 1,   max: 19,  unitPrice: 8.0 },
+  { min: 20,  max: 49,  unitPrice: 7.0 },
+  { min: 50,  max: 99,  unitPrice: 6.5 },
+  { min: 100, max: 149, unitPrice: 6.0 },
+  { min: 150, max: 314, unitPrice: 5.0 },
+  { min: 315, max: Infinity, unitPrice: 3.8 },
 ];
 
 const ADULT_DISCS = [
