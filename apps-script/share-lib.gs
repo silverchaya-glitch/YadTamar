@@ -14,6 +14,11 @@
  *  שינוי בקובץ הזה בריפו לא משפיע על הפריסה בפועל — יש לדחוף/לפרוס דרך
  *  clasp (ראה PROGRESS.txt 2026-07-13) תחת חשבון yadtamar613.
  *
+ *  עדכון 2026-07-21: הוסרה שליחת המייל ללקוח מתוך הסקריפט (sendShareNotificationEmail
+ *  ותלוייה buildEmailSubject/buildShareEmailHtml נמחקו) — האתר (server/services/email.js,
+ *  sendFileDelivery) שולח את מייל הקישור ללקוח במקום זאת, עם הפרפיקס/שם השולח הקבועים
+ *  של האתר. השיתוף בדרייב עצמו (addViewer/addEditor) לא שונה.
+ *
  *  Script Properties נדרשים (Project Settings -> Script Properties):
  *    ALERT_OWNER_EMAIL  - silver.chaya@gmail.com, לקבלת התרעות על ניסיונות לא מורשים
  *    ADMIN_EMAIL        - silver.chaya@gmail.com, לקבלת התרעות על קריסות מערכת כלליות
@@ -53,8 +58,6 @@ const LOG_SPREADSHEET_ID = '10DPq9digOdHIsDcqnE41x2a0-OOV8eePMPqp7NmVT7U'; // Ya
 
 const VERBOSE_LOGGING_ENABLED = true; // דגל יחיד, בשליטתך בלבד - הלקוח לא יכול להשפיע עליו
 const SECRET = "chayasilver_"; // סוד קבוע בצד שרת בלבד - לעולם לא נמסר ללקוח
-const DEFAULT_EMAIL_SUBJECT_PREFIX = 'לבקשתך- הקובץ';
-const DEFAULT_EMAIL_SUBJECT_SUFFIX = 'שותף איתך';
 const SCRIPT_VERSION_TAG = 'v-2026-06-30-logs-2';
 const SCRIPT_EDITOR_URL = 'https://script.google.com/d/1sf1LDC0eaSm67nlE633-GJqwxUCs59Ck-9Q1RNBiBXAYsDXITeZnkh9b/edit';
 
@@ -200,23 +203,11 @@ function doGet(e) {
       }
     }
 
-    logInfo(debugLog, 'שולח מייל הודעה למקבל השיתוף');
-    const emailResult = sendShareNotificationEmail(requestId, recipientEmail, fileName, fileUrl, messageText, debugLog);
-
-    if (!emailResult.success) {
-      logInfo(debugLog, 'כשל חלקי - השיתוף בדרייב הצליח אך שליחת המייל למקבל נכשלה');
-      writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'כשל חלקי', 'שיתוף הצליח, מייל נכשל: ' + emailResult.error, customerSheetId, debugLog);
-
-      return jsonResponse(requestId, true,
-        'הגישה לקובץ ניתנה בהצלחה, אך הייתה תקלה בשליחת המייל. שם הקובץ: ' + fileName,
-        debugLog);
-    }
-
-    logInfo(debugLog, 'הצלחה מלאה - שיתוף ומייל נשלחו בהצלחה');
-    writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'הצלחה', 'שיתוף ומייל הושלמו בהצלחה. קובץ: ' + fileName, customerSheetId, debugLog);
+    logInfo(debugLog, 'שיתוף הושלם בהצלחה (המייל ללקוח נשלח מהאתר, לא מכאן)');
+    writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'הצלחה', 'שיתוף הושלם בהצלחה. קובץ: ' + fileName, customerSheetId, debugLog);
 
     return jsonResponse(requestId, true,
-      'הגישה לקובץ ניתנה בהצלחה! מייל עם קישור נשלח אל מקבל השיתוף. שם הקובץ: ' + fileName,
+      'הגישה לקובץ ניתנה בהצלחה! שם הקובץ: ' + fileName,
       debugLog);
 
   } catch (err) {
@@ -495,58 +486,6 @@ function writeCustomerSheetLog(requestId, customerSheetId, emailFrom, recipientE
     console.error('[' + requestId + '] שגיאה בכתיבה לגליון הלקוח (' + customerSheetId + '): ' + err.toString());
     if (debugLog) logVerbose(debugLog, 'שגיאה בכתיבה לגליון הלקוח (' + customerSheetId + '): ' + (err.stack || err.message));
   }
-}
-
-// ============================================================
-// מייל - הודעת שיתוף למקבל הקובץ
-// ============================================================
-
-/**
- * שולחת ל-recipientEmail הודעה על השיתוף.
- * אם messageText סופק על ידי הלקוח (email_from) - הוא משולב בהודעה.
- * אם לא - נעשה שימוש בברירת מחדל מלאה (טקסט + שם קובץ + קישור).
- * אין יותר תלות בטיוטות Gmail - כל הבנייה מתבצעת בקוד, חוסך זמן ריצה.
- */
-function sendShareNotificationEmail(requestId, recipientEmail, fileName, fileUrl, messageText, debugLog) {
-  try {
-    const subject = buildEmailSubject(fileName);
-    const htmlBody = buildShareEmailHtml(messageText, fileName, fileUrl);
-
-    GmailApp.sendEmail(recipientEmail, subject, '', { htmlBody: htmlBody });
-    logVerbose(debugLog, 'מייל שיתוף נשלח בהצלחה ל-' + recipientEmail);
-
-    return { success: true, error: '' };
-
-  } catch (err) {
-    const errorText = err.stack || err.message || String(err);
-    logVerbose(debugLog, 'EMAIL ERROR: ' + errorText);
-    return { success: false, error: errorText };
-  }
-}
-
-/**
- * בונה נושא מייל בטוח. fileName מגיע מהדרייב (לרוב בטוח), אך עדיין
- * מנקה תווי שורה חדשה/null-bytes שעלולים לשבש כותרות מייל (header injection).
- */
-function buildEmailSubject(fileName) {
-  const safeFileName = String(fileName || '').replace(/[\r\n\0]/g, ' ').trim();
-  return DEFAULT_EMAIL_SUBJECT_PREFIX + ' "' + safeFileName + '" ' + DEFAULT_EMAIL_SUBJECT_SUFFIX;
-}
-
-function buildShareEmailHtml(messageText, fileName, fileUrl) {
-  const fileLine = 'שם הקובץ: <strong>' + escapeHtml(fileName) + '</strong><br>' +
-    '<a href="' + escapeHtml(fileUrl) + '" target="_blank">לחץ כאן לפתיחת הקובץ</a>';
-
-  if (messageText && messageText.trim()) {
-    const safeMessage = escapeHtml(messageText).replace(/\n/g, '<br>');
-    return '<div dir="rtl" style="direction: rtl; text-align: right; font-family: Arial, sans-serif; line-height: 1.8;">' +
-      safeMessage + '<br><br>' + fileLine +
-      '</div>';
-  }
-
-  return '<div dir="rtl" style="direction: rtl; text-align: right; font-family: Arial, sans-serif; line-height: 1.8;">' +
-    'הגישה לקובץ ניתנה בהצלחה! מייל עם קישור ישיר נשלח אליך.<br><br>' + fileLine +
-    '</div>';
 }
 
 // ============================================================
@@ -1143,21 +1082,11 @@ function shareFile(customerEmail, customerToken, recipientEmail, fileId, permiss
       }
     }
 
-    logInfo(debugLog, 'שולח מייל הודעה למקבל השיתוף');
-    const emailResult = sendShareNotificationEmail(requestId, recipientEmail, fileName, fileUrl, messageText, debugLog);
-
-    if (!emailResult.success) {
-      logInfo(debugLog, 'כשל חלקי - השיתוף הצליח אך המייל נכשל');
-      writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'כשל חלקי', 'שיתוף הצליח, מייל נכשל: ' + emailResult.error, customerSheetId, debugLog);
-      Logger.log('[shareFile] לפני return (כשל חלקי) - success=true, fileName=' + fileName);
-      return { requestId: requestId, success: true, message: 'הגישה לקובץ ניתנה בהצלחה, אך הייתה תקלה בשליחת המייל. שם הקובץ: ' + fileName, debugLog: debugLog };
-    }
-
-    logInfo(debugLog, 'הצלחה מלאה');
-    writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'הצלחה', 'שיתוף ומייל הושלמו בהצלחה. קובץ: ' + fileName, customerSheetId, debugLog);
+    logInfo(debugLog, 'שיתוף הושלם בהצלחה (המייל ללקוח נשלח מהאתר, לא מכאן)');
+    writeSummaryLog(requestId, emailFrom, recipientEmail, fileId, permission, 'הצלחה', 'שיתוף הושלם בהצלחה. קובץ: ' + fileName, customerSheetId, debugLog);
 
     Logger.log('[shareFile] לפני return (הצלחה מלאה) - success=true, fileName=' + fileName);
-    return { requestId: requestId, success: true, message: 'הגישה לקובץ ניתנה בהצלחה! מייל עם קישור נשלח אל מקבל השיתוף. שם הקובץ: ' + fileName, debugLog: debugLog };
+    return { requestId: requestId, success: true, message: 'הגישה לקובץ ניתנה בהצלחה! שם הקובץ: ' + fileName, debugLog: debugLog };
 
   } catch (err) {
     logVerbose(debugLog, 'קריסה כללית בלתי צפויה: ' + (err.stack || err.message));

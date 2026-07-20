@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const db = require('../db');
-const { triggerFulfillment } = require('../services/fulfillment');
+const { confirmManualPayment } = require('../services/fulfillment');
+const { sendFileDelivery } = require('../services/email');
 
 const pool = new Pool();
 
@@ -77,7 +78,22 @@ router.patch('/orders/:id', async (req, res) => {
 
   let fulfillment;
   if (fields.status === 'paid' || fields.fulfillment_status !== undefined) {
-    fulfillment = await triggerFulfillment(req.params.id);
+    fulfillment = await confirmManualPayment(req.params.id);
+    // מייל "התוכן שלך מוכן" ללקוח — רק כששיתוף בפועל הושלם עכשיו (sharingStatus
+    // 'SHARED', לא רק WAITING_MANUAL), ולא בלחיצה חוזרת על "שולם" כשכבר שותף
+    // בעבר (alreadyShared).
+    if (fulfillment.success && fulfillment.sharingStatus === 'SHARED' && fulfillment.externalFolderUrl && !fulfillment.alreadyShared) {
+      const order = await db.getOrderForPayment(req.params.id);
+      if (order) {
+        await sendFileDelivery({
+          orderId: order.id,
+          customerId: order.customerId,
+          customerName: order.customerName,
+          email: order.email,
+          folderUrl: fulfillment.externalFolderUrl,
+        });
+      }
+    }
   }
   res.json({ success: true, fulfillment });
 });

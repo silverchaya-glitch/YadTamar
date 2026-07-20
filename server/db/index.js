@@ -222,6 +222,26 @@ module.exports = {
     );
   },
 
+  // נקראת מ-confirmManualPayment (server/services/fulfillment.js) כדי לדעת אם הזמנה
+  // בהעברה בנקאית/טלפון כבר מחכה בשלב WAITING_MANUAL עם תיקייה קיימת, לפני שמחליטים
+  // אם לקרוא לשלב 2 (שיתוף) מחדש או להריץ את כל הצינור מהתחלה.
+  async getFulfillmentRequest(orderId) {
+    const { rows } = await pool.query(
+      `SELECT request_status, sharing_status, external_folder_id, external_folder_url, shared_email
+       FROM fulfillment_requests WHERE order_id = $1`,
+      [orderId]
+    );
+    if (!rows.length) return null;
+    const row = rows[0];
+    return {
+      requestStatus: row.request_status,
+      sharingStatus: row.sharing_status,
+      externalFolderId: row.external_folder_id,
+      externalFolderUrl: row.external_folder_url,
+      sharedEmail: row.shared_email,
+    };
+  },
+
   // עדכון 2026-07-13: השדות מקורם כעת בשתי קריאות webhook נפרדות שמאוחדות
   // ע"י server/services/fulfillment.js לפני הקריאה הזו — external_folder_id/url
   // ו-item_results משלב 1 (יצירת התיקייה, הסקריפט הקיים), sharing_status/shared_email
@@ -258,14 +278,14 @@ module.exports = {
 
   // UPSERT (לא UPDATE רגיל) — חייב לעבוד גם אם נקרא לפני recordFulfillmentAttempt
   // (למשל FULFILLMENT_WEBHOOK_URL/SECRET חסרים — אין עדיין שורה להזמנה הזו)
-  async recordFulfillmentFailure(orderId, { errorCode, errorMessage, externalFolderId = null, itemResults = null, responseReceivedAt }) {
+  async recordFulfillmentFailure(orderId, { errorCode, errorMessage, externalFolderId = null, externalFolderUrl = null, itemResults = null, responseReceivedAt }) {
     await pool.query(
-      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, external_folder_id, item_results, response_received_at)
-       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4, $5, $6)
+      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, external_folder_id, external_folder_url, item_results, response_received_at)
+       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4, $5, $6, $7)
        ON CONFLICT (order_id) DO UPDATE SET
          request_status = 'FAILED', sharing_status = 'FAILED', error_code = $2, error_message = $3,
-         external_folder_id = $4, item_results = $5, response_received_at = $6, updated_at = now()`,
-      [orderId, errorCode, errorMessage, externalFolderId, itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
+         external_folder_id = $4, external_folder_url = $5, item_results = $6, response_received_at = $7, updated_at = now()`,
+      [orderId, errorCode, errorMessage, externalFolderId, externalFolderUrl, itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
     );
   },
 

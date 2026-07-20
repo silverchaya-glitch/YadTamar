@@ -151,6 +151,7 @@ async function triggerFulfillment(orderId) {
         return { success: false, errorCode: 'CONFIG_MISSING', errorMessage };
       }
       folderId = masterFolderId;
+      folderUrl = `https://drive.google.com/drive/folders/${masterFolderId}`;
       sharingDecision = 'SHARE_NOW';
     } else {
       const stage1 = await callFolderCreationWebhook(orderId, order, requestId);
@@ -192,6 +193,7 @@ async function triggerFulfillment(orderId) {
         errorCode: stage2.errorCode,
         errorMessage: stage2.errorMessage,
         externalFolderId: folderId,
+        externalFolderUrl: folderUrl,
         itemResults,
         responseReceivedAt: new Date(),
       });
@@ -214,4 +216,60 @@ async function triggerFulfillment(orderId) {
   }
 }
 
-module.exports = { triggerFulfillment, callShareWebhook };
+// נקראת מ-PATCH /api/admin/orders/:id כשהמשרד מאשר ידנית תשלום בהעברה בנקאית/טלפון.
+// triggerFulfillment לבדה לא מספיקה כאן: היא תמיד מריצה מחדש את שלב 1 (יצירת תיקייה)
+// מההתחלה, וההחלטה WAITING_MANUAL-מול-שתף-עכשיו מחושבת שם לפי paymentType בלבד —
+// שלא משתנה גם אחרי אישור ידני, כך ששלב 2 (שיתוף) לעולם לא היה נקרא בפועל. הפונקציה
+// הזו במקום זה משתמשת בתיקייה שכבר נוצרה (WAITING_MANUAL, או FAILED עם תיקייה קיימת —
+// למשל ניסיון שיתוף קודם שנכשל, ליחוד חסום, וכו') וקוראת ישירות לשלב 2 על אותה תיקייה,
+// בלי להריץ מחדש את שלב 1. לא זורקת לעולם, כמו triggerFulfillment.
+async function confirmManualPayment(orderId) {
+  try {
+    const existing = await db.getFulfillmentRequest(orderId);
+
+    if (existing && existing.sharingStatus === 'SHARED') {
+      // כבר שותף בעבר (למשל לחיצה כפולה על "שולם") — לא לשתף/לשלוח מייל שוב.
+      return { success: true, externalFolderUrl: existing.externalFolderUrl, sharingStatus: 'SHARED', alreadyShared: true };
+    }
+
+    if (existing && (existing.sharingStatus === 'WAITING_MANUAL' || existing.sharingStatus === 'FAILED') && existing.externalFolderId) {
+      const order = await db.getOrderForFulfillment(orderId);
+      if (!order) {
+        console.error(`[fulfillment] confirmManualPayment: order not found: ${orderId}`);
+        return { success: false, errorCode: 'ORDER_NOT_FOUND' };
+      }
+
+      const requestId = crypto.randomUUID();
+      const stage2 = await callShareWebhook(existing.externalFolderId, order.recipientEmail, requestId);
+      if (!stage2.success) {
+        console.error(`[fulfillment] confirmManualPayment: share failed for order ${orderId}: ${stage2.errorCode} — ${stage2.errorMessage}`);
+        await db.recordFulfillmentFailure(orderId, {
+          errorCode: stage2.errorCode,
+          errorMessage: stage2.errorMessage,
+          externalFolderId: existing.externalFolderId,
+          externalFolderUrl: existing.externalFolderUrl,
+          responseReceivedAt: new Date(),
+        });
+        return { success: false, errorCode: stage2.errorCode, errorMessage: stage2.errorMessage };
+      }
+
+      await db.recordFulfillmentSuccess(orderId, {
+        requestStatus: 'COMPLETED',
+        sharingStatus: 'SHARED',
+        externalFolderId: existing.externalFolderId,
+        externalFolderUrl: existing.externalFolderUrl,
+        sharedEmail: order.recipientEmail,
+        responseReceivedAt: new Date(),
+      });
+      return { success: true, externalFolderUrl: existing.externalFolderUrl, sharingStatus: 'SHARED' };
+    }
+
+    // מעולם לא רץ (אין שורה) או נכשל בעבר — להריץ את כל הצינור מהתחלה.
+    return triggerFulfillment(orderId);
+  } catch (err) {
+    console.error(`[fulfillment] confirmManualPayment unexpected error for order ${orderId}: ${err.message}`);
+    return { success: false, errorCode: 'INTERNAL_ERROR', errorMessage: err.message };
+  }
+}
+
+module.exports = { triggerFulfillment, callShareWebhook, confirmManualPayment };

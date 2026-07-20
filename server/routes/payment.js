@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const paymentService = require('../services/payment');
 const { triggerFulfillment } = require('../services/fulfillment');
-const { sendPurchaseConfirmation, sendPaymentApprovedOfficeNotification, sendPaymentFailedOfficeNotification } = require('../services/email');
+const { sendPurchaseConfirmation, sendFileDelivery, sendPaymentApprovedOfficeNotification, sendPaymentFailedOfficeNotification } = require('../services/email');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
@@ -23,6 +23,17 @@ async function finalizePaymentResult(orderId, status) {
         total: order.totalAmount,
         deliveryType: order.deliveryType,
       });
+      // מייל "התוכן שלך מוכן" עם קישור התיקייה האמיתי — רק כשהשיתוף בפועל הושלם
+      // (sharingStatus 'SHARED'), דרך האתר (לא דרך share-lib.gs, שכבר לא שולח מיילים).
+      if (fulfillment.success && fulfillment.sharingStatus === 'SHARED' && fulfillment.externalFolderUrl) {
+        await sendFileDelivery({
+          orderId: order.id,
+          customerId: order.customerId,
+          customerName: order.customerName,
+          email: order.email,
+          folderUrl: fulfillment.externalFolderUrl,
+        });
+      }
       await sendPaymentApprovedOfficeNotification({
         orderId: order.id,
         customerId: order.customerId,
