@@ -1,18 +1,48 @@
-const nodemailer = require('nodemailer');
+const MailComposer = require('nodemailer/lib/mail-composer');
 const db = require('../db');
 
-// טרנספורטר יחיד, נוצר בעצלנות בקריאה הראשונה (כמו pool ב-db/index.js)
-let transporter = null;
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: Number(process.env.MAIL_PORT) || 587,
-      secure: false, // 587 = STARTTLS
-      auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-    });
+// שליחה דרך Gmail REST API (לא SMTP) — ה-scope gmail.send שאושר ב-OAuth2 תקף
+// מול ה-API הזה, לא מול XOAUTH2 ב-SMTP הרגיל (שדורש את ה-scope הרחב mail.google.com).
+// ראה server/scripts/gmail-oauth-*.js לתהליך קבלת ה-refresh token.
+async function getAccessToken() {
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.GMAIL_OAUTH_CLIENT_ID,
+      client_secret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+      refresh_token: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+      grant_type: 'refresh_token',
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.access_token) {
+    throw new Error(`gmail oauth token refresh failed: ${data.error || res.status}`);
   }
-  return transporter;
+  return data.access_token;
+}
+
+function buildRawMessage({ from, to, subject, html }) {
+  return new Promise((resolve, reject) => {
+    new MailComposer({ from, to, subject, html }).compile().build((err, message) => {
+      if (err) return reject(err);
+      resolve(message.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''));
+    });
+  });
+}
+
+async function sendViaGmailApi({ from, to, subject, html }) {
+  const accessToken = await getAccessToken();
+  const raw = await buildRawMessage({ from, to, subject, html });
+  const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ raw }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(`gmail send failed: ${data.error?.message || res.status}`);
+  }
 }
 
 // שולחת מייל ולוגגת את התוצאה ל-email_logs. לעולם לא זורקת —
@@ -22,11 +52,11 @@ async function sendRawEmail({ emailType, to, subject, html, orderId = null, cust
   let sentAt = null;
   let error;
   try {
-    if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
-      throw new Error('MAIL_USER/MAIL_PASS not configured');
+    if (!process.env.MAIL_USER || !process.env.GMAIL_OAUTH_CLIENT_ID || !process.env.GMAIL_OAUTH_CLIENT_SECRET || !process.env.GMAIL_OAUTH_REFRESH_TOKEN) {
+      throw new Error('Gmail OAuth2 not configured (MAIL_USER/GMAIL_OAUTH_*)');
     }
     const fromName = process.env.MAIL_FROM_NAME || 'יד תמר';
-    await getTransporter().sendMail({
+    await sendViaGmailApi({
       from: `"${fromName}" <${process.env.MAIL_USER}>`,
       to,
       subject,

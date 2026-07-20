@@ -9,7 +9,7 @@ Priorities: HIGH, MED, LOW
 
 - [HIGH] Real backend (Node.js / Python) for order persistence | MVP used localStorage; not production-viable | New: server, DB (PostgreSQL or Firebase), API endpoints for orders/leads
 - [HIGH] Real admin authentication (JWT or session-based) | Any-credential login is an MVP stub; security risk | New: auth middleware, hashed password, session management
-- [HIGH] HYP payment gateway real integration | Payment UI exists but no API call is wired | Integrate HYP API: tokenization, charge, webhook for confirmation
+- [DONE 2026-07-20] HYP payment gateway real integration | Payment UI exists but no API call is wired | Integrated: Hosted Page redirect + webhook, see PROGRESS.txt hyp-payment-integration. Still open: real HYP_API_KEY/HYP_TERMINAL_ID/HYP_API_BASE_URL/HYP_WEBHOOK_SECRET not yet received — see FOLLOWUPS.md.
 
 ## Order Fulfillment
 

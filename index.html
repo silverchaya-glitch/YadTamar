@@ -847,11 +847,28 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
     <!-- ===== STEP 4: CONFIRMATION ===== -->
     <div class="page-section" id="section-4">
       <div class="success-screen">
-        <div class="check-circle">✓</div>
-        <h2>ההזמנה נקלטה!</h2>
-        <p id="confirm-msg">תודה על ההזמנה. אישור ישלח אל כתובת הדוא"ל שהזנת.</p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="resetOrder()">🔄 הזמנה חדשה</button>
+        <div id="payment-pending-box" style="display:none">
+          <div style="font-size:2.5rem;margin-bottom:12px">⏳</div>
+          <h2>מאמתים את התשלום שלך...</h2>
+          <p>רגע אחד, אנחנו בודקים מול חברת הסליקה. הדף יתעדכן אוטומטית.</p>
+        </div>
+        <div id="payment-failed-box" style="display:none">
+          <div style="font-size:2.5rem;margin-bottom:12px">❌</div>
+          <h2>התשלום נכשל</h2>
+          <p>העסקה לא הושלמה. הבחירה שלכם נשמרה — אפשר לנסות שוב.</p>
+          <button class="btn btn-pink" onclick="retryFailedPayment()">🔄 נסו שוב</button>
+        </div>
+        <div id="order-success-box">
+          <div class="check-circle">✓</div>
+          <h2>ההזמנה נקלטה!</h2>
+          <p id="confirm-msg">תודה על ההזמנה. אישור ישלח אל כתובת הדוא"ל שהזנת.</p>
+          <div id="folder-url-box" style="display:none;margin:16px auto;max-width:500px;padding:16px 20px;background:var(--teal-lt);border-radius:12px;border:1px solid rgba(0,180,204,.3);text-align:center">
+            <div style="font-weight:700;margin-bottom:6px">📁 התוכן שלך מוכן:</div>
+            <a id="folder-url-link" href="#" target="_blank" rel="noopener" style="word-break:break-all"></a>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary" id="order-again-btn" onclick="resetOrder()">🔄 הזמנה חדשה</button>
+          </div>
         </div>
         <div style="margin-top:32px;padding:24px;background:#fff;border-radius:16px;max-width:500px;margin:32px auto 0;text-align:right;border:1px solid var(--border);box-shadow:var(--shadow)">
           <div style="font-weight:800;margin-bottom:8px;color:var(--teal-dk)">📞 יד תמר – שירות לקוחות</div>
@@ -1068,7 +1085,106 @@ document.addEventListener('DOMContentLoaded', async () => {
   selectProduct('STORY_SELECTION');
   document.getElementById('usb-free-note').textContent =
     `✅ הזמנות מ-${FREE_USB_MIN_FILES} קבצים ומעלה – דיסק און קי חינם!`;
+  await handlePaymentReturn();
 });
+
+// ========== PAYMENT RETURN (חזרה מ-HYP אחרי redirect) ==========
+// נקרא בכל טעינת דף שיש בה ?payment=return&orderId=... ב-URL. אמת יחידה על מצב
+// התשלום היא GET /api/orders/:id (מבוסס על מה שהwebhook כתב ל-DB) — לעולם לא
+// מסתמכים על פרמטרים אחרים שאולי HYP מוסיף ל-return URL בעצמו.
+async function handlePaymentReturn() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('payment') !== 'return') return;
+  const orderId = params.get('orderId');
+  if (!orderId) return;
+
+  state.currentStep = 4;
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('section-' + i).classList.toggle('active', i === 4);
+    const stepEl = document.getElementById('step-' + i);
+    if (stepEl) { stepEl.classList.toggle('active', i === 4); stepEl.classList.toggle('done', i < 4); }
+  }
+  document.getElementById('order-success-box').style.display = 'none';
+  document.getElementById('payment-failed-box').style.display = 'none';
+  const pendingBox = document.getElementById('payment-pending-box');
+  pendingBox.style.display = '';
+
+  const MAX_ATTEMPTS = 30;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch('/api/orders/' + orderId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'paid' || data.status === 'fulfilled') {
+          localStorage.removeItem('yadtamar_pending_' + orderId);
+          pendingBox.style.display = 'none';
+          const successBox = document.getElementById('order-success-box');
+          successBox.style.display = '';
+          document.getElementById('confirm-msg').textContent = 'התשלום התקבל בהצלחה! אישור נשלח אל כתובת הדוא"ל שלכם.';
+          const folderBox = document.getElementById('folder-url-box');
+          const folderLink = document.getElementById('folder-url-link');
+          const againBtn = document.getElementById('order-again-btn');
+          if (data.drive_folder_url) {
+            folderLink.href = data.drive_folder_url;
+            folderLink.textContent = data.drive_folder_url;
+            folderBox.style.display = '';
+            againBtn.style.display = 'none';
+          } else {
+            folderBox.style.display = 'none';
+            againBtn.style.display = '';
+          }
+          return;
+        }
+        if (data.status === 'failed') {
+          pendingBox.style.display = 'none';
+          const failedBox = document.getElementById('payment-failed-box');
+          failedBox.dataset.orderId = orderId;
+          failedBox.style.display = '';
+          return;
+        }
+      }
+    } catch { /* רשת נופלת — ממשיכים לנסות עד MAX_ATTEMPTS */ }
+    await new Promise(r => setTimeout(r, 2000));
+  }
+
+  pendingBox.querySelector('p').textContent =
+    'עדיין מעבדים את התשלום. ברגע שהוא יאושר תישלח הודעת אישור למייל שלכם.';
+}
+
+function retryFailedPayment() {
+  const orderId = document.getElementById('payment-failed-box').dataset.orderId;
+  history.replaceState(null, '', location.pathname); // מנקה ?payment=return מה-URL
+  document.getElementById('payment-pending-box').style.display = 'none';
+  document.getElementById('payment-failed-box').style.display = 'none';
+  document.getElementById('order-success-box').style.display = '';
+
+  const saved = orderId && localStorage.getItem('yadtamar_pending_' + orderId);
+  if (!saved) { resetOrder(); return; }
+  try {
+    const restored = JSON.parse(saved);
+    state.selectedStories = new Set(restored.selectedStories || []);
+    state.useDrive = restored.useDrive;
+    state.useUsb = restored.useUsb;
+    document.getElementById('c-name').value = restored.customerName || '';
+    document.getElementById('c-email').value = restored.email || '';
+    document.getElementById('c-phone').value = restored.phone || '';
+    document.getElementById('c-dedication').value = restored.dedication || '';
+    if (restored.address) {
+      document.getElementById('c-street').value = restored.address.street || '';
+      document.getElementById('c-house').value  = restored.address.house  || '';
+      document.getElementById('c-apt').value    = restored.address.apt    || '';
+      document.getElementById('c-po').value     = restored.address.po     || '';
+      document.getElementById('c-city').value   = restored.address.city   || '';
+      document.getElementById('c-zip').value    = restored.address.zip   || '';
+    }
+    selectProduct(restored.product || 'STORY_SELECTION');
+    renderCatalogAll();
+    updatePricingBar();
+    showToast('הבחירה שלכם שוחזרה — אפשר לנסות שוב', 'info');
+  } catch {
+    resetOrder();
+  }
+}
 
 async function loadCatalog() {
   const grid = document.getElementById('catalog-viewer-step1');
@@ -1628,10 +1744,49 @@ async function submitOrder() {
       credentials: 'include'
     });
     if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
     const stored = JSON.parse(localStorage.getItem('yadtamar_orders') || '[]');
     stored.unshift(order);
     localStorage.setItem('yadtamar_orders', JSON.stringify(stored));
     document.getElementById('confirm-msg').textContent = msg;
+
+    if (order.paymentType === 'CREDIT_CARD') {
+      // שומר את בחירת הסיפורים/פרטי הטופס לפני שעוזבים את העמוד ל-HYP — כדי
+      // שאם התשלום ייכשל ונחזור, "נסו שוב" יוכל לשחזר אותם (ראו retryFailedPayment).
+      try {
+        localStorage.setItem('yadtamar_pending_' + data.id, JSON.stringify({
+          product: state.product,
+          selectedStories: Array.from(state.selectedStories),
+          useDrive: state.useDrive,
+          useUsb: state.useUsb,
+          customerName: name, email, phone,
+          dedication: order.dedication,
+          address: order.address,
+        }));
+      } catch {}
+
+      btn.textContent = '⏳ מעביר לתשלום מאובטח...';
+      try {
+        const payRes = await fetch('/api/payment/' + data.id + '/init', { method: 'POST', credentials: 'include' });
+        const payData = await payRes.json();
+        if (payRes.ok && payData.redirectUrl) {
+          window.location.href = payData.redirectUrl;
+          return; // ניווט מלא ל-HYP — לא נשארים על העמוד הזה
+        }
+        throw new Error('no redirectUrl');
+      } catch {
+        btn.disabled = false;
+        btn.textContent = '🛒 בצע הזמנה';
+        showToast('ההזמנה נשמרה אך חלה שגיאה בהעברה לתשלום — נסו שוב', 'error');
+      }
+      return;
+    }
+
+    // מגיעים לכאן רק עבור BANK_TRANSFER/CALLBACK — CREDIT_CARD מבצע return מוקדם יותר
+    // (redirect ל-HYP). אין fulfillment מיידי להציג כאן, לכן folderBox תמיד מוסתר.
+    document.getElementById('folder-url-box').style.display = 'none';
+    document.getElementById('order-again-btn').style.display = '';
+
     btn.disabled = false;
     btn.textContent = '🛒 בצע הזמנה';
     goToStep(4);

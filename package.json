@@ -9,7 +9,9 @@
     "db:schema": "psql -f server/db/schema.sql",
     "db:seed:catalog": "node server/db/seed-catalog.js",
     "db:seed:admin": "node server/db/seed-admin.js",
-    "db:seed:fake": "node server/db/seed-fake-data.js"
+    "db:seed:fake": "node server/db/seed-fake-data.js",
+    "qa": "node qa/run.js",
+    "qa:cleanup": "node qa/cleanup.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

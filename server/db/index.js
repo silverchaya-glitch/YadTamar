@@ -124,7 +124,7 @@ module.exports = {
       }
 
       await client.query('COMMIT');
-      return orderId;
+      return { id: orderId, orderNumber, customerName: customer_name, email, phone, total };
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;
@@ -262,6 +262,88 @@ module.exports = {
          external_folder_id = $4, item_results = $5, response_received_at = $6, updated_at = now()`,
       [orderId, errorCode, errorMessage, externalFolderId, itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
     );
+  },
+
+  async getOrderForPayment(orderId) {
+    const { rows } = await pool.query(
+      `SELECT o.id, o.order_number, o.payment_type, o.payment_status, o.total_amount, o.delivery_type,
+              o.customer_id, c.full_name AS customer_name, c.email, c.phone
+       FROM orders o JOIN customers c ON c.id = o.customer_id
+       WHERE o.id = $1`,
+      [orderId]
+    );
+    if (!rows.length) return null;
+    const row = rows[0];
+    return {
+      id: row.id,
+      orderNumber: row.order_number,
+      paymentType: row.payment_type,
+      paymentStatus: row.payment_status,
+      totalAmount: Number(row.total_amount),
+      deliveryType: row.delivery_type,
+      customerId: row.customer_id,
+      customerName: row.customer_name,
+      email: row.email,
+      phone: row.phone,
+    };
+  },
+
+  async createPendingPayment({ orderId, amount }) {
+    const { rows } = await pool.query(
+      `INSERT INTO payments (order_id, provider, amount, status) VALUES ($1,'HYP',$2,'PENDING') RETURNING id`,
+      [orderId, amount]
+    );
+    return rows[0].id;
+  },
+
+  // אטומית: מעדכנת payments + orders יחד. idempotent — אם אין עוד תשלום PENDING
+  // ממתין להזמנה הזו (webhook כפול/מאוחר), לא נוגעת ב-orders בכלל ומחזירה duplicate:true.
+  // מכבדת את הטריגר prevent_paid_to_pending (DB) ולא "מתקנת" הזמנה PAID בחזרה,
+  // וגם לא מורידה הזמנה PAID ל-FAILED אם webhook FAILED מגיע אחרי webhook APPROVED.
+  async recordPaymentResult({ orderId, providerTransactionId, status, rawResponse }) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const { rows: pendingRows } = await client.query(
+        `SELECT id FROM payments WHERE order_id = $1 AND status = 'PENDING'
+         ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
+        [orderId]
+      );
+      if (!pendingRows.length) {
+        await client.query('COMMIT');
+        return { duplicate: true, orderId, status };
+      }
+      const paymentId = pendingRows[0].id;
+
+      await client.query(
+        `UPDATE payments SET status = $1, provider_transaction_id = $2, raw_response_json = $3 WHERE id = $4`,
+        [status, providerTransactionId || null, rawResponse ? JSON.stringify(rawResponse) : null, paymentId]
+      );
+
+      if (status === 'APPROVED') {
+        await client.query(
+          `UPDATE orders SET payment_status = 'PAID',
+             processing_status = CASE WHEN processing_status IN ('COMPLETED','PROCESSING') THEN processing_status ELSE 'READY_FOR_FULFILLMENT' END
+           WHERE id = $1`,
+          [orderId]
+        );
+      } else if (status === 'FAILED') {
+        await client.query(
+          `UPDATE orders SET payment_status = 'FAILED', processing_status = 'FAILED'
+           WHERE id = $1 AND payment_status <> 'PAID'`,
+          [orderId]
+        );
+      }
+
+      await client.query('COMMIT');
+      return { duplicate: false, orderId, status };
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
   },
 
   async logEmail({ orderId = null, customerId = null, emailType, recipientEmail, sendStatus, sentAt = null }) {

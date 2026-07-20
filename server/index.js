@@ -33,7 +33,8 @@ app.use('/api/catalog', require('./routes/catalog'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api/admin', require('./routes/admin'));
-// app.use('/api/payment', require('./routes/payment')); // פאזה 3
+app.use('/api/payment', require('./routes/payment'));
+app.use('/api/oauth2', require('./routes/oauth'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', project: 'יד תמר', version: '1.0.0' });
