@@ -17,6 +17,7 @@ async function callFolderCreationWebhook(orderId, order, requestId) {
   const body = {
     secret,
     orderId,
+    orderNumber: order.orderNumber,
     requestId,
     fileIds: order.fileIds,
     recipientEmail: order.recipientEmail,
@@ -125,9 +126,10 @@ async function triggerFulfillment(orderId) {
       return { success: false, errorCode: 'ORDER_NOT_FOUND' };
     }
 
-    // הסקריפט (Apps Script) לא תומך ב-ADULT_COLLECTION בכלל — לא שולחים אליו,
-    // ולא כותבים fulfillment_requests כדי שזה לא ייראה כ"כישלון" באדמין.
-    if (order.orderType === 'ADULT_COLLECTION') {
+    // הסקריפט (Apps Script) לא תומך ב-ADULT_COLLECTION/GEMARA בכלל — לא שולחים אליו,
+    // ולא כותבים fulfillment_requests כדי שזה לא ייראה כ"כישלון" באדמין. גמרא מסופקת
+    // בדיסק און קי בלבד (מפורש, מפאת גודל הקבצים) — מילוי ידני של המשרד, כמו אוסף מבוגרים.
+    if (order.orderType === 'ADULT_COLLECTION' || order.orderType === 'GEMARA') {
       return { success: false, errorCode: 'NOT_APPLICABLE' };
     }
 
@@ -212,4 +214,4 @@ async function triggerFulfillment(orderId) {
   }
 }
 
-module.exports = { triggerFulfillment };
+module.exports = { triggerFulfillment, callShareWebhook };

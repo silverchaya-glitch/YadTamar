@@ -59,7 +59,7 @@ async function sendRawEmail({ emailType, to, subject, html, orderId = null, cust
     await sendViaGmailApi({
       from: `"${fromName}" <${process.env.MAIL_USER}>`,
       to,
-      subject,
+      subject: `[טופס דיגיטל] ${subject}`,
       html,
     });
     sendStatus = 'SENT';
@@ -91,7 +91,7 @@ async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, cust
   return sendRawEmail({
     emailType: 'PURCHASE_CONFIRMATION',
     to: email,
-    subject: `אישור הזמנה ${orderNumber} — יד תמר`,
+    subject: `אישור הזמנה ${orderNumber}`,
     html,
     orderId,
     customerId,
@@ -109,7 +109,7 @@ async function sendFileDelivery({ orderId, customerId, customerName, email, fold
   return sendRawEmail({
     emailType: 'FILE_DELIVERY',
     to: email,
-    subject: 'התוכן שלך מוכן להורדה — יד תמר',
+    subject: 'התוכן שלך מוכן להורדה',
     html,
     orderId,
     customerId,
@@ -127,9 +127,69 @@ async function sendGiftStory({ customerId, name, email, storyTitle, storyLink })
   return sendRawEmail({
     emailType: 'GIFT_STORY',
     to: email,
-    subject: 'הסיפור במתנה שלך — יד תמר',
+    subject: 'הסיפור במתנה שלך',
     html,
     customerId,
+  });
+}
+
+const PAY_LABELS = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
+
+function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, statusLine, feedback, contactMePhone }) {
+  return `
+    <div dir="rtl" style="font-family:sans-serif">
+      <h2>${title} — ${orderNumber}</h2>
+      <p>לקוח: ${customerName} | ${phone} | ${email}</p>
+      <p>אמצעי תשלום: ${PAY_LABELS[paymentType] || paymentType}</p>
+      <p>סוג משלוח: ${deliveryType === 'USB' ? 'דיסק און קי' : 'קישור הורדה'}</p>
+      <p>סכום: ${totalAmount} ₪</p>
+      ${contactMePhone ? `<p>📞 הלקוח/ה ביקש/ה שניצור קשר טלפוני</p>` : ''}
+      ${feedback ? `<p>💬 משוב מהלקוח/ה: ${feedback}</p>` : ''}
+      ${statusLine}
+    </div>`;
+}
+
+function buildFulfillmentStatusLine(fulfillment) {
+  return !fulfillment
+    ? `<p>סטטוס מילוי: ממתין לאישור תשלום (כרטיס אשראי)</p>`
+    : fulfillment.success && fulfillment.externalFolderUrl
+      ? `<p>תיקייה: <a href="${fulfillment.externalFolderUrl}">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`
+      : `<p>סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
+}
+
+async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, feedback, contactMePhone }) {
+  return sendOfficeNotification({
+    subject: `הזמנה חדשה ${orderNumber}`,
+    html: buildOrderSummaryHtml({
+      title: 'הזמנה חדשה', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
+      statusLine: buildFulfillmentStatusLine(fulfillment),
+      feedback, contactMePhone,
+    }),
+    orderId,
+    customerId,
+  });
+}
+
+async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment }) {
+  return sendOfficeNotification({
+    subject: `תשלום אושר — הזמנה ${orderNumber}`,
+    html: buildOrderSummaryHtml({
+      title: 'תשלום אושר', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
+      statusLine: buildFulfillmentStatusLine(fulfillment),
+    }),
+    orderId,
+    customerId,
+  });
+}
+
+async function sendPaymentFailedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount }) {
+  return sendErrorNotification({
+    subject: `תשלום נכשל — הזמנה ${orderNumber}`,
+    html: buildOrderSummaryHtml({
+      title: 'תשלום נכשל', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
+      statusLine: `<p style="color:#c0392b">⚠️ התשלום לא הושלם — יש ליצור קשר עם הלקוח.</p>`,
+    }),
+    orderId,
   });
 }
 
@@ -160,4 +220,7 @@ module.exports = {
   sendGiftStory,
   sendOfficeNotification,
   sendErrorNotification,
+  sendOrderPlacedOfficeNotification,
+  sendPaymentApprovedOfficeNotification,
+  sendPaymentFailedOfficeNotification,
 };

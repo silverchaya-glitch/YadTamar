@@ -38,6 +38,7 @@ const ADULT_DISCS = [
 
 const FULL_LIBRARY_PRICE    = 1550;
 const ADULT_COLLECTION_PRICE = 360;
+const GEMARA_PRICE           = 75;
 const USB_PRICE             = 15;
 const FREE_USB_MIN_FILES    = 50;
 const TOTAL_STORIES         = 438;
@@ -54,20 +55,20 @@ const CATEGORIES = [
   { id: 'c2',  name: 'מעגל השנה',                    displayOrder: 2  },
   { id: 'c3',  name: 'ספר בראשית',                   displayOrder: 3  },
   { id: 'c4',  name: 'ספר שמות',                     displayOrder: 4  },
-  { id: 'c5',  name: 'ספר יהושע',                    displayOrder: 5  },
-  { id: 'c6',  name: 'ספר שופטים',                   displayOrder: 6  },
-  { id: 'c7',  name: 'ספר שמואל א\'',                 displayOrder: 7  },
-  { id: 'c8',  name: 'ספר שמואל ב\'',                 displayOrder: 8  },
-  { id: 'c9',  name: 'ספר מלכים א\'',                 displayOrder: 9  },
-  { id: 'c10', name: 'ספר מלכים ב\'',                 displayOrder: 10 },
-  { id: 'c11', name: 'סיפורי מופת - סדרה א\'',        displayOrder: 11 },
-  { id: 'c12', name: 'סיפורי מופת - סדרה ב\'',        displayOrder: 12 },
-  { id: 'c13', name: 'סיפורי מופת - סדרה ג\'',        displayOrder: 13 },
-  { id: 'c15', name: 'ילדים מספרים בשולחן שבת',       displayOrder: 14 },
-  { id: 'c16', name: 'בר מצוה/בת מצוה',              displayOrder: 15 },
-  { id: 'c17', name: 'ספר במדבר',                    displayOrder: 16 },
+  { id: 'c17', name: 'ספר במדבר',                    displayOrder: 5  },
+  { id: 'c5',  name: 'ספר יהושע',                    displayOrder: 6  },
+  { id: 'c6',  name: 'ספר שופטים',                   displayOrder: 7  },
+  { id: 'c7',  name: 'ספר שמואל א\'',                 displayOrder: 8  },
+  { id: 'c8',  name: 'ספר שמואל ב\'',                 displayOrder: 9  },
+  { id: 'c9',  name: 'ספר מלכים א\'',                 displayOrder: 10 },
+  { id: 'c10', name: 'ספר מלכים ב\'',                 displayOrder: 11 },
+  { id: 'c11', name: 'סיפורי מופת - סדרה א\'',        displayOrder: 12 },
+  { id: 'c12', name: 'סיפורי מופת - סדרה ב\'',        displayOrder: 13 },
+  { id: 'c13', name: 'סיפורי מופת - סדרה ג\'',        displayOrder: 14 },
+  { id: 'c15', name: 'ילדים מספרים בשולחן שבת',       displayOrder: 15 },
+  { id: 'c16', name: 'בר מצוה/בת מצוה',              displayOrder: 16 },
   { id: 'c14', name: 'סיפורי מופת - סדרה ד\'',        displayOrder: 17 },
-  { id: 'c18', name: 'גמרא',                         displayOrder: 18 },
+  { id: 'c18', name: 'גמרא "אלו מציעות"',             displayOrder: 18 },
 ];
 
 // [channelNum, categoryId, title, durationMin]

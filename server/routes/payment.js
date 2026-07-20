@@ -3,9 +3,59 @@ const router = express.Router();
 const db = require('../db');
 const paymentService = require('../services/payment');
 const { triggerFulfillment } = require('../services/fulfillment');
-const { sendPurchaseConfirmation, sendErrorNotification } = require('../services/email');
+const { sendPurchaseConfirmation, sendPaymentApprovedOfficeNotification, sendPaymentFailedOfficeNotification } = require('../services/email');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
+
+// לוגיקת ה-side-effects אחרי שסטטוס תשלום נקבע (APPROVED/FAILED) — משותפת
+// ל-/webhook האמיתי ול-/mock-confirm (סימולציה, ראה למטה), כדי לא לשכפל אותה.
+async function finalizePaymentResult(orderId, status) {
+  if (status === 'APPROVED') {
+    const fulfillment = await triggerFulfillment(orderId);
+    const order = await db.getOrderForPayment(orderId);
+    if (order) {
+      await sendPurchaseConfirmation({
+        orderId: order.id,
+        customerId: order.customerId,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        email: order.email,
+        total: order.totalAmount,
+        deliveryType: order.deliveryType,
+      });
+      await sendPaymentApprovedOfficeNotification({
+        orderId: order.id,
+        customerId: order.customerId,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        phone: order.phone,
+        email: order.email,
+        paymentType: order.paymentType,
+        deliveryType: order.deliveryType,
+        totalAmount: order.totalAmount,
+        fulfillment,
+      });
+    }
+    console.log(`[payment] order ${orderId} approved, fulfillment: ${fulfillment.success ? fulfillment.sharingStatus : 'FAILED — ' + fulfillment.errorCode}`);
+  } else {
+    const order = await db.getOrderForPayment(orderId);
+    if (order) {
+      await sendPaymentFailedOfficeNotification({
+        orderId: order.id,
+        customerId: order.customerId,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        phone: order.phone,
+        email: order.email,
+        paymentType: order.paymentType,
+        deliveryType: order.deliveryType,
+        totalAmount: order.totalAmount,
+      });
+    } else {
+      console.error(`[payment] payment failed for unknown order ${orderId} — could not send office notification`);
+    }
+  }
+}
 
 // POST /api/payment/:orderId/init — פותח עסקת תשלום מול HYP ומחזיר redirectUrl
 // לדף התשלום המאובטח שלהם. נקרא מ-index.html מיד אחרי POST /api/orders להזמנת
@@ -72,35 +122,50 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).json({ received: true });
     }
 
-    if (parsed.status === 'APPROVED') {
-      const fulfillment = await triggerFulfillment(parsed.orderId);
-      const order = await db.getOrderForPayment(parsed.orderId);
-      if (order) {
-        await sendPurchaseConfirmation({
-          orderId: order.id,
-          customerId: order.customerId,
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          email: order.email,
-          total: order.totalAmount,
-          deliveryType: order.deliveryType,
-        });
-      }
-      console.log(`[payment] order ${parsed.orderId} approved, fulfillment: ${fulfillment.success ? fulfillment.sharingStatus : 'FAILED — ' + fulfillment.errorCode}`);
-    } else {
-      const order = await db.getOrderForPayment(parsed.orderId);
-      await sendErrorNotification({
-        subject: `תשלום נכשל — הזמנה ${order ? order.orderNumber : parsed.orderId}`,
-        html: `<div dir="rtl"><p>תשלום HYP נכשל להזמנה ${order ? order.orderNumber : parsed.orderId}.</p></div>`,
-        orderId: parsed.orderId,
-      });
-    }
+    await finalizePaymentResult(parsed.orderId, parsed.status);
 
     res.status(200).json({ received: true });
   } catch (e) {
     console.error(`[payment] /webhook unexpected error: ${e.message}`);
     // 500 (לא 200) בכוונה: זו יכולה להיות תקלה חולפת (DB זמנית לא זמין) — עדיף
     // ש-HYP ינסה שוב (רוב ספקי סליקה עושים retry על 5xx) מאשר לאבד אישור תשלום בשקט.
+    res.status(500).json({ error: 'שגיאת שרת' });
+  }
+});
+
+// POST /api/payment/mock-confirm — סימולציה מקומית (payment-mock.html) בזמן
+// שאין עדיין פרטי סוחר אמיתיים מ-HYP (ראה server/services/payment.js). כרטיס
+// בדיקה קבוע 000000000/0000/000 = הצלחה, כל ערך אחר = דחייה. אין הגנת
+// anti-forgery מעבר לכך ש-orderId הוא UUID לא ניתן לניחוש — מקובל כי זו
+// סימולציה זמנית בלבד וללא כסף אמיתי מעורב (ראה FOLLOWUPS.md).
+router.post('/mock-confirm', async (req, res) => {
+  try {
+    const { orderId, cardNumber, expiry, cvv } = req.body || {};
+    if (!orderId || !UUID_RE.test(orderId)) return res.status(400).json({ error: 'orderId לא תקין' });
+
+    const order = await db.getOrderForPayment(orderId);
+    if (!order) return res.status(404).json({ error: 'הזמנה לא נמצאה' });
+    if (order.paymentType !== 'CREDIT_CARD')
+      return res.status(400).json({ error: 'הזמנה זו אינה בתשלום כרטיס אשראי' });
+    if (order.paymentStatus !== 'PENDING')
+      return res.status(409).json({ error: 'לא ניתן לאשר תשלום להזמנה זו', paymentStatus: order.paymentStatus });
+
+    const status = (cardNumber === '000000000' && expiry === '0000' && cvv === '000') ? 'APPROVED' : 'FAILED';
+
+    const result = await db.recordPaymentResult({
+      orderId,
+      providerTransactionId: 'MOCK-' + Date.now(),
+      status,
+      rawResponse: { mock: true, cardLast4: String(cardNumber || '').slice(-4) },
+    });
+
+    if (!result.duplicate) {
+      await finalizePaymentResult(orderId, status);
+    }
+
+    res.status(200).json({ success: true, status });
+  } catch (e) {
+    console.error(`[payment] /mock-confirm unexpected error: ${e.message}`);
     res.status(500).json({ error: 'שגיאת שרת' });
   }
 });

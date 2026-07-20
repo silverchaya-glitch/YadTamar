@@ -8,12 +8,14 @@ const FREE_USB_MIN_FILES = 50;
 function mapProductToOrderType(product) {
   if (product === 'MASTER_LIBRARY' || product === 'FULL_LIBRARY') return 'FULL_LIBRARY';
   if (product === 'ADULT_COLLECTION') return 'ADULT_COLLECTION';
+  if (product === 'GEMARA') return 'GEMARA';
   return 'STORY_SELECTION';
 }
 
 function mapProductToDeliveryType(product) {
   if (product === 'MASTER_LIBRARY' || product === 'FULL_LIBRARY') return 'MASTER_LIBRARY';
   if (product === 'ADULT_COLLECTION') return 'ADULT_COLLECTION';
+  if (product === 'GEMARA') return 'GEMARA';
   return 'SELECTED_STORIES';
 }
 
@@ -84,7 +86,7 @@ module.exports = {
 
       const usbRequested = delivery_type === 'USB';
       const usbAmount = usbRequested
-        ? ((product === 'ADULT_COLLECTION' || stories.length >= FREE_USB_MIN_FILES) ? 0 : USB_PRICE)
+        ? ((product === 'ADULT_COLLECTION' || product === 'GEMARA' || stories.length >= FREE_USB_MIN_FILES) ? 0 : USB_PRICE)
         : null;
       const subtotalAmount = total - (usbAmount || 0);
 
@@ -95,6 +97,8 @@ module.exports = {
         const addrStr = [a.street, a.house, a.apt, a.city, a.zip].filter(Boolean).join(' ');
         if (addrStr) noteParts.push('כתובת למשלוח USB: ' + addrStr);
       }
+      if (items.feedback) noteParts.push('משוב: ' + items.feedback);
+      if (items.contactMePhone) noteParts.push('☎️ ביקש/ה יצירת קשר טלפוני');
       const officeNotes = noteParts.length ? noteParts.join(' | ') : null;
 
       const { rows: seqRows } = await client.query("SELECT nextval('order_number_seq') AS n");
@@ -124,7 +128,7 @@ module.exports = {
       }
 
       await client.query('COMMIT');
-      return { id: orderId, orderNumber, customerName: customer_name, email, phone, total };
+      return { id: orderId, orderNumber, customerId, customerName: customer_name, email, phone, total };
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;
@@ -175,7 +179,7 @@ module.exports = {
 
   async getOrderForFulfillment(id) {
     const { rows } = await pool.query(
-      `SELECT o.id, o.order_type, o.payment_type, c.email
+      `SELECT o.id, o.order_number, o.order_type, o.payment_type, c.email
        FROM orders o JOIN customers c ON c.id = o.customer_id
        WHERE o.id = $1`,
       [id]
@@ -197,6 +201,7 @@ module.exports = {
     // ADULT_COLLECTION -> fileIds נשאר [] (אין מיפוי Drive לדיסקים — ראה FOLLOWUPS.md)
 
     return {
+      orderNumber: order.order_number,
       orderType: order.order_type,
       paymentType: order.payment_type,
       recipientEmail: order.email,
@@ -420,15 +425,27 @@ module.exports = {
     }));
   },
 
+  async getStoryByCode(storyCode) {
+    const { rows } = await pool.query(
+      'SELECT id, story_code, title, google_drive_file_id FROM stories WHERE story_code = $1 AND is_active = true',
+      [storyCode]
+    );
+    if (!rows.length) return null;
+    return { id: rows[0].id, storyCode: rows[0].story_code, title: rows[0].title, googleDriveFileId: rows[0].google_drive_file_id };
+  },
+
   async getCatalog() {
+    // קטגוריית גמרא נמכרת כבאנדל עצמאי קבוע (₪75, לא לפי סיפור) — לא חלק מהקטלוג
+    // הרגיל הנצפה/נבחר לפי-סיפור, ולכן מוחרגת כאן (לא ב-admin.html, שקורא מ-data.js
+    // ישירות ורוצה לראות הכל).
     const [{ rows: categories }, { rows: stories }] = await Promise.all([
-      pool.query('SELECT id, name, display_order FROM categories WHERE is_active = true ORDER BY display_order'),
+      pool.query(`SELECT id, name, display_order FROM categories WHERE is_active = true AND name NOT LIKE 'גמרא%' ORDER BY display_order`),
       pool.query(`
         SELECT s.id, s.story_code, s.category_id, s.title, s.duration_seconds
         FROM stories s
         JOIN categories c ON c.id = s.category_id
-        WHERE s.is_active = true AND c.is_active = true
-        ORDER BY c.display_order, s.story_code
+        WHERE s.is_active = true AND c.is_active = true AND c.name NOT LIKE 'גמרא%'
+        ORDER BY c.display_order, length(s.story_code), s.story_code
       `),
     ]);
     return {

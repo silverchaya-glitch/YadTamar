@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>עמוד תשלום (סימולציה) – יד תמר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" />
+  <style>
+    :root {
+      --bg: #F4FAFB;
+      --card: #FFFFFF;
+      --text: #1A1A2E;
+      --muted: #6B7280;
+      --teal: #00B4CC;
+      --teal-dk: #007A8C;
+      --teal-lt: #E0F7FA;
+      --pink: #E91E8C;
+      --border: #D1E8EC;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(0,50,60,.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      direction: rtl;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .wrap { width: 100%; max-width: 420px; }
+    .sim-banner {
+      background: #FFF3CD;
+      border: 1.5px solid #E6B800;
+      color: #6B5300;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: .85rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+    }
+    .logo { text-align: center; font-weight: 800; color: var(--teal-dk); font-size: 1.15rem; margin-bottom: 4px; }
+    .sub { text-align: center; color: var(--muted); font-size: .82rem; margin-bottom: 20px; }
+    .amount-box {
+      background: var(--teal-lt);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .amount-box .num { font-size: 1.6rem; font-weight: 900; color: var(--teal-dk); }
+    .amount-box .ord { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+    label { display: block; font-size: .85rem; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 16px;
+      direction: ltr;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    input:focus { outline: none; border-color: var(--teal); }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    button.pay {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--pink);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    button.pay:disabled { opacity: .6; cursor: not-allowed; }
+    .cancel-link {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: .85rem;
+      text-decoration: none;
+    }
+    .cancel-link:hover { color: var(--text); }
+    .msg { text-align: center; font-size: .85rem; margin-top: 14px; min-height: 1.2em; }
+    .msg.error { color: #C0392B; }
+    button.autofill {
+      width: 100%;
+      padding: 10px;
+      border: 1.5px dashed var(--teal);
+      border-radius: 10px;
+      background: var(--teal-lt);
+      color: var(--teal-dk);
+      font-size: .85rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sim-banner">⚠️ סביבת בדיקה — לא תשלום אמיתי, סימולציה בלבד</div>
+    <div class="card">
+      <div class="logo">🔐 HYP — עמוד תשלום מאובטח</div>
+      <div class="sub">הזמנה מס' <span id="order-number">—</span></div>
+      <div class="amount-box">
+        <div class="num" id="amount">₪0</div>
+        <div class="ord">סכום לחיוב</div>
+      </div>
+
+      <button type="button" class="autofill" id="autofill-btn">🧪 מלא כרטיס בדיקה (הצלחה)</button>
+
+      <form id="pay-form">
+        <label for="card-number">מספר כרטיס (9 ספרות)</label>
+        <input type="text" id="card-number" inputmode="numeric" maxlength="9" placeholder="000000000" autocomplete="off" />
+
+        <div class="row">
+          <div>
+            <label for="expiry">תוקף (4 ספרות)</label>
+            <input type="text" id="expiry" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off" />
+          </div>
+          <div>
+            <label for="cvv">CVV (3 ספרות)</label>
+            <input type="text" id="cvv" inputmode="numeric" maxlength="3" placeholder="000" autocomplete="off" />
+          </div>
+        </div>
+
+        <button type="submit" class="pay" id="pay-btn">💳 שלם עכשיו</button>
+        <div class="msg" id="msg"></div>
+      </form>
+
+      <a href="#" class="cancel-link" id="cancel-link">ביטול וחזרה לחנות</a>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId') || '';
+    const orderNumber = params.get('orderNumber') || '';
+    const amount = params.get('amount') || '0';
+    const returnUrl = params.get('returnUrl') || '/index.html';
+
+    document.getElementById('order-number').textContent = orderNumber || '—';
+    document.getElementById('amount').textContent = '₪' + amount;
+    document.getElementById('cancel-link').href = returnUrl;
+
+    ['card-number', 'expiry', 'cvv'].forEach(id => {
+      document.getElementById(id).addEventListener('input', e => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+      });
+    });
+
+    // ה-placeholder בכל שדה זהה בכוונה לערך כרטיס הבדיקה (000000000/0000/000) —
+    // קל להתבלבל בין "שדה ריק שמציג placeholder אפור" לבין "שדה מלא בפועל".
+    // כפתור הזה ממלא את הערכים בפועל, בלי תלות בהקלדה ידנית.
+    document.getElementById('autofill-btn').addEventListener('click', () => {
+      document.getElementById('card-number').value = '000000000';
+      document.getElementById('expiry').value = '0000';
+      document.getElementById('cvv').value = '000';
+      const msg = document.getElementById('msg');
+      msg.className = 'msg';
+      msg.textContent = '';
+    });
+
+    document.getElementById('pay-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const cardNumber = document.getElementById('card-number').value;
+      const expiry = document.getElementById('expiry').value;
+      const cvv = document.getElementById('cvv').value;
+      const msg = document.getElementById('msg');
+      msg.className = 'msg';
+      msg.textContent = '';
+
+      const fieldChecks = [
+        { label: 'מספר כרטיס', value: cardNumber, need: 9 },
+        { label: 'תוקף', value: expiry, need: 4 },
+        { label: 'CVV', value: cvv, need: 3 },
+      ];
+      const incomplete = fieldChecks.filter(f => f.value.length !== f.need);
+      if (incomplete.length) {
+        msg.className = 'msg error';
+        msg.textContent = fieldChecks
+          .map(f => `${f.label}: ${f.value.length}/${f.need}${f.value.length === f.need ? ' ✓' : ''}`)
+          .join(' | ');
+        return;
+      }
+      if (!orderId) {
+        msg.className = 'msg error';
+        msg.textContent = 'שגיאה: מזהה הזמנה חסר';
+        return;
+      }
+
+      const btn = document.getElementById('pay-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ מעבד תשלום...';
+
+      try {
+        await fetch('/api/payment/mock-confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, cardNumber, expiry, cvv }),
+        });
+      } catch {
+        // גם אם הבקשה נכשלה ברשת - עדיין חוזרים ל-returnUrl; handlePaymentReturn()
+        // יבדוק מול השרת את הסטטוס האמיתי ויציג הודעה מתאימה.
+      }
+      window.location.href = returnUrl;
+    });
+  </script>
+</body>
+</html>

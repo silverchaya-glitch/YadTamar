@@ -10,6 +10,19 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
   const apiKey = process.env.HYP_API_KEY;
   const terminalId = process.env.HYP_TERMINAL_ID;
   if (!baseUrl || !apiKey || !terminalId) {
+    // עדיין אין פרטי סוחר אמיתיים מ-HYP — נופלים לעמוד תשלום מדומה מקומי
+    // (payment-mock.html) כדי שאפשר יהיה להדגים/לבדוק את הזרימה המלאה. ברגע
+    // ש-HYP_API_BASE_URL/HYP_API_KEY/HYP_TERMINAL_ID ימולאו, הענף הזה מפסיק
+    // להתבצע והקוד יעבור אוטומטית לקריאה האמיתית מטה. לא בסביבת "production
+    // אמיתית" (HYP_SANDBOX=false) — שם עדיף להיכשל בבירור.
+    if (process.env.HYP_SANDBOX !== 'false') {
+      const base = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
+      const mockUrl = `${base}/payment-mock.html?orderId=${encodeURIComponent(orderId)}`
+        + `&orderNumber=${encodeURIComponent(orderNumber || '')}`
+        + `&amount=${encodeURIComponent(amount)}`
+        + `&returnUrl=${encodeURIComponent(returnUrl)}`;
+      return { success: true, redirectUrl: mockUrl, providerSessionId: null, raw: { mock: true } };
+    }
     return { success: false, errorCode: 'CONFIG_MISSING', errorMessage: 'HYP_API_BASE_URL/HYP_API_KEY/HYP_TERMINAL_ID not configured' };
   }
 
