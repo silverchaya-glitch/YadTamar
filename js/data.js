@@ -65,9 +65,9 @@ const CATEGORIES = [
   { id: 'c11', name: 'סיפורי מופת - סדרה א\'',        displayOrder: 12 },
   { id: 'c12', name: 'סיפורי מופת - סדרה ב\'',        displayOrder: 13 },
   { id: 'c13', name: 'סיפורי מופת - סדרה ג\'',        displayOrder: 14 },
-  { id: 'c15', name: 'ילדים מספרים בשולחן שבת',       displayOrder: 15 },
-  { id: 'c16', name: 'בר מצוה/בת מצוה',              displayOrder: 16 },
-  { id: 'c14', name: 'סיפורי מופת - סדרה ד\'',        displayOrder: 17 },
+  { id: 'c14', name: 'סיפורי מופת - סדרה ד\'',        displayOrder: 15 },
+  { id: 'c15', name: 'ילדים מספרים בשולחן שבת',       displayOrder: 16 },
+  { id: 'c16', name: 'בר מצוה/בת מצוה',              displayOrder: 17 },
   { id: 'c18', name: 'גמרא "אלו מציעות"',             displayOrder: 18 },
 ];
 

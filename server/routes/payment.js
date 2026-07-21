@@ -45,6 +45,7 @@ async function finalizePaymentResult(orderId, status) {
         deliveryType: order.deliveryType,
         totalAmount: order.totalAmount,
         fulfillment,
+        notes: order.notes,
       });
     }
     console.log(`[payment] order ${orderId} approved, fulfillment: ${fulfillment.success ? fulfillment.sharingStatus : 'FAILED — ' + fulfillment.errorCode}`);
@@ -61,6 +62,7 @@ async function finalizePaymentResult(orderId, status) {
         paymentType: order.paymentType,
         deliveryType: order.deliveryType,
         totalAmount: order.totalAmount,
+        notes: order.notes,
       });
     } else {
       console.error(`[payment] payment failed for unknown order ${orderId} — could not send office notification`);
@@ -133,9 +135,16 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).json({ received: true });
     }
 
-    await finalizePaymentResult(parsed.orderId, parsed.status);
-
+    // עונים ל-HYP מיד אחרי שרישום התשלום הושלם — לא ממתינים ל-fulfillment (עד שתי
+    // קריאות רשת אמיתיות ל-Google Apps Script, עד 60 שניות כל אחת) ולשליחת המיילים.
+    // אם HYP מגביל בעצמו כמה זמן הוא מוכן לחכות לתגובת webhook, המתנה סינכרונית
+    // ארוכה עלולה לגרום לו "להתייאש" ולשלוח את אותו webhook שוב — מוגן ע"י בדיקת
+    // ה-duplicate למעלה, אבל מיותר ומעכב. finalizePaymentResult רץ ברקע; היא לא
+    // זורקת בעצמה (ראה fulfillment.js/email.js), אבל ה-.catch כאן הוא רשת ביטחון.
     res.status(200).json({ received: true });
+    finalizePaymentResult(parsed.orderId, parsed.status).catch(e =>
+      console.error(`[payment] webhook order ${parsed.orderId} background finalize failed: ${e.message}`)
+    );
   } catch (e) {
     console.error(`[payment] /webhook unexpected error: ${e.message}`);
     // 500 (לא 200) בכוונה: זו יכולה להיות תקלה חולפת (DB זמנית לא זמין) — עדיף
@@ -170,11 +179,15 @@ router.post('/mock-confirm', async (req, res) => {
       rawResponse: { mock: true, cardLast4: String(cardNumber || '').slice(-4) },
     });
 
-    if (!result.duplicate) {
-      await finalizePaymentResult(orderId, status);
-    }
-
+    // עונים ללקוח מיד אחרי שהתשלום נרשם — ראו ההערה המקבילה ב-/webhook למעלה על
+    // הסיבה (fulfillment יכול לקחת עד 2 דקות, זה מה שגרם ל"שלם עכשיו" להיתקע).
     res.status(200).json({ success: true, status });
+
+    if (!result.duplicate) {
+      finalizePaymentResult(orderId, status).catch(e =>
+        console.error(`[payment] mock-confirm order ${orderId} background finalize failed: ${e.message}`)
+      );
+    }
   } catch (e) {
     console.error(`[payment] /mock-confirm unexpected error: ${e.message}`);
     res.status(500).json({ error: 'שגיאת שרת' });

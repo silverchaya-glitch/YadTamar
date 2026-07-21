@@ -292,7 +292,7 @@ module.exports = {
   async getOrderForPayment(orderId) {
     const { rows } = await pool.query(
       `SELECT o.id, o.order_number, o.payment_type, o.payment_status, o.total_amount, o.delivery_type,
-              o.customer_id, c.full_name AS customer_name, c.email, c.phone
+              o.customer_id, o.office_notes, c.full_name AS customer_name, c.email, c.phone
        FROM orders o JOIN customers c ON c.id = o.customer_id
        WHERE o.id = $1`,
       [orderId]
@@ -310,6 +310,7 @@ module.exports = {
       customerName: row.customer_name,
       email: row.email,
       phone: row.phone,
+      notes: row.office_notes || '',
     };
   },
 
@@ -398,6 +399,7 @@ module.exports = {
       id: row.id,
       status: deriveLegacyStatus(row),
       drive_folder_url: row.folder_url || null,
+      order_type: row.order_type,
     };
   },
 

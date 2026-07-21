@@ -20,20 +20,26 @@ router.post('/', async (req, res) => {
     const paymentType = items.paymentType || 'CREDIT_CARD'; // אותה ברירת מחדל בדיוק כמו ב-db.createOrder
     const fulfillment = paymentType === 'CREDIT_CARD' ? undefined : await triggerFulfillment(order.id);
 
-    await sendOrderPlacedOfficeNotification({
-      orderId: order.id,
-      customerId: order.customerId,
-      orderNumber: order.orderNumber,
-      customerName: order.customerName,
-      phone: order.phone,
-      email: order.email,
-      paymentType,
-      deliveryType: delivery_type,
-      totalAmount: total,
-      fulfillment,
-      feedback: items.feedback,
-      contactMePhone: items.contactMePhone,
-    });
+    // CREDIT_CARD: אין מייל משרד כאן — נשלח מייל אחד מרוכז מ-server/routes/payment.js
+    // (finalizePaymentResult) רק כשהתשלום נגמר (אושר/נכשל), במקום שני מיילים נפרדים
+    // על אותה הזמנה. תוצאת לוואי מקובלת: הזמנה ננטשת (הלקוח לא חוזר מדף HYP) לא
+    // תיצור שום מייל למשרד — ראה FOLLOWUPS.md.
+    if (paymentType !== 'CREDIT_CARD') {
+      await sendOrderPlacedOfficeNotification({
+        orderId: order.id,
+        customerId: order.customerId,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        phone: order.phone,
+        email: order.email,
+        paymentType,
+        deliveryType: delivery_type,
+        totalAmount: total,
+        fulfillment,
+        feedback: items.feedback,
+        contactMePhone: items.contactMePhone,
+      });
+    }
 
     res.status(201).json({ success: true, id: order.id, orderNumber: order.orderNumber, fulfillment });
   } catch (e) {
@@ -48,7 +54,8 @@ router.get('/:id', async (req, res) => {
   res.json({
     id: order.id,
     status: order.status,
-    drive_folder_url: order.drive_folder_url || null
+    drive_folder_url: order.drive_folder_url || null,
+    order_type: order.order_type
   });
 });
 

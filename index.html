@@ -229,7 +229,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .product-card .card-icon { display: flex; align-items: center; justify-content: center; font-size: 2.3rem; margin: 0 auto 10px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg2); box-shadow: var(--clay-shadow-sm); transition: transform .35s var(--ease-clay), filter .35s var(--ease-clay); }
 .product-card:hover .card-icon { transform: rotate(-8deg) scale(1.12); filter: brightness(1.15) drop-shadow(0 0 6px rgba(0,180,204,.5)); }
 .product-card h3 { font-size: .9rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 4px; }
-.product-card .card-price { font-size: 1.2rem; font-weight: 900; color: var(--pink); margin: 6px 0 2px; }
+.product-card .card-price { font-size: 1.2rem; font-weight: 900; color: #A84C73; margin: 6px 0 2px; }
 .product-card .card-price-sub { font-size: .78rem; color: var(--muted); margin-bottom: 6px; }
 .card-price-free { color: var(--green) !important; }
 .product-card .card-desc { font-size: .75rem; color: var(--muted); line-height: 1.5; }
@@ -357,6 +357,10 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 }
 .btn:hover::before, .btn-catalog-pdf:hover::before { animation: btn-shine .6s ease-out; }
 @keyframes btn-shine { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+.btn-shine-auto::before { animation: btn-shine-auto 4s ease-in-out infinite; }
+.btn-shine-auto:disabled::before { animation: none; }
+@keyframes btn-shine-auto { 0% { transform: translateX(-120%); } 12% { transform: translateX(120%); } 100% { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) { .btn-shine-auto::before { animation: none; } }
 
 /* ===== Summary Card ===== */
 .summary-card { background: #fff; border-radius: var(--radius-md); border: 2px solid var(--clay-border-tint); padding: var(--space-5); margin-bottom: var(--space-4); box-shadow: var(--clay-shadow-md); }
@@ -393,13 +397,13 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 
 /* ===== Success Screen ===== */
 .success-screen { text-align: center; padding: var(--space-9) var(--space-5); }
-.check-circle { width: 96px; height: 96px; background: linear-gradient(135deg, var(--teal), var(--pink)); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; margin: 0 auto 28px; animation: pop .4s ease; box-shadow: 0 8px 32px rgba(0,180,204,.35); }
+.check-circle { width: 96px; height: 96px; background: linear-gradient(135deg, var(--green), var(--teal-dk)); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; margin: 0 auto 28px; animation: pop .4s ease; box-shadow: 0 8px 32px rgba(0,180,204,.35); }
 @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
 .success-screen h2 { font-family: 'Fredoka', 'Heebo', sans-serif; font-size: var(--fs-display); font-weight: 600; color: var(--teal-dk); margin-bottom: 12px; }
 .success-screen p  { font-size: 1.05rem; color: var(--muted); max-width: 500px; margin: 0 auto 28px; }
 
 /* ===== Gift Section ===== */
-.gift-section { background: linear-gradient(135deg, var(--teal), var(--pink)); border-radius: var(--radius-lg); padding: var(--space-7); text-align: center; position: relative; overflow: hidden; }
+.gift-section { background: linear-gradient(135deg, var(--teal), var(--gold)); border-radius: var(--radius-lg); padding: var(--space-7); text-align: center; position: relative; overflow: hidden; }
 .gift-section::before, .gift-section::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255,255,255,.08); }
 .gift-section::before { width: 220px; height: 220px; top: -100px; left: -60px; }
 .gift-section::after  { width: 140px; height: 140px; bottom: -60px; right: -20px; }
@@ -531,7 +535,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 <header class="site-header">
   <div class="header-inner">
     <div class="logo-area">
-      <img src="גלופה%20001.jpg" alt="יד תמר" class="logo-img" />
+      <img src="גלופה%20001-logo.jpg" alt="יד תמר" class="logo-img" width="44" height="44" />
       <div class="logo-text">
         <h1>יד תמר</h1>
         <p>גם חוויה וגם ידע</p>
@@ -592,7 +596,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
       <div class="hero-illustration-wrap">
         <div class="hero-rays"></div>
         <div class="hero-illustration">
-          <img src="גלופה%20001.jpg" alt="רב מספר סיפורים לילדים" />
+          <img src="גלופה%20001-hero.jpg" alt="רב מספר סיפורים לילדים" width="700" height="700" loading="eager" />
         </div>
       </div>
     </div>
@@ -664,27 +668,27 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
       <!-- Bundle info panel (Adult Collection / Gemara) -->
       <div id="bundle-info" style="display:none;padding:24px 0">
         <div class="summary-card" id="bundle-card">
-          <h3>📦 <span id="bundle-title"></span></h3>
+          <h3><span id="bundle-title"></span></h3>
           <p id="bundle-desc" style="color:var(--muted);margin-bottom:16px"></p>
           <div class="price-row" style="font-size:1.3rem;font-weight:800">
             <span>סה״כ לתשלום:</span>
-            <span class="amount" id="bundle-price-display" style="color:var(--pink)"></span>
+            <span class="amount" id="bundle-price-display" style="color:#A84C73"></span>
           </div>
         </div>
 
-        <div id="gemara-note" style="display:none;margin-top:12px;font-size:.9rem;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px">
-          💳 תשלום באשראי דרך האתר — ומפאת גודל הקבצים, הסיפורים יישלחו בדיסק און קי בלבד (לא ב-Google Drive).
+        <div id="delivery-payment-note" style="display:none;margin-top:12px;font-size:.9rem;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px">
+          💳 תשלום באשראי דרך האתר — ומפאת גודל הקבצים, הסיפורים יישלחו בדיסק און קי בלבד ולא דרך המייל.
         </div>
 
         <div style="text-align:center;margin:16px 0">
-          <button class="btn btn-primary" onclick="goToStep(2)">המשך להזמנה ←</button>
+          <button class="btn btn-primary btn-shine-auto" onclick="goToStep(2)">🛒 המשך להזמנה ←</button>
         </div>
 
         <div id="adult-disc-list" style="display:none;margin-top:16px">
           <div class="catalog-download-bar">
             <a href="files/קטלוג מבוגרים.pdf" download class="btn-catalog-pdf">📄 להורדת הקטלוג למבוגרים לחץ כאן</a>
           </div>
-          <div class="section-title" style="font-size:1rem;margin-bottom:4px">📋 תוכן האוסף — 24 דיסקים, 283 הרצאות</div>
+          <div class="section-title" style="font-size:1rem;margin-bottom:4px">תוכן האוסף — 24 דיסקים, 283 הרצאות</div>
           <div style="font-size:.85rem;color:var(--muted);margin-bottom:12px">(מסופק בדיסק און קי בלבד)</div>
           <div id="adult-discs-grid"></div>
         </div>
@@ -733,7 +737,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           </div>
         </div>
         <div class="pricing-tiers" id="pricing-tiers"></div>
-        <button class="btn btn-cta-gold btn-sm" id="continue-btn" onclick="goToStep(2)" disabled>🛒 המשך להזמנה ←</button>
+        <button class="btn btn-cta-gold btn-sm btn-shine-auto" id="continue-btn" onclick="goToStep(2)" disabled>🛒 המשך להזמנה ←</button>
       </div>
 
     </div>
@@ -771,7 +775,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
               </div>
             </label>
             <div id="usb-free-note" style="font-size:.78rem;color:var(--muted);margin-top:8px">✅ הזמנות מ-50 קבצים ומעלה – דיסק און קי חינם!</div>
-            <div id="delivery-locked-note" style="display:none;font-size:.78rem;color:var(--muted);margin-top:8px">📀 קטגוריה זו נשלחת בדיסק און קי בלבד — אין אפשרות מסירה בדרייב.</div>
+            <div id="delivery-locked-note" style="display:none;font-size:.78rem;color:var(--muted);margin-top:8px">קטגוריה זו נשלחת בדיסק און קי בלבד — אין אפשרות מסירה בדרייב.</div>
           </div>
 
           <div style="display:flex;gap:10px;margin-top:4px">
@@ -789,7 +793,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 
         <div>
           <div class="summary-card">
-            <h3>📝 פרטי הלקוח</h3>
+            <h3>פרטי הלקוח</h3>
             <div class="form-grid">
               <div class="form-group">
                 <label>שם מלא <span class="req">*</span></label>
@@ -810,7 +814,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           </div>
 
           <div class="summary-card mt-16" id="address-section" style="display:none">
-            <h3>📦 כתובת למשלוח דיסק און קי <span class="req">*</span></h3>
+            <h3>כתובת למשלוח דיסק און קי <span class="req">*</span></h3>
             <div class="form-grid">
               <div class="form-group">
                 <label>רחוב <span class="req">*</span></label>
@@ -1024,7 +1028,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         </div>
         <div class="catalog-selection-summary" id="catalog-selection-summary">
           <span><strong id="catalog-sel-count">0</strong> סיפורים נבחרו · סה"כ <strong id="catalog-sel-total">₪0</strong></span>
-          <button type="button" class="btn btn-cta-gold btn-sm" id="catalog-continue-btn" disabled
+          <button type="button" class="btn btn-cta-gold btn-sm btn-shine-auto" id="catalog-continue-btn" disabled
                   onclick="selectProduct('STORY_SELECTION'); goToStep(2);">🛒 המשך להזמנה ←</button>
         </div>
 
@@ -1067,12 +1071,12 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 
 <!-- ===== FOOTER ===== -->
 <footer class="site-footer">
+  <div class="footer-copy">© יד תמר — כל הזכויות שמורות. החומר נמכר לשימוש אישי בלבד.</div>
+  <div class="footer-credit">האתר פותח ועוצב על ידי חיה סילבר — <a href="mailto:c0548496744@gmail.com" class="footer-credit-link">✉️ c0548496744@gmail.com</a></div>
   <div class="footer-links">
     <a href="accessibility.html">הצהרת נגישות</a>
     <a href="privacy.html">מדיניות פרטיות</a>
   </div>
-  <div class="footer-credit">✨ האתר פותח ועוצב על ידי חיה סילבר — <a href="mailto:c0548496744@gmail.com" class="footer-credit-link">✉️ c0548496744@gmail.com</a></div>
-  <div class="footer-copy">© יד תמר — כל הזכויות שמורות. החומר נמכר לשימוש אישי בלבד.</div>
 </footer>
 
 <script src="js/data.js"></script>
@@ -1198,13 +1202,23 @@ async function handlePaymentReturn() {
   const pendingBox = document.getElementById('payment-pending-box');
   pendingBox.style.display = '';
 
+  // סוגי הזמנה שמסופקים ידנית (דיסק און קי) — לא עוברים fulfillment אוטומטי,
+  // ולכן לעולם לא יגיעו ל-status==='fulfilled' ולא יקבלו drive_folder_url. עבורם
+  // 'paid' הוא כבר מצב הסיום הנכון (ראו fulfillment.js).
+  const MANUAL_DELIVERY_TYPES = ['ADULT_COLLECTION', 'GEMARA'];
+
   const MAX_ATTEMPTS = 30;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetch('/api/orders/' + orderId);
       if (res.ok) {
         const data = await res.json();
-        if (data.status === 'paid' || data.status === 'fulfilled') {
+        // התשלום נרשם ('paid') עוד לפני שיצירת התיקייה/השיתוף ברקע הסתיימו —
+        // אם עדיין אין קישור ומדובר בסוג הזמנה שאמור לקבל אחד, ממשיכים לחכות
+        // (ולא מציגים "הצלחה" בלי קישור, שלעולם לא יתעדכן אחרי ה-return).
+        const isDone = data.status === 'fulfilled'
+          || (data.status === 'paid' && (data.drive_folder_url || MANUAL_DELIVERY_TYPES.includes(data.order_type)));
+        if (isDone) {
           localStorage.removeItem('yadtamar_pending_' + orderId);
           pendingBox.style.display = 'none';
           const successBox = document.getElementById('order-success-box');
@@ -1223,6 +1237,10 @@ async function handlePaymentReturn() {
             againBtn.style.display = '';
           }
           return;
+        }
+        if (data.status === 'paid') {
+          pendingBox.querySelector('h2').textContent = 'התשלום התקבל בהצלחה!';
+          pendingBox.querySelector('p').textContent = 'מכינים את הקבצים שלכם... הדף יתעדכן אוטומטית.';
         }
         if (data.status === 'failed') {
           pendingBox.style.display = 'none';
@@ -1372,7 +1390,7 @@ function selectProduct(type) {
     pricingBar.style.display   = 'none';
 
     document.getElementById('adult-disc-list').style.display = 'none';
-    document.getElementById('gemara-note').style.display = 'none';
+    document.getElementById('delivery-payment-note').style.display = 'none';
 
     if (type === 'ADULT_COLLECTION') {
       document.getElementById('bundle-title').textContent = 'קטלוג הרצאות ושיעורים למבוגרים';
@@ -1380,6 +1398,7 @@ function selectProduct(type) {
       document.getElementById('bundle-price-display').textContent = '₪' + ADULT_COLLECTION_PRICE.toLocaleString();
 
       document.getElementById('adult-disc-list').style.display = '';
+      document.getElementById('delivery-payment-note').style.display = '';
       const adultGroups = [];
       ADULT_DISCS.forEach(d => {
         let g = adultGroups.find(g => g.cat === d.cat);
@@ -1395,9 +1414,9 @@ function selectProduct(type) {
         </div>`).join('');
     } else if (type === 'GEMARA') {
       document.getElementById('bundle-title').textContent = 'גמרא "אלו מציעות"';
-      document.getElementById('bundle-desc').textContent  = '5 קבצי שמע — כלים, יסודות וכללים להבנת הגמרא. קטגוריה בפני עצמה.';
+      document.getElementById('bundle-desc').textContent  = '5 קבצי שמע — כלים, יסודות וכללים להבנת הגמרא.';
       document.getElementById('bundle-price-display').textContent = '₪' + GEMARA_PRICE.toLocaleString();
-      document.getElementById('gemara-note').style.display = '';
+      document.getElementById('delivery-payment-note').style.display = '';
     }
   }
 
@@ -1407,6 +1426,7 @@ function selectProduct(type) {
   document.getElementById('usb-free-note').style.display = isUsbOnly ? 'none' : '';
   document.getElementById('delivery-locked-note').style.display = isUsbOnly ? '' : 'none';
   document.getElementById('usb-check').disabled = isUsbOnly;
+  document.getElementById('usb-check').style.display = isUsbOnly ? 'none' : '';
   state.useDrive = !isUsbOnly;
   state.useUsb = isUsbOnly;
   document.getElementById('drive-toggle').classList.toggle('active', !isUsbOnly);
@@ -1726,9 +1746,9 @@ function buildSummary(autoSet = false) {
       return `<li><span>${s.storyCode.replace(/^YT-/, '')} – ${s.title}</span><span style="color:var(--muted);font-size:.8rem">${priceLabel}</span></li>`;
     }).join('');
   } else if (state.product === 'ADULT_COLLECTION') {
-    list.innerHTML = `<li><span>🎓 אוסף מבוגרים ונוער</span><span>₪${ADULT_COLLECTION_PRICE}</span></li>`;
+    list.innerHTML = `<li><span>אוסף מבוגרים ונוער</span><span>₪${ADULT_COLLECTION_PRICE}</span></li>`;
   } else if (state.product === 'GEMARA') {
-    list.innerHTML = `<li><span>📜 גמרא "אלו מציעות"</span><span>₪${GEMARA_PRICE}</span></li>`;
+    list.innerHTML = `<li><span>גמרא פרק "אלו מציעות"</span><span>₪${GEMARA_PRICE}</span></li>`;
   }
 
   const bd = document.getElementById('price-breakdown');
@@ -1746,13 +1766,13 @@ function buildSummary(autoSet = false) {
       <div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
   } else if (state.product === 'GEMARA') {
     bd.innerHTML = `
-      <div class="price-row"><span>גמרא "אלו מציעות" (כולל דיסק און קי)</span><span>₪${subtotal.toLocaleString()}</span></div>
+      <div class="price-row"><span>גמרא פרק "אלו מציעות" (כולל דיסק און קי)</span><span>₪${subtotal.toLocaleString()}</span></div>
       <div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
   }
 
   const usbNote = document.getElementById('usb-price-note');
   if (state.product === 'ADULT_COLLECTION' || state.product === 'GEMARA') {
-    usbNote.textContent = '✅ כלול במחיר (ניתן לבטל אם מעדיפים דרייב בלבד)';
+    usbNote.textContent = '✅ כלול במחיר';
   } else {
     usbNote.textContent = usbFree ? '✨ חינם להזמנה זו! (ניתן לבטל)' : `עלות: ₪${USB_PRICE}`;
   }

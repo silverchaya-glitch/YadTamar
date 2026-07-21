@@ -78,14 +78,42 @@ async function sendRawEmail({ emailType, to, subject, html, orderId = null, cust
   return error ? { success: false, error } : { success: true };
 }
 
+function buildCustomerFooter() {
+  return `
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+    <p>יש שאלה? אפשר גם להתקשר אלינו: <strong>04-9846776</strong> — נשמח לעזור! 📞</p>
+    <p>אהבתם את הסיפורים? יש עוד עשרות סיפורים שמחכים לכם —
+    <a href="https://shop.emanuel-tehila.co.il/">לחצו כאן לרכישה נוספת</a> ותנו לילדים עוד רגעים קסומים. 🎧</p>`;
+}
+
+// גרסה מצומצמת — למייל שמגיע כמעט מיד אחרי מייל אחר שכבר הציג את הפוטר המלא
+// (sendFileDelivery, שבד"כ מגיע תוך פחות משנייה אחרי sendPurchaseConfirmation),
+// כדי לא לחזור על אותה פנייה פעמיים ברצף.
+function buildCustomerFooterCompact() {
+  return `
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+    <p style="font-size:.85rem;color:#6B7280">שאלות? 04-9846776 · <a href="https://shop.emanuel-tehila.co.il/">לעוד סיפורים בחנות</a> 🎧</p>`;
+}
+
 async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, customerName, email, total, deliveryType }) {
+  // deliveryType מגיע מ-orders.delivery_type (schema.sql) — הערכים האמיתיים הם
+  // SELECTED_STORIES/MASTER_LIBRARY/ADULT_COLLECTION/GEMARA/GIFT_STORY, לעולם לא 'USB'.
+  const isAutoDrive = ['SELECTED_STORIES', 'MASTER_LIBRARY'].includes(deliveryType);
+  const deliveryLine = isAutoDrive ? 'קישור להורדה (Google Drive)' : 'דיסק און קי';
+  // רק הזמנות עם מילוי אוטומטי מקבלות מייל שני (sendFileDelivery) — ADULT_COLLECTION/GEMARA
+  // מסופקות ידנית בלבד ולעולם לא יקבלו אותו (ראה fulfillment.js).
+  const followUpLine = isAutoDrive
+    ? '<p>הקבצים בדרך אליכם — בתוך זמן קצר יישלח אליכם מייל נפרד עם קישור ההורדה. אם הוא לא מגיע תוך זמן סביר, אפשר לפנות אלינו במענה למייל זה.</p>'
+    : '';
   const html = `
     <div dir="rtl" style="font-family:sans-serif">
       <h2>תודה על ההזמנה, ${customerName}!</h2>
       <p>הזמנה מספר <strong>${orderNumber}</strong> התקבלה בהצלחה.</p>
       <p>סכום לתשלום: <strong>${total} ₪</strong></p>
-      <p>אופן קבלת התוכן: ${deliveryType === 'USB' ? 'דיסק און קי' : 'קישור להורדה (Google Drive)'}</p>
+      <p>אופן קבלת התוכן: ${deliveryLine}</p>
+      ${followUpLine}
       <p>לכל שאלה ניתן לפנות אלינו במענה למייל זה.</p>
+      ${buildCustomerFooter()}
       <p>בברכה,<br>צוות יד תמר</p>
     </div>`;
   return sendRawEmail({
@@ -104,6 +132,7 @@ async function sendFileDelivery({ orderId, customerId, customerName, email, fold
       <h2>התוכן שלך מוכן, ${customerName}!</h2>
       <p>ניתן לגשת לתיקיית ההורדה כאן:</p>
       <p><a href="${folderUrl}">${folderUrl}</a></p>
+      ${buildCustomerFooterCompact()}
       <p>בברכה,<br>צוות יד תמר</p>
     </div>`;
   return sendRawEmail({
@@ -122,6 +151,7 @@ async function sendGiftStory({ customerId, name, email, storyTitle, storyLink })
       <h2>הסיפור במתנה שלך, ${name}!</h2>
       <p>מצורף הקישור לסיפור "<strong>${storyTitle}</strong>":</p>
       <p><a href="${storyLink}">${storyLink}</a></p>
+      ${buildCustomerFooter()}
       <p>בברכה,<br>צוות יד תמר</p>
     </div>`;
   return sendRawEmail({
@@ -135,7 +165,7 @@ async function sendGiftStory({ customerId, name, email, storyTitle, storyLink })
 
 const PAY_LABELS = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
 
-function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, statusLine, feedback, contactMePhone }) {
+function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, statusLine, feedback, contactMePhone, notes }) {
   return `
     <div dir="rtl" style="font-family:sans-serif">
       <h2>${title} — ${orderNumber}</h2>
@@ -145,16 +175,22 @@ function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email,
       <p>סכום: ${totalAmount} ₪</p>
       ${contactMePhone ? `<p>📞 הלקוח/ה ביקש/ה שניצור קשר טלפוני</p>` : ''}
       ${feedback ? `<p>💬 משוב מהלקוח/ה: ${feedback}</p>` : ''}
+      ${notes ? `<p>📝 ${notes}</p>` : ''}
       ${statusLine}
     </div>`;
 }
 
 function buildFulfillmentStatusLine(fulfillment) {
-  return !fulfillment
-    ? `<p>סטטוס מילוי: ממתין לאישור תשלום (כרטיס אשראי)</p>`
-    : fulfillment.success && fulfillment.externalFolderUrl
-      ? `<p>תיקייה: <a href="${fulfillment.externalFolderUrl}">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`
-      : `<p>סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
+  if (!fulfillment) {
+    return `<p>סטטוס מילוי: ממתין לאישור תשלום (כרטיס אשראי)</p>`;
+  }
+  if (fulfillment.success && fulfillment.externalFolderUrl) {
+    return `<p>תיקייה: <a href="${fulfillment.externalFolderUrl}">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`;
+  }
+  if (!fulfillment.success && fulfillment.errorCode === 'NOT_APPLICABLE') {
+    return `<p>סטטוס מילוי: לא רלוונטי — נדרש מילוי ידני (דיסק און קי)</p>`;
+  }
+  return `<p>סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
 }
 
 async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, feedback, contactMePhone }) {
@@ -170,24 +206,26 @@ async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNum
   });
 }
 
-async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment }) {
+async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, notes }) {
   return sendOfficeNotification({
     subject: `תשלום אושר — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום אושר', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
       statusLine: buildFulfillmentStatusLine(fulfillment),
+      notes,
     }),
     orderId,
     customerId,
   });
 }
 
-async function sendPaymentFailedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount }) {
+async function sendPaymentFailedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, notes }) {
   return sendErrorNotification({
     subject: `תשלום נכשל — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום נכשל', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
       statusLine: `<p style="color:#c0392b">⚠️ התשלום לא הושלם — יש ליצור קשר עם הלקוח.</p>`,
+      notes,
     }),
     orderId,
   });
