@@ -55,6 +55,7 @@ function mapOrderRow(row) {
     filesCount:        Number(row.files_count) || 0,
     notes:             row.office_notes || '',
     createdAt:         row.created_at ? new Date(row.created_at).toLocaleString('he-IL') : '',
+    createdAtISO:      row.created_at ? new Date(row.created_at).toISOString() : '',
   };
 }
 
@@ -457,13 +458,13 @@ module.exports = {
   },
 
   async getCatalog() {
-    // קטגוריית גמרא נמכרת כבאנדל עצמאי קבוע (₪75, לא לפי סיפור) — לא חלק מהקטלוג
+    // קטגוריית גמרא נמכרת כבאנדל עצמאי קבוע (₪90, לא לפי סיפור) — לא חלק מהקטלוג
     // הרגיל הנצפה/נבחר לפי-סיפור, ולכן מוחרגת כאן (לא ב-admin.html, שקורא מ-data.js
     // ישירות ורוצה לראות הכל).
     const [{ rows: categories }, { rows: stories }] = await Promise.all([
       pool.query(`SELECT id, name, display_order FROM categories WHERE is_active = true AND name NOT LIKE 'גמרא%' ORDER BY display_order`),
       pool.query(`
-        SELECT s.id, s.story_code, s.category_id, s.title, s.duration_seconds
+        SELECT s.id, s.story_code, s.category_id, s.title, s.gate, s.duration_seconds
         FROM stories s
         JOIN categories c ON c.id = s.category_id
         WHERE s.is_active = true AND c.is_active = true AND c.name NOT LIKE 'גמרא%'
@@ -477,6 +478,7 @@ module.exports = {
         storyCode:       s.story_code,
         categoryId:      s.category_id,
         title:           s.title,
+        gate:            s.gate,
         durationMinutes: s.duration_seconds ? Math.round(s.duration_seconds / 60) : null,
       })),
     };
@@ -485,7 +487,7 @@ module.exports = {
   async getKPI() {
     const today = new Date().toISOString().slice(0, 10);
     const firstOfMonth = today.slice(0, 7) + '-01';
-    const [ordersToday, requiresAttention, failedPayments, leadsOnly, paidCreditOrders, monthlyRevenue, usbOrders] = await Promise.all([
+    const [ordersToday, requiresAttention, failedPayments, leadsOnly, paidCreditOrders, monthlyRevenue, usbOrders, systemErrors] = await Promise.all([
       pool.query('SELECT COUNT(*)::int AS n FROM orders WHERE created_at::date = $1', [today]),
       pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status = 'PENDING' AND payment_type IN ('BANK_TRANSFER','CALLBACK')"),
       pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status IN ('FAILED','CANCELLED')"),
@@ -493,6 +495,11 @@ module.exports = {
       pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status = 'PAID'"),
       pool.query("SELECT COALESCE(SUM(total_amount),0)::float AS n FROM orders WHERE payment_status = 'PAID' AND created_at >= $1", [firstOfMonth]),
       pool.query('SELECT COUNT(*)::int AS n FROM orders WHERE usb_amount IS NOT NULL'),
+      pool.query(`
+        SELECT
+          (SELECT COUNT(*)::int FROM fulfillment_requests WHERE request_status = 'FAILED') +
+          (SELECT COUNT(*)::int FROM email_logs WHERE send_status = 'FAILED') AS n
+      `),
     ]);
     return {
       ordersToday:       ordersToday.rows[0].n,
@@ -502,7 +509,7 @@ module.exports = {
       paidCreditOrders:  paidCreditOrders.rows[0].n,
       monthlyRevenue:    monthlyRevenue.rows[0].n,
       usbOrders:         usbOrders.rows[0].n,
-      systemErrors:      0,
+      systemErrors:      systemErrors.rows[0].n,
     };
   },
 };

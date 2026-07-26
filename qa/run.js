@@ -7,7 +7,9 @@ const path = require('path');
 
 const SAFE_FILES = [
   'catalog.test.js',
+  'ui-categories.test.js',
   'pricing.test.js',
+  'catalog-bundle-pricing.test.js',
   'admin-auth.test.js',
   'negative.test.js',
 ];

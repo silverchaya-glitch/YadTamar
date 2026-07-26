@@ -9,18 +9,28 @@ function extractCookie(setCookieHeader) {
   return setCookieHeader.split(';')[0];
 }
 
-async function request(pathName, { method = 'GET', body, cookie } = {}) {
+// timeoutMs אופציונלי (ברירת מחדל: בלי timeout, כמו קודם) — משמש בעיקר את
+// בדיקות העומס (qa/load-*.test.js), כדי שקריאה תקועה (למשל אחרי קריסת שרת)
+// תיכשל מהר במקום לתלות את הבדיקה לנצח.
+async function request(pathName, { method = 'GET', body, cookie, timeoutMs } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (cookie) headers['Cookie'] = cookie;
-  const res = await fetch(BASE_URL + pathName, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  const setCookie = extractCookie(res.headers.get('set-cookie'));
-  let json = null;
-  try { json = await res.json(); } catch { /* לא JSON — לא כל תגובה חייבת להיות */ }
-  return { status: res.status, body: json, cookie: setCookie };
+  const controller = timeoutMs ? new AbortController() : null;
+  const timer = timeoutMs ? setTimeout(() => controller.abort(), timeoutMs) : null;
+  try {
+    const res = await fetch(BASE_URL + pathName, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller?.signal,
+    });
+    const setCookie = extractCookie(res.headers.get('set-cookie'));
+    let json = null;
+    try { json = await res.json(); } catch { /* לא JSON — לא כל תגובה חייבת להיות */ }
+    return { status: res.status, body: json, cookie: setCookie };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 module.exports = { BASE_URL, request };

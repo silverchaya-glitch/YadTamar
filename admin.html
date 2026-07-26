@@ -112,6 +112,7 @@
                        oninput="renderOrders()" />
               </div>
             </div>
+            <div id="orders-filter-chip" style="padding:0 20px;margin-top:-4px"></div>
             <div class="table-scroll">
               <table class="data-table" id="orders-table">
                 <thead>
@@ -345,6 +346,67 @@ let ORDERS = [];
 let LEADS  = [];
 let KPI    = { ordersToday:0, requiresAttention:0, failedPayments:0, leadsOnly:0, paidCreditOrders:0, monthlyRevenue:0, usbOrders:0, systemErrors:0 };
 
+// ========== KPI → ORDERS QUICK FILTERS ==========
+// כל מפתח משקף בדיוק את השאילתה המתאימה ב-server/db/index.js getKPI(), כדי שהמספר
+// בכרטיס וההזמנות שמוצגות בלחיצה יתאימו זה לזה.
+let ordersQuickFilterKey = null;
+const ORDER_QUICK_FILTERS = {
+  today: {
+    label: 'הזמנות היום',
+    test: o => o.createdAtISO && o.createdAtISO.slice(0, 10) === new Date().toISOString().slice(0, 10),
+  },
+  requiresAttention: {
+    label: 'דורשות טיפול (ממתין תשלום — בנק/טלפון)',
+    test: o => o.paymentStatus === 'PENDING' && ['BANK_TRANSFER', 'CALLBACK'].includes(o.paymentType),
+  },
+  failedPayments: {
+    label: 'תשלומים שנכשלו/בוטלו',
+    test: o => ['FAILED', 'CANCELLED'].includes(o.paymentStatus),
+  },
+  paidCreditOrders: {
+    label: 'שולמו',
+    test: o => o.paymentStatus === 'PAID',
+  },
+  monthlyRevenue: {
+    label: 'שולמו החודש',
+    test: o => {
+      if (o.paymentStatus !== 'PAID' || !o.createdAtISO) return false;
+      const firstOfMonth = new Date().toISOString().slice(0, 7) + '-01';
+      return o.createdAtISO.slice(0, 10) >= firstOfMonth;
+    },
+  },
+  usbOrders: {
+    label: 'הזמנות עם דיסק און קי',
+    test: o => o.usb === true,
+  },
+};
+
+function goToOrdersWithFilter(key) {
+  ordersQuickFilterKey = key;
+  showPanel('orders');
+  document.querySelectorAll('#panel-orders .tab-btn').forEach(b => b.classList.remove('active'));
+  renderOrders();
+  renderOrdersFilterChip();
+}
+
+function clearOrdersQuickFilter() {
+  ordersQuickFilterKey = null;
+  const allTab = document.querySelector('#panel-orders .tab-btn');
+  if (allTab) allTab.classList.add('active');
+  renderOrders();
+  renderOrdersFilterChip();
+}
+
+function renderOrdersFilterChip() {
+  const el = document.getElementById('orders-filter-chip');
+  if (!el) return;
+  el.innerHTML = ordersQuickFilterKey
+    ? `<span class="badge badge-blue">מסונן לפי KPI: ${ORDER_QUICK_FILTERS[ordersQuickFilterKey].label}
+        <a href="#" onclick="clearOrdersQuickFilter();return false" style="margin-right:8px;color:inherit;text-decoration:underline">✕ נקה סינון</a>
+       </span>`
+    : '';
+}
+
 async function loadAdminData() {
   try {
     const [oRes, lRes, kRes] = await Promise.all([
@@ -405,17 +467,17 @@ function showPanel(name) {
 // ========== KPI ==========
 function renderKPI() {
   const cards = [
-    { label:'הזמנות היום',       value:KPI.ordersToday,       type:'' },
-    { label:'דורשות טיפול',      value:KPI.requiresAttention, type:'warning' },
-    { label:'תשלומים שנכשלו',   value:KPI.failedPayments,    type:'danger' },
-    { label:'לידים בלבד',        value:KPI.leadsOnly,         type:'' },
-    { label:'אשראי שולם',        value:KPI.paidCreditOrders,  type:'success' },
-    { label:'הכנסה חודשית',      value:'₪'+KPI.monthlyRevenue.toLocaleString(), type:'gold' },
-    { label:'הזמנות דיסק און קי', value:KPI.usbOrders,         type:'pink' },
-    { label:'שגיאות מערכת',       value:KPI.systemErrors,      type:KPI.systemErrors>0?'danger':'success' },
+    { label:'הזמנות היום',       value:KPI.ordersToday,       type:'',        onClick:"goToOrdersWithFilter('today')" },
+    { label:'דורשות טיפול',      value:KPI.requiresAttention, type:'warning', onClick:"goToOrdersWithFilter('requiresAttention')" },
+    { label:'תשלומים שנכשלו',   value:KPI.failedPayments,    type:'danger',  onClick:"goToOrdersWithFilter('failedPayments')" },
+    { label:'לידים בלבד',        value:KPI.leadsOnly,         type:'',        onClick:"showPanel('leads')" },
+    { label:'אשראי שולם',        value:KPI.paidCreditOrders,  type:'success', onClick:"goToOrdersWithFilter('paidCreditOrders')" },
+    { label:'הכנסה חודשית',      value:'₪'+KPI.monthlyRevenue.toLocaleString(), type:'gold', onClick:"goToOrdersWithFilter('monthlyRevenue')" },
+    { label:'הזמנות דיסק און קי', value:KPI.usbOrders,         type:'pink',    onClick:"goToOrdersWithFilter('usbOrders')" },
+    { label:'שגיאות מערכת',       value:KPI.systemErrors,      type:KPI.systemErrors>0?'danger':'success', onClick:"showPanel('fulfillment')" },
   ];
   document.getElementById('kpi-grid').innerHTML = cards.map(c => `
-    <div class="kpi-card ${c.type}">
+    <div class="kpi-card kpi-clickable ${c.type}" onclick="${c.onClick}" title="לחצו לצפייה בטבלה הרלוונטית">
       <div class="kpi-label">${c.label}</div>
       <div class="kpi-value">${c.value}</div>
     </div>
@@ -466,6 +528,8 @@ function renderPricingTable() {
 // ========== ORDERS TABLE ==========
 let ordersFilter = 'all';
 function filterOrdersTab(btn, f) {
+  ordersQuickFilterKey = null;
+  renderOrdersFilterChip();
   ordersFilter = f;
   document.querySelectorAll('#panel-orders .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -475,7 +539,9 @@ function filterOrdersTab(btn, f) {
 function renderOrders() {
   const q = (document.getElementById('order-search')?.value || '').toLowerCase();
   const rows = ORDERS.filter(o => {
-    const matchStatus = ordersFilter === 'all' || o.paymentStatus === ordersFilter;
+    const matchStatus = ordersQuickFilterKey
+      ? ORDER_QUICK_FILTERS[ordersQuickFilterKey].test(o)
+      : (ordersFilter === 'all' || o.paymentStatus === ordersFilter);
     const matchSearch = !q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q) || o.email.toLowerCase().includes(q);
     return matchStatus && matchSearch;
   });

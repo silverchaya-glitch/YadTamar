@@ -476,6 +476,10 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .catalog-table tbody tr:hover td:nth-child(2)::before { opacity: 1; }
 .catalog-check-cell { width: 32px; text-align: center; }
 .catalog-check-cell input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+.catalog-table tbody tr.catalog-gate-row { cursor: default; }
+.catalog-table tbody tr.catalog-gate-row td { background: var(--bg2); color: var(--teal-dk); font-weight: 700; font-size: .82rem; padding: 8px 14px; }
+.catalog-table tbody tr.catalog-gate-row:hover { background: var(--bg2); box-shadow: none; }
+.catalog-table tbody tr.catalog-gate-row:hover td { transform: none; }
 
 /* ===== Toast ===== */
 #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
@@ -621,7 +625,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
       <div class="product-card" id="card-gemara" onclick="selectProduct('GEMARA')">
         <div class="card-icon"><img src="gemara-icon.svg" alt="גמרא" style="width:36px;height:36px;object-fit:contain" /></div>
         <h3>גמרא<br>"אלו מציעות"</h3>
-        <div class="card-price">₪75</div>
+        <div class="card-price">₪90</div>
         <div class="card-desc">5 קבצי שמע</div>
       </div>
       <div class="product-card card-gift" id="card-gift" onclick="showTab('gift')">
@@ -702,7 +706,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <div class="catalog-toolbar">
           <input type="text" class="search-input" id="search-box"
                  placeholder="🔍 חיפוש סיפור לפי שם או קוד..."
-                 oninput="filterStories()" />
+                 oninput="filterStories(this)" />
           <select class="category-select" id="category-select" onchange="setCategoryFilter(this.value)">
             <option value="all">כל הקטגוריות</option>
           </select>
@@ -984,7 +988,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           <div class="about-card full">
             <div class="about-card-icon">📦</div>
             <h4>מה כלול?</h4>
-            <p>433 סיפורי שמע לילדים בפורמט דיגיטלי, כל קובץ שמע כ-45–60 דקות, מסופקים באמצעות קישור למייל / דיסק און קי. בנוסף, 5 קבצי גמרא (בקטגוריה נפרדת) וקטלוג הרצאות ושיעורים למבוגרים בנפרד (24 דיסקים, כ-283 שיעורים) — ניתן לרכישה רק על גבי דיסק און קי.</p>
+            <p>423 סיפורי שמע לילדים בפורמט דיגיטלי, כל קובץ שמע כ-45–60 דקות, מסופקים באמצעות קישור למייל / דיסק און קי. בנוסף, 5 קבצי גמרא (בקטגוריה נפרדת) וקטלוג הרצאות ושיעורים למבוגרים בנפרד (24 דיסקים, כ-283 שיעורים) — ניתן לרכישה רק על גבי דיסק און קי.</p>
           </div>
           <div class="about-card full">
             <div class="about-card-icon">🎁</div>
@@ -1030,6 +1034,18 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           <span><strong id="catalog-sel-count">0</strong> סיפורים נבחרו · סה"כ <strong id="catalog-sel-total">₪0</strong></span>
           <button type="button" class="btn btn-cta-gold btn-sm btn-shine-auto" id="catalog-continue-btn" disabled
                   onclick="selectProduct('STORY_SELECTION'); goToStep(2);">🛒 המשך להזמנה ←</button>
+        </div>
+
+        <div class="catalog-toolbar">
+          <input type="text" class="search-input" id="search-box-2"
+                 placeholder="🔍 חיפוש סיפור לפי שם או קוד..."
+                 oninput="filterStories(this)" />
+          <select class="category-select" id="category-select-2" onchange="setCategoryFilter(this.value)">
+            <option value="all">כל הקטגוריות</option>
+          </select>
+          <div class="filter-chips" id="category-chips-2">
+            <button class="chip active" data-cat="all" onclick="filterByCategory(this)">הכל</button>
+          </div>
         </div>
 
         <div id="catalog-viewer"></div>
@@ -1082,7 +1098,10 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 <script src="js/data.js"></script>
 <script>
 // ========== BUNDLE-ONLY CATEGORY (בר/בת מצוה) ==========
-const BUNDLE_ONLY_CATEGORY_ID = 'c16';
+// הקטלוג נטען מה-DB החי (/api/catalog) עם UUID אמיתיים, לא הקודים 'c1'..'c18' של
+// js/data.js — לכן ה-ID נפתר בזמן ריצה לפי שם הקטגוריה (ר' loadCatalog), לא hardcoded.
+const BUNDLE_ONLY_CATEGORY_NAME = 'בר מצוה/בת מצוה';
+let BUNDLE_ONLY_CATEGORY_ID = null;
 const BUNDLE_ONLY_PRICE = 15;
 
 // מפרידה את הבחירה לכמות "רגילה" (נכנסת לנוסחת התמחור המדורגת) לעומת חבילת
@@ -1147,7 +1166,7 @@ function initScrollReveal() {
 // ========== SPARKLE TRAIL ==========
 // Progressive enhancement: no-op on touch devices (no hover) or if the mouse never moves.
 function initSparkleTrail() {
-  if (!window.matchMedia('(hover: hover)').matches) return;
+  if (!('matchMedia' in window) || !window.matchMedia('(hover: hover)').matches) return;
   let lastSpawn = 0;
   let activeCount = 0;
   const MAX_ACTIVE = 5;
@@ -1171,14 +1190,18 @@ function initSparkleTrail() {
 
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', async () => {
-  initScrollReveal();
-  initSparkleTrail();
+  // הקטלוג נטען קודם, ולבד — זה החלק הקריטי (בלעדיו אין אתר). אפקטים קוסמטיים
+  // (scroll-reveal / sparkle-trail) עוטפים ב-try/catch כל אחד בנפרד, כדי ששגיאה
+  // בהם (למשל דפדפן/וידג'ט שלא תומך ב-API מסוים) לא תפיל את כל שרשרת האתחול
+  // ותשאיר את הקטלוג/הרכישה תקועים - זה בדיוק מה שקרה בפועל לפני התיקון הזה.
   await loadCatalog();
   renderPricingTiers();
   selectProduct('STORY_SELECTION');
   document.getElementById('usb-free-note').textContent =
     `✅ הזמנות מ-${FREE_USB_MIN_FILES} קבצים ומעלה – דיסק און קי חינם!`;
   await handlePaymentReturn();
+  try { initScrollReveal(); } catch (e) { console.error('initScrollReveal failed', e); }
+  try { initSparkleTrail(); } catch (e) { console.error('initSparkleTrail failed', e); }
 });
 
 // ========== PAYMENT RETURN (חזרה מ-HYP אחרי redirect) ==========
@@ -1304,6 +1327,7 @@ async function loadCatalog() {
     const data = await res.json();
     liveCategories = data.categories || [];
     liveStories = data.stories || [];
+    BUNDLE_ONLY_CATEGORY_ID = liveCategories.find(c => c.name === BUNDLE_ONLY_CATEGORY_NAME)?.id || null;
     buildCategoryChips();
     renderCatalogAll();
   } catch {
@@ -1436,29 +1460,34 @@ function selectProduct(type) {
 }
 
 // ========== CATALOG ==========
+// יש שני toolbar-ים מקבילים לאותו קטלוג (בתוך אשף הרכישה וב"מאגר סיפורי ילדים"
+// בעמוד הראשי) — כל הפונקציות כאן פועלות לפי class, לא id יחיד, כדי שתמיד
+// יתעדכנו שני העותקים יחד ולא יתפצלו למצבים שונים.
 function buildCategoryChips() {
-  const chips = document.getElementById('category-chips');
-  const select = document.getElementById('category-select');
-  liveCategories.forEach(cat => {
-    const b = document.createElement('button');
-    b.className = 'chip';
-    b.dataset.cat = cat.id;
-    b.textContent = cat.name;
-    b.onclick = () => filterByCategory(b);
-    chips.appendChild(b);
-
-    const opt = document.createElement('option');
-    opt.value = cat.id;
-    opt.textContent = cat.name;
-    select.appendChild(opt);
+  document.querySelectorAll('.filter-chips').forEach(chips => {
+    liveCategories.forEach(cat => {
+      const b = document.createElement('button');
+      b.className = 'chip';
+      b.dataset.cat = cat.id;
+      b.textContent = cat.name;
+      b.onclick = () => filterByCategory(b);
+      chips.appendChild(b);
+    });
+  });
+  document.querySelectorAll('.category-select').forEach(select => {
+    liveCategories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat.id;
+      opt.textContent = cat.name;
+      select.appendChild(opt);
+    });
   });
 }
 
 function setCategoryFilter(catId) {
   state.filterCat = catId;
-  document.querySelectorAll('#category-chips .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === catId));
-  const select = document.getElementById('category-select');
-  if (select) select.value = catId;
+  document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === catId));
+  document.querySelectorAll('.category-select').forEach(select => { select.value = catId; });
   renderCatalogAll();
 }
 
@@ -1466,13 +1495,46 @@ function filterByCategory(btn) {
   setCategoryFilter(btn.dataset.cat);
 }
 
-function filterStories() {
-  state.search = document.getElementById('search-box').value.trim().toLowerCase();
+function filterStories(input) {
+  state.search = input.value.trim().toLowerCase();
+  document.querySelectorAll('.search-input').forEach(el => { if (el !== input) el.value = input.value; });
   renderCatalogAll();
 }
 
 function getCategoryName(id) {
   return liveCategories.find(c => c.id === id)?.name || '';
+}
+
+function renderCatalogStoryRows(stories, isBundleOnly) {
+  let prevGate = null;
+  return stories.map(s => {
+    let header = '';
+    if (s.gate && s.gate !== prevGate) {
+      if (isBundleOnly) {
+        header = `<tr class="catalog-gate-row"><td colspan="3">${s.gate}</td></tr>`;
+      } else {
+        const gateStories = liveStories.filter(x => x.categoryId === s.categoryId && x.gate === s.gate);
+        const gateAllSelected = gateStories.length > 0 && gateStories.every(x => state.selectedStories.has(x.id));
+        header = `<tr class="catalog-gate-row" data-gate-cat="${s.categoryId}" data-gate="${s.gate}">
+                    <td class="catalog-check-cell"><input type="checkbox" class="catalog-gate-checkbox" ${gateAllSelected ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleCatalogGateSelect(this)"></td>
+                    <td colspan="2">${s.gate}</td>
+                  </tr>`;
+      }
+    }
+    prevGate = s.gate || null;
+    const row = isBundleOnly ? `
+                  <tr data-story-id="${s.id}" class="${state.selectedStories.has(s.id) ? 'checked' : ''}">
+                    <td class="catalog-check-cell">${state.selectedStories.has(s.id) ? '✓' : ''}</td>
+                    <td>${s.storyCode.replace(/^YT-/, '')}</td>
+                    <td>${s.title}</td>
+                  </tr>` : `
+                  <tr data-story-id="${s.id}" class="${state.selectedStories.has(s.id) ? 'checked' : ''}" onclick="toggleStory('${s.id}')">
+                    <td class="catalog-check-cell"><input type="checkbox" ${state.selectedStories.has(s.id) ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleStory('${s.id}')"></td>
+                    <td>${s.storyCode.replace(/^YT-/, '')}</td>
+                    <td>${s.title}</td>
+                  </tr>`;
+    return header + row;
+  }).join('');
 }
 
 function renderCatalogViewer(targetId = 'catalog-viewer') {
@@ -1503,24 +1565,18 @@ function renderCatalogViewer(targetId = 'catalog-viewer') {
           <button type="button" class="btn-select-cat catalog-cat-select-btn" onclick="event.stopPropagation(); toggleCatalogCategorySelect('${cat.id}')">✓ בחר הכל</button>
         </div>
         <div class="catalog-collapse-wrap">
-          ${isBundleOnly ? `<div class="catalog-bundle-note">📦 קטגוריה זו נמכרת כחבילה שלמה בלבד — כל ${stories.length} הסיפורים יחד, במחיר קבוע של ₪${BUNDLE_ONLY_PRICE}. לא ניתן לבחור סיפורים בודדים מתוכה.</div>` : ''}
+          ${isBundleOnly ? `
+          <label class="catalog-bundle-note" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" class="catalog-bundle-checkbox" ${stories.every(s => state.selectedStories.has(s.id)) ? 'checked' : ''} onchange="toggleCatalogCategorySelect('${cat.id}')" />
+            <span>קטגוריה זו נמכרת כחבילה שלמה בלבד — כל ${stories.length} הסיפורים יחד, במחיר קבוע של ₪${BUNDLE_ONLY_PRICE}. לא ניתן לבחור סיפורים בודדים מתוכה.</span>
+          </label>` : ''}
           <div class="catalog-table-wrap">
             <table class="catalog-table">
               <thead>
                 <tr><th></th><th>מס' סידורי</th><th>שם הסיפור</th></tr>
               </thead>
               <tbody>
-                ${stories.map(s => isBundleOnly ? `
-                  <tr data-story-id="${s.id}" class="${state.selectedStories.has(s.id) ? 'checked' : ''}">
-                    <td class="catalog-check-cell">${state.selectedStories.has(s.id) ? '✓' : ''}</td>
-                    <td>${s.storyCode.replace(/^YT-/, '')}</td>
-                    <td>${s.title}</td>
-                  </tr>` : `
-                  <tr data-story-id="${s.id}" class="${state.selectedStories.has(s.id) ? 'checked' : ''}" onclick="toggleStory('${s.id}')">
-                    <td class="catalog-check-cell"><input type="checkbox" ${state.selectedStories.has(s.id) ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleStory('${s.id}')"></td>
-                    <td>${s.storyCode.replace(/^YT-/, '')}</td>
-                    <td>${s.title}</td>
-                  </tr>`).join('')}
+                ${renderCatalogStoryRows(stories, isBundleOnly)}
               </tbody>
             </table>
           </div>
@@ -1549,7 +1605,12 @@ function toggleStory(id) {
   else state.selectedStories.add(id);
   patchCatalogRow(id);
   const story = liveStories.find(s => s.id === id);
-  if (story) syncCategoryButton(story.categoryId);
+  if (story) {
+    syncCategoryButton(story.categoryId);
+    if (story.gate) {
+      document.querySelectorAll(`.catalog-gate-row[data-gate-cat="${story.categoryId}"][data-gate="${story.gate}"]`).forEach(syncGateCheckbox);
+    }
+  }
   updatePricingBar();
   updateCatalogSelectionSummary();
   updateSelectButtons();
@@ -1561,15 +1622,45 @@ function patchCatalogRow(id) {
     tr.classList.toggle('checked', checked);
     const cb = tr.querySelector('input[type=checkbox]');
     if (cb) cb.checked = checked;
+    else {
+      // שורות קטגוריית bundle-only (בר/בת מצוה) אין להן checkbox אמיתי — רק ✓ סטטי
+      const cell = tr.querySelector('.catalog-check-cell');
+      if (cell) cell.textContent = checked ? '✓' : '';
+    }
   });
 }
 
 function syncCategoryButton(catId) {
-  const btn = document.querySelector(`.catalog-cat-group[data-cat="${catId}"] .catalog-cat-select-btn`);
-  if (!btn) return;
   const stories = liveStories.filter(s => s.categoryId === catId);
   const allSelected = stories.length > 0 && stories.every(s => state.selectedStories.has(s.id));
-  btn.textContent = allSelected ? '✗ נקה הכל' : '✓ בחר הכל';
+  const btn = document.querySelector(`.catalog-cat-group[data-cat="${catId}"] .catalog-cat-select-btn`);
+  if (btn) btn.textContent = allSelected ? '✗ נקה הכל' : '✓ בחר הכל';
+  const bundleCb = document.querySelector(`.catalog-cat-group[data-cat="${catId}"] .catalog-bundle-checkbox`);
+  if (bundleCb) bundleCb.checked = allSelected;
+}
+
+function syncGateCheckbox(tr) {
+  const catId = tr.dataset.gateCat, gate = tr.dataset.gate;
+  const stories = liveStories.filter(s => s.categoryId === catId && s.gate === gate);
+  const cb = tr.querySelector('.catalog-gate-checkbox');
+  if (cb) cb.checked = stories.length > 0 && stories.every(s => state.selectedStories.has(s.id));
+}
+
+function toggleCatalogGateSelect(cb) {
+  const tr = cb.closest('tr');
+  const catId = tr.dataset.gateCat, gate = tr.dataset.gate;
+  const stories = liveStories.filter(s => s.categoryId === catId && s.gate === gate);
+  const allSelected = stories.every(s => state.selectedStories.has(s.id));
+  stories.forEach(s => {
+    if (allSelected) state.selectedStories.delete(s.id);
+    else state.selectedStories.add(s.id);
+    patchCatalogRow(s.id);
+  });
+  document.querySelectorAll(`.catalog-gate-row[data-gate-cat="${catId}"][data-gate="${gate}"]`).forEach(syncGateCheckbox);
+  syncCategoryButton(catId);
+  updatePricingBar();
+  updateCatalogSelectionSummary();
+  updateSelectButtons();
 }
 
 function patchAllCatalogRows() {
@@ -1578,8 +1669,13 @@ function patchAllCatalogRows() {
     tr.classList.toggle('checked', checked);
     const cb = tr.querySelector('input[type=checkbox]');
     if (cb) cb.checked = checked;
+    else {
+      const cell = tr.querySelector('.catalog-check-cell');
+      if (cell) cell.textContent = checked ? '✓' : '';
+    }
   });
   document.querySelectorAll('.catalog-cat-group').forEach(g => syncCategoryButton(g.dataset.cat));
+  document.querySelectorAll('.catalog-gate-row').forEach(syncGateCheckbox);
 }
 
 function toggleCatalogCategorySelect(catId) {
@@ -1591,6 +1687,7 @@ function toggleCatalogCategorySelect(catId) {
     patchCatalogRow(s.id);
   });
   syncCategoryButton(catId);
+  document.querySelectorAll(`.catalog-gate-row[data-gate-cat="${catId}"]`).forEach(syncGateCheckbox);
   updatePricingBar();
   updateCatalogSelectionSummary();
   updateSelectButtons();

@@ -11,6 +11,7 @@
     "db:seed:admin": "node server/db/seed-admin.js",
     "db:seed:fake": "node server/db/seed-fake-data.js",
     "qa": "node qa/run.js",
+    "qa:report": "node qa/run-all.js",
     "qa:cleanup": "node qa/cleanup.js"
   },
   "dependencies": {

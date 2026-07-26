@@ -41,6 +41,7 @@ CREATE TABLE stories (
   story_code TEXT NOT NULL UNIQUE,                 -- DC-02
   category_id UUID NOT NULL REFERENCES categories(id),
   title TEXT NOT NULL,
+  gate TEXT,                                        -- שער תמטי בתוך קטגוריה (רלוונטי כרגע רק לסיפורי מופת); NULL = אין חלוקה לשערים
   google_drive_file_id TEXT NOT NULL,               -- DC-04
   duration_seconds INTEGER,
   is_active BOOLEAN NOT NULL DEFAULT true,

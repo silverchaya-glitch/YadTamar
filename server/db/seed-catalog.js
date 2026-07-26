@@ -92,12 +92,13 @@ async function main() {
       if (driveId.startsWith('PENDING-DRIVE-ID-')) placeholderCount++; else realDriveCount++;
 
       await client.query(
-        `INSERT INTO stories (story_code, category_id, title, google_drive_file_id, duration_seconds, is_active)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
+        `INSERT INTO stories (story_code, category_id, title, gate, google_drive_file_id, duration_seconds, is_active)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
         [
           story.storyCode,
           categoryIdByCode.get(story.categoryId),
           story.title,
+          story.gate || null,
           driveId,
           story.duration ? story.duration * 60 : null,
           story.isActive,

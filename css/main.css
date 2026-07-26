@@ -540,6 +540,7 @@ body {
   transition: transform .22s var(--ease-clay), box-shadow .22s ease;
 }
 .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-admin-hover); }
+.kpi-card.kpi-clickable { cursor: pointer; }
 .kpi-card.danger  { border-right-color: var(--red); }
 .kpi-card.warning { border-right-color: var(--orange); }
 .kpi-card.success { border-right-color: var(--green); }
