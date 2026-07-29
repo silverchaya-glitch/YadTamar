@@ -477,7 +477,7 @@ body {
 
 /* ===== Admin Dashboard ===== */
 .admin-layout {
-  display: flex; min-height: 100vh;
+  display: flex; height: 100vh;
 }
 .admin-sidebar {
   width: 240px; min-width: 240px;
@@ -513,16 +513,26 @@ body {
 .menu-item:hover  { background: rgba(255,255,255,.1); color: #fff; }
 .menu-item.active { background: rgba(255,255,255,.18); color: #fff; font-weight: 700; box-shadow: inset 0 0 0 1.5px rgba(245,197,24,.4); }
 
-.admin-main { flex: 1; background: var(--bg); overflow-y: auto; }
+.admin-main { flex: 1; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
 .admin-topbar {
   background: #fff;
   padding: 14px 28px;
   border-bottom: 2px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
   box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  flex-shrink: 0;
 }
 .admin-topbar h2 { font-size: 1.2rem; font-weight: 700; }
-.admin-content { padding: 28px; }
+.admin-content { padding: 28px; flex: 1; overflow-y: auto; }
+.admin-footer {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: .82rem;
+  color: var(--muted);
+  padding: 12px 28px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
 
 /* ===== KPI Cards ===== */
 .kpi-grid {
