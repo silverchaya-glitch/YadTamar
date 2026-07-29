@@ -19,21 +19,15 @@
         <span>יד תמר</span>
       </div>
       <nav class="sidebar-menu">
-        <div class="menu-item active" id="menu-dashboard" onclick="showPanel('dashboard')">
-          <span>📊</span> לוח בקרה
-        </div>
-        <div class="menu-item" id="menu-orders" onclick="showPanel('orders')">
+        <div class="menu-item active" id="menu-orders" onclick="showPanel('orders')">
           <span>🧾</span> הזמנות
         </div>
-        <div class="menu-item" id="menu-fulfillment" onclick="showPanel('fulfillment')">
-          <span>📦</span> משלוחים
-        </div>
-        <div class="menu-item" id="menu-leads" onclick="showPanel('leads')">
-          <span>👥</span> לידים
-        </div>
-        <div class="menu-item" id="menu-catalog" onclick="showPanel('catalog')">
-          <span>📚</span> קטלוג
-        </div>
+        <!-- מוסתרים לפי בקשת המשתמשת (מינימום למשרד) — הקוד/הפאנלים נשארו קיימים, רק לא בתפריט:
+        <div class="menu-item" id="menu-dashboard" onclick="showPanel('dashboard')"><span>📊</span> לוח בקרה</div>
+        <div class="menu-item" id="menu-fulfillment" onclick="showPanel('fulfillment')"><span>📦</span> משלוחים</div>
+        <div class="menu-item" id="menu-leads" onclick="showPanel('leads')"><span>👥</span> לידים</div>
+        <div class="menu-item" id="menu-catalog" onclick="showPanel('catalog')"><span>📚</span> קטלוג</div>
+        -->
       </nav>
       <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);margin-top:auto">
         <div id="sidebar-user" style="font-size:.8rem;opacity:.7;margin-bottom:8px">מחובר:</div>
@@ -48,7 +42,7 @@
       <div class="admin-topbar">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="btn-hamburger" onclick="document.getElementById('admin-sidebar').classList.toggle('sidebar-open')" aria-label="תפריט">☰</button>
-          <h2 id="panel-title">לוח בקרה</h2>
+          <h2 id="panel-title">הזמנות</h2>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <nav class="header-nav">
@@ -63,7 +57,7 @@
       <div class="admin-content">
 
         <!-- ===== PANEL: DASHBOARD ===== -->
-        <div id="panel-dashboard" class="tab-panel active">
+        <div id="panel-dashboard" class="tab-panel">
 
           <!-- KPI Cards -->
           <div class="kpi-grid" id="kpi-grid"></div>
@@ -94,7 +88,7 @@
         </div>
 
         <!-- ===== PANEL: ORDERS ===== -->
-        <div id="panel-orders" class="tab-panel">
+        <div id="panel-orders" class="tab-panel active">
           <div class="tab-list">
             <button class="tab-btn active" onclick="filterOrdersTab(this,'all')">כל ההזמנות</button>
             <button class="tab-btn" onclick="filterOrdersTab(this,'PAID')">שולמו</button>
