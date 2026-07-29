@@ -106,6 +106,10 @@
             <div class="table-header">
               <h3>הזמנות</h3>
               <div class="table-toolbar">
+                <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;user-select:none">
+                  <input type="checkbox" id="order-group-toggle" onchange="toggleOrdersGrouping(this.checked)" />
+                  קיבוץ לפי סטטוס
+                </label>
                 <input type="text" class="search-input" id="order-search"
                        style="min-width:200px;padding:8px 14px;border-radius:20px"
                        placeholder="🔍 חיפוש לפי שם / מספר..."
@@ -271,6 +275,8 @@
             </div>
           </div>
         </div>
+
+        <div style="text-align:center;font-size:.82rem;color:var(--muted);margin-top:28px">✨ האתר פותח ועוצב על ידי חיה סילבר — <a href="https://mail.google.com/mail/u/0/?fs=1&amp;tf=cm&amp;source=mailto&amp;to=c0548496744%40gmail.com&amp;su=%D7%94%D7%92%D7%A2%D7%AA%D7%99+%D7%9E%D7%90%D7%AA%D7%A8+%D7%99%D7%93+%D7%AA%D7%9E%D7%A8" style="color:var(--teal-dk);font-weight:600;text-decoration:none" target="_blank" rel="noopener">✉️ c0548496744@gmail.com</a></div>
 
       </div><!-- /admin-content -->
     </main>
@@ -527,6 +533,10 @@ function renderPricingTable() {
 
 // ========== ORDERS TABLE ==========
 let ordersFilter = 'all';
+let ordersGroupByStatus = false;
+const ORDER_STATUS_GROUP_ORDER = ['PENDING', 'PAID', 'FAILED', 'CANCELLED'];
+const ORDER_STATUS_GROUP_LABEL = { PAID:'✅ שולם', PENDING:'⏳ ממתין תשלום', FAILED:'❌ נכשל', CANCELLED:'🚫 בוטל' };
+
 function filterOrdersTab(btn, f) {
   ordersQuickFilterKey = null;
   renderOrdersFilterChip();
@@ -536,22 +546,30 @@ function filterOrdersTab(btn, f) {
   renderOrders();
 }
 
-function renderOrders() {
-  const q = (document.getElementById('order-search')?.value || '').toLowerCase();
-  const rows = ORDERS.filter(o => {
-    const matchStatus = ordersQuickFilterKey
-      ? ORDER_QUICK_FILTERS[ordersQuickFilterKey].test(o)
-      : (ordersFilter === 'all' || o.paymentStatus === ordersFilter);
-    const matchSearch = !q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q) || o.email.toLowerCase().includes(q);
-    return matchStatus && matchSearch;
-  });
-  document.getElementById('orders-tbody').innerHTML = rows.map(o => `
+function toggleOrdersGrouping(checked) {
+  ordersGroupByStatus = checked;
+  renderOrders();
+}
+
+function needsPhoneCall(o) {
+  return o.paymentStatus === 'PENDING' && ['BANK_TRANSFER', 'CALLBACK'].includes(o.paymentType);
+}
+
+function phoneCell(o) {
+  const link = `<a href="tel:${o.phone}" style="color:var(--teal);text-decoration:none">${o.phone}</a>`;
+  return needsPhoneCall(o)
+    ? `${link} <span class="badge badge-yellow" style="white-space:nowrap">☎ להתקשר</span>`
+    : link;
+}
+
+function orderRowHtml(o) {
+  return `
     <tr>
       <td><a href="#" onclick="openOrderDetail('${o.id}')" style="color:var(--teal);font-weight:700;text-decoration:none">${o.orderNumber}</a></td>
       <td style="white-space:nowrap;font-size:.82rem">${o.createdAt}</td>
       <td>${o.customerName}</td>
       <td style="font-size:.82rem">${o.email}</td>
-      <td style="font-size:.82rem">${o.phone}</td>
+      <td style="font-size:.82rem;white-space:nowrap">${phoneCell(o)}</td>
       <td style="font-weight:700">₪${o.amount.toLocaleString()}</td>
       <td>${payTypeBadge(o.paymentType)}</td>
       <td>${payStatusBadge(o.paymentStatus)}</td>
@@ -564,7 +582,43 @@ function renderOrders() {
         <button class="btn btn-sm btn-outline" onclick="openNotes('${o.id}')" style="margin-right:4px">📝</button>
       </td>
     </tr>
-  `).join('');
+  `;
+}
+
+function orderGroupHeaderHtml(status, count) {
+  return `
+    <tr>
+      <td colspan="13" style="background:var(--bg-soft,#f4f6f7);font-weight:700;padding:8px 14px">
+        ${ORDER_STATUS_GROUP_LABEL[status] || status} (${count})
+      </td>
+    </tr>
+  `;
+}
+
+function renderOrders() {
+  const q = (document.getElementById('order-search')?.value || '').toLowerCase();
+  const rows = ORDERS.filter(o => {
+    const matchStatus = ordersQuickFilterKey
+      ? ORDER_QUICK_FILTERS[ordersQuickFilterKey].test(o)
+      : (ordersFilter === 'all' || o.paymentStatus === ordersFilter);
+    const matchSearch = !q || o.orderNumber.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q) || o.email.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+
+  if (!ordersGroupByStatus) {
+    document.getElementById('orders-tbody').innerHTML = rows.map(orderRowHtml).join('');
+    return;
+  }
+
+  const byStatus = {};
+  rows.forEach(o => {
+    (byStatus[o.paymentStatus] = byStatus[o.paymentStatus] || []).push(o);
+  });
+  const statuses = [...ORDER_STATUS_GROUP_ORDER, ...Object.keys(byStatus).filter(s => !ORDER_STATUS_GROUP_ORDER.includes(s))];
+  document.getElementById('orders-tbody').innerHTML = statuses
+    .filter(s => byStatus[s]?.length)
+    .map(s => orderGroupHeaderHtml(s, byStatus[s].length) + byStatus[s].map(orderRowHtml).join(''))
+    .join('');
 }
 
 // ========== FULFILLMENT ==========
@@ -718,7 +772,7 @@ function openOrderDetail(id) {
         ['תאריך', o.createdAt],
         ['שם לקוח', o.customerName],
         ['דוא"ל', o.email],
-        ['טלפון', o.phone],
+        ['טלפון', phoneCell(o)],
         ['סכום', '₪'+o.amount.toLocaleString()],
       ].map(([l,v]) => `
         <div>
