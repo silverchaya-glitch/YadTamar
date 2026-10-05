@@ -1,6 +1,76 @@
 const MailComposer = require('nodemailer/lib/mail-composer');
 const db = require('../db');
 
+const SITE_URL = 'https://shop.emanuel-tehila.co.il/';
+// קידוד זהה למה שכבר בשימוש ב-index.html/admin.html (רק הרווח מקודד, לא התווים העבריים)
+const LOGO_URL = `${SITE_URL}גלופה%20001-logo.jpg`;
+
+// תת-קבוצה מפלטת ה-:root של index.html (ADR-007) — הצבע היחיד המותר לשימוש במיילים
+const EMAIL_COLORS = {
+  bg: '#F4FAFB',
+  card: '#FFFFFF',
+  text: '#1A1A2E',
+  muted: '#6B7280',
+  teal: '#00B4CC',
+  tealDk: '#007A8C',
+  border: '#D1E8EC',
+  red: '#E74C3C',
+  green: '#27AE60',
+};
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// עטיפת HTML משותפת לכל המיילים — לוגו + כרטיס בגבול עדין בצבעי האתר.
+// table-based בכוונה (לא flexbox/grid) לתאימות עם Outlook desktop.
+function buildEmailWrapper({ bodyHtml, footerHtml = '' }) {
+  return `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יד תמר</title>
+</head>
+<body style="margin:0;padding:0;background-color:${EMAIL_COLORS.bg};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${EMAIL_COLORS.bg};">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+               style="max-width:600px;width:100%;background-color:${EMAIL_COLORS.card};border:1px solid ${EMAIL_COLORS.border};border-radius:16px;">
+          <tr>
+            <td height="4" style="background-color:${EMAIL_COLORS.teal};font-size:0;line-height:0;border-radius:16px 16px 0 0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding:20px 28px 16px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl">
+                <tr>
+                  <td width="44" valign="middle" style="padding-left:12px;">
+                    <img src="${LOGO_URL}" width="44" height="44" alt="יד תמר" style="display:block;border-radius:10px;border:0;">
+                  </td>
+                  <td valign="middle" style="font-family:Arial, Helvetica, sans-serif;">
+                    <span style="font-size:18px;font-weight:700;color:${EMAIL_COLORS.tealDk};">יד תמר</span><br>
+                    <span style="font-size:12px;color:${EMAIL_COLORS.muted};">ספריית סיפורים דיגיטלית</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr><td style="border-top:1px solid ${EMAIL_COLORS.border};font-size:0;line-height:0;">&nbsp;</td></tr>
+          <tr>
+            <td dir="rtl" align="right" style="padding:24px 28px;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.7;color:${EMAIL_COLORS.text};">
+              ${bodyHtml}
+              ${footerHtml}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 // שליחה דרך Gmail REST API (לא SMTP) — ה-scope gmail.send שאושר ב-OAuth2 תקף
 // מול ה-API הזה, לא מול XOAUTH2 ב-SMTP הרגיל (שדורש את ה-scope הרחב mail.google.com).
 // ראה server/scripts/gmail-oauth-*.js לתהליך קבלת ה-refresh token.
@@ -80,10 +150,10 @@ async function sendRawEmail({ emailType, to, subject, html, orderId = null, cust
 
 function buildCustomerFooter() {
   return `
-    <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
-    <p>יש שאלה? אפשר גם להתקשר אלינו: <strong>04-9846776</strong> — נשמח לעזור! 📞</p>
-    <p>אהבתם את הסיפורים? יש עוד עשרות סיפורים שמחכים לכם —
-    <a href="https://shop.emanuel-tehila.co.il/">לחצו כאן לרכישה נוספת</a> ותנו לילדים עוד רגעים קסומים. 🎧</p>`;
+    <hr style="border:none;border-top:1px solid ${EMAIL_COLORS.border};margin:20px 0">
+    <p style="margin:0 0 8px;">יש שאלה? אפשר גם להתקשר אלינו: <strong>04-9846776</strong> — נשמח לעזור! 📞</p>
+    <p style="margin:0;">אהבתם את הסיפורים? יש עוד עשרות סיפורים שמחכים לכם —
+    <a href="${SITE_URL}" style="color:${EMAIL_COLORS.tealDk};">לחצו כאן לרכישה נוספת</a> ותנו לילדים עוד רגעים קסומים. 🎧</p>`;
 }
 
 // גרסה מצומצמת — למייל שמגיע כמעט מיד אחרי מייל אחר שכבר הציג את הפוטר המלא
@@ -91,8 +161,14 @@ function buildCustomerFooter() {
 // כדי לא לחזור על אותה פנייה פעמיים ברצף.
 function buildCustomerFooterCompact() {
   return `
-    <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
-    <p style="font-size:.85rem;color:#6B7280">שאלות? 04-9846776 · <a href="https://shop.emanuel-tehila.co.il/">לעוד סיפורים בחנות</a> 🎧</p>`;
+    <hr style="border:none;border-top:1px solid ${EMAIL_COLORS.border};margin:20px 0">
+    <p style="margin:0;font-size:.85rem;color:${EMAIL_COLORS.muted}">שאלות? 04-9846776 · <a href="${SITE_URL}" style="color:${EMAIL_COLORS.tealDk};">לעוד סיפורים בחנות</a> 🎧</p>`;
+}
+
+function buildAdminFooter() {
+  return `
+    <hr style="border:none;border-top:1px solid ${EMAIL_COLORS.border};margin:20px 0">
+    <p style="margin:0;"><a href="${SITE_URL}admin-login.html" style="color:${EMAIL_COLORS.tealDk};">🔐 כניסה לניהול</a></p>`;
 }
 
 async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, customerName, email, total, deliveryType }) {
@@ -105,17 +181,16 @@ async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, cust
   const followUpLine = isAutoDrive
     ? '<p>הקבצים בדרך אליכם — בתוך זמן קצר יישלח אליכם מייל נפרד עם קישור ההורדה. אם הוא לא מגיע תוך זמן סביר, אפשר לפנות אלינו במענה למייל זה.</p>'
     : '';
-  const html = `
-    <div dir="rtl" style="font-family:sans-serif">
+  const bodyHtml = `
       <h2>תודה על ההזמנה, ${customerName}!</h2>
       <p>הזמנה מספר <strong>${orderNumber}</strong> התקבלה בהצלחה.</p>
       <p>סכום לתשלום: <strong>${total} ₪</strong></p>
       <p>אופן קבלת התוכן: ${deliveryLine}</p>
       ${followUpLine}
-      <p>לכל שאלה ניתן לפנות אלינו במענה למייל זה.</p>
-      ${buildCustomerFooter()}
-      <p>בברכה,<br>צוות יד תמר</p>
-    </div>`;
+      <p>לכל שאלה ניתן לפנות אלינו במענה למייל זה.</p>`;
+  const footerHtml = `${buildCustomerFooter()}
+      <p>בברכה,<br>צוות יד תמר</p>`;
+  const html = buildEmailWrapper({ bodyHtml, footerHtml });
   return sendRawEmail({
     emailType: 'PURCHASE_CONFIRMATION',
     to: email,
@@ -127,14 +202,13 @@ async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, cust
 }
 
 async function sendFileDelivery({ orderId, customerId, customerName, email, folderUrl }) {
-  const html = `
-    <div dir="rtl" style="font-family:sans-serif">
+  const bodyHtml = `
       <h2>התוכן שלך מוכן, ${customerName}!</h2>
       <p>ניתן לגשת לתיקיית ההורדה כאן:</p>
-      <p><a href="${folderUrl}">${folderUrl}</a></p>
-      ${buildCustomerFooterCompact()}
-      <p>בברכה,<br>צוות יד תמר</p>
-    </div>`;
+      <p><a href="${folderUrl}" style="color:${EMAIL_COLORS.tealDk};">${folderUrl}</a></p>`;
+  const footerHtml = `${buildCustomerFooterCompact()}
+      <p>בברכה,<br>צוות יד תמר</p>`;
+  const html = buildEmailWrapper({ bodyHtml, footerHtml });
   return sendRawEmail({
     emailType: 'FILE_DELIVERY',
     to: email,
@@ -146,14 +220,13 @@ async function sendFileDelivery({ orderId, customerId, customerName, email, fold
 }
 
 async function sendGiftStory({ customerId, name, email, storyTitle, storyLink }) {
-  const html = `
-    <div dir="rtl" style="font-family:sans-serif">
+  const bodyHtml = `
       <h2>הסיפור במתנה שלך, ${name}!</h2>
       <p>מצורף הקישור לסיפור "<strong>${storyTitle}</strong>":</p>
-      <p><a href="${storyLink}">${storyLink}</a></p>
-      ${buildCustomerFooter()}
-      <p>בברכה,<br>צוות יד תמר</p>
-    </div>`;
+      <p><a href="${storyLink}" style="color:${EMAIL_COLORS.tealDk};">${storyLink}</a></p>`;
+  const footerHtml = `${buildCustomerFooter()}
+      <p>בברכה,<br>צוות יד תמר</p>`;
+  const html = buildEmailWrapper({ bodyHtml, footerHtml });
   return sendRawEmail({
     emailType: 'GIFT_STORY',
     to: email,
@@ -167,17 +240,15 @@ const PAY_LABELS = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'הע�
 
 function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, statusLine, feedback, contactMePhone, notes }) {
   return `
-    <div dir="rtl" style="font-family:sans-serif">
       <h2>${title} — ${orderNumber}</h2>
-      <p>לקוח: ${customerName} | ${phone} | ${email}</p>
-      <p>אמצעי תשלום: ${PAY_LABELS[paymentType] || paymentType}</p>
-      <p>סוג משלוח: ${deliveryType === 'USB' ? 'דיסק און קי' : 'קישור הורדה'}</p>
-      <p>סכום: ${totalAmount} ₪</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">לקוח:</span> ${escapeHtml(customerName)} | ${escapeHtml(phone)} | ${escapeHtml(email)}</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">אמצעי תשלום:</span> ${PAY_LABELS[paymentType] || paymentType}</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">סוג משלוח:</span> ${deliveryType === 'USB' ? 'דיסק און קי' : 'קישור הורדה'}</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">סכום:</span> ${totalAmount} ₪</p>
       ${contactMePhone ? `<p>📞 הלקוח/ה ביקש/ה שניצור קשר טלפוני</p>` : ''}
-      ${feedback ? `<p>💬 משוב מהלקוח/ה: ${feedback}</p>` : ''}
-      ${notes ? `<p>📝 ${notes}</p>` : ''}
-      ${statusLine}
-    </div>`;
+      ${feedback ? `<p>💬 משוב מהלקוח/ה: ${escapeHtml(feedback)}</p>` : ''}
+      ${notes ? `<p>📝 ${escapeHtml(notes)}</p>` : ''}
+      ${statusLine}`;
 }
 
 function buildFulfillmentStatusLine(fulfillment) {
@@ -185,12 +256,12 @@ function buildFulfillmentStatusLine(fulfillment) {
     return `<p>סטטוס מילוי: ממתין לאישור תשלום (כרטיס אשראי)</p>`;
   }
   if (fulfillment.success && fulfillment.externalFolderUrl) {
-    return `<p>תיקייה: <a href="${fulfillment.externalFolderUrl}">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`;
+    return `<p style="color:${EMAIL_COLORS.green};">תיקייה: <a href="${fulfillment.externalFolderUrl}" style="color:${EMAIL_COLORS.tealDk};">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`;
   }
   if (!fulfillment.success && fulfillment.errorCode === 'NOT_APPLICABLE') {
     return `<p>סטטוס מילוי: לא רלוונטי — נדרש מילוי ידני (דיסק און קי)</p>`;
   }
-  return `<p>סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
+  return `<p style="color:${fulfillment.success ? EMAIL_COLORS.green : EMAIL_COLORS.red};">סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
 }
 
 async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, feedback, contactMePhone }) {
@@ -224,7 +295,7 @@ async function sendPaymentFailedOfficeNotification({ orderId, customerId, orderN
     subject: `תשלום נכשל — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום נכשל', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
-      statusLine: `<p style="color:#c0392b">⚠️ התשלום לא הושלם — יש ליצור קשר עם הלקוח.</p>`,
+      statusLine: `<p style="color:${EMAIL_COLORS.red}">⚠️ התשלום לא הושלם — יש ליצור קשר עם הלקוח.</p>`,
       notes,
     }),
     orderId,
@@ -236,7 +307,7 @@ async function sendOfficeNotification({ subject, html, orderId = null, customerI
     emailType: 'OFFICE_NOTIFICATION',
     to: process.env.MAIL_TO,
     subject,
-    html,
+    html: buildEmailWrapper({ bodyHtml: html, footerHtml: buildAdminFooter() }),
     orderId,
     customerId,
   });
@@ -247,7 +318,7 @@ async function sendErrorNotification({ subject, html, orderId = null }) {
     emailType: 'ERROR_NOTIFICATION',
     to: process.env.MAIL_TO,
     subject,
-    html,
+    html: buildEmailWrapper({ bodyHtml: html, footerHtml: buildAdminFooter() }),
     orderId,
   });
 }

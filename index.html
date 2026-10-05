@@ -118,7 +118,8 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 1px 0 var(--border), 0 4px 16px rgba(15,23,42,.06);
 }
-.header-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 32px; max-width: 1280px; margin: 0 auto; }
+.header-inner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 32px; max-width: 1280px; margin: 0 auto; position: relative; }
+.header-brand { display: flex; align-items: center; gap: 16px; justify-self: start; }
 .logo-area { display: flex; align-items: center; gap: 12px; }
 .logo-img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; object-position: center top; box-shadow: 0 2px 8px rgba(0,180,204,.3); }
 .logo-text h1 { font-family: 'Fredoka', 'Heebo', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--teal); letter-spacing: -.5px; }
@@ -127,6 +128,8 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .nav-btn { background: transparent; border: 1.5px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: 'Heebo', sans-serif; font-size: .88rem; font-weight: 500; transition: all .2s; white-space: nowrap; }
 .nav-btn:hover { background: var(--teal-lt); border-color: var(--teal); color: var(--teal-dk); }
 .nav-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); font-weight: 700; }
+.header-phone.phone-main { justify-self: center; }
+.header-phone.email-cta { justify-self: end; }
 .header-phone { display: flex; align-items: center; gap: 6px; color: var(--teal-dk); font-size: .88rem; font-weight: 700; text-decoration: none; white-space: nowrap; background: var(--teal-lt); padding: 8px 16px; border-radius: 20px; border: 1.5px solid rgba(0,180,204,.2); transition: all .2s; }
 .header-phone:hover { background: var(--teal); color: #fff; border-color: var(--teal); }
 
@@ -212,7 +215,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .hero-illustration img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 
 .product-cards { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
-.product-card { background: var(--card-cream); border-radius: var(--radius-md); padding: 18px 14px; width: 190px; cursor: pointer; border: 2px solid var(--clay-border-gold); transition: transform .35s var(--ease-clay), box-shadow .35s var(--ease-clay), border-color .35s var(--ease-clay); text-align: center; position: relative; box-shadow: var(--clay-shadow-cream); }
+.product-card { display: grid; grid-template-rows: 70px 44px 54px 24px 54px; background: var(--card-cream); border-radius: var(--radius-md); padding: 18px 14px; width: 190px; cursor: pointer; border: 2px solid var(--clay-border-gold); transition: transform .35s var(--ease-clay), box-shadow .35s var(--ease-clay), border-color .35s var(--ease-clay); text-align: center; position: relative; box-shadow: var(--clay-shadow-cream); }
 .product-card:hover { transform: translateY(-6px) scale(1.035) !important; border-color: var(--gold-warm); box-shadow: 0 16px 44px rgba(0,50,60,.14), 0 4px 16px rgba(244,185,66,.22); }
 .product-card:active { transform: translateY(-3px) scale(.98) !important; transition-duration: .12s; }
 @property --border-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
@@ -226,13 +229,13 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .product-card:hover::after { opacity: 1; animation: card-border-draw .3s ease-out forwards; }
 @keyframes card-border-draw { from { --border-angle: 0deg; } to { --border-angle: 360deg; } }
 .product-card.selected { border-color: var(--teal); background: #fff; box-shadow: 0 0 0 4px rgba(0,180,204,.2), 0 8px 32px rgba(0,0,0,.15); }
-.product-card .card-icon { display: flex; align-items: center; justify-content: center; font-size: 2.3rem; margin: 0 auto 10px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg2); box-shadow: var(--clay-shadow-sm); transition: transform .35s var(--ease-clay), filter .35s var(--ease-clay); }
+.product-card .card-icon { grid-row: 1; align-self: center; display: flex; align-items: center; justify-content: center; font-size: 2.3rem; margin: 0 auto 10px; width: 60px; height: 60px; border-radius: 50%; background: var(--bg2); box-shadow: var(--clay-shadow-sm); transition: transform .35s var(--ease-clay), filter .35s var(--ease-clay); }
 .product-card:hover .card-icon { transform: rotate(-8deg) scale(1.12); filter: brightness(1.15) drop-shadow(0 0 6px rgba(0,180,204,.5)); }
-.product-card h3 { font-size: .9rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 4px; }
-.product-card .card-price { font-size: 1.2rem; font-weight: 900; color: #A84C73; margin: 6px 0 2px; }
-.product-card .card-price-sub { font-size: .78rem; color: var(--muted); margin-bottom: 6px; }
+.product-card h3 { grid-row: 2; align-self: center; font-size: .9rem; font-weight: 800; color: var(--teal-dk); margin-bottom: 4px; line-height: 1.3; }
+.product-card .card-price { grid-row: 3; align-self: center; font-size: 1.2rem; font-weight: 900; color: #A84C73; margin: 6px 0 2px; }
+.product-card .card-price-sub { grid-row: 4; align-self: center; font-size: .78rem; color: var(--muted); margin-bottom: 6px; }
 .card-price-free { color: var(--green) !important; }
-.product-card .card-desc { font-size: .75rem; color: var(--muted); line-height: 1.5; }
+.product-card .card-desc { grid-row: 5; align-self: start; font-size: .75rem; color: var(--muted); line-height: 1.5; }
 .product-card.card-gift { border: 2px dashed rgba(245,197,24,.6); background: var(--card-cream); }
 .card-gift-badge { position: absolute; top: -13px; right: 50%; transform: translateX(50%); background: var(--gold); color: #fff; font-size: .72rem; font-weight: 800; padding: 3px 14px; border-radius: 20px; white-space: nowrap; z-index: 2; }
 .product-card.card-about { border: 2px solid var(--clay-border-gold); background: var(--card-cream); }
@@ -417,10 +420,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 /* ===== About Tab ===== */
 .about-tab { background: var(--bg2); min-height: 60vh; padding: var(--space-7) var(--space-6); }
 .about-tab-inner { max-width: var(--content-narrow); margin: 0 auto; }
-.about-tab-header { display: flex; align-items: center; gap: var(--space-5); margin-bottom: var(--space-7); }
-.about-logo-pill { display: flex; align-items: center; gap: 14px; background: var(--card); border-radius: 60px; padding: 8px 20px 8px 8px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-.about-logo-pill img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: center top; }
-.about-logo-pill span { font-size: .95rem; font-weight: 700; color: var(--teal-dk); }
 .about-main-title { font-family: 'Fredoka', 'Heebo', sans-serif; font-size: var(--fs-h1); font-weight: 600; color: var(--teal-dk); margin-bottom: 8px; }
 .about-main-sub { font-size: 1.05rem; color: var(--teal-dk); font-weight: 600; margin-bottom: 32px; }
 .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
@@ -434,8 +433,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .about-card.full { grid-column: 1 / -1; }
 .about-badges-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
 .about-badge { background: var(--teal-lt); border: 1.5px solid rgba(0,180,204,.2); color: var(--teal-dk); font-size: .85rem; font-weight: 600; padding: 7px 16px; border-radius: 20px; }
-.about-copyright { text-align: center; font-size: .8rem; color: var(--muted); margin-top: 8px; padding: 16px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
-
 /* ===== Catalog Tab ===== */
 .product-card.card-catalog { border: 2px solid var(--clay-border-gold); background: var(--card-cream); }
 .product-card.card-catalog h3 { color: var(--teal-dk); }
@@ -446,7 +443,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .catalog-info-list li { position: relative; font-size: .9rem; color: var(--muted); line-height: 1.8; margin: 0 0 10px; padding-right: 18px; }
 .catalog-info-list li:last-child { margin-bottom: 0; }
 .catalog-info-list li::before { content: '•'; position: absolute; right: 0; color: var(--teal); font-weight: 900; }
-.catalog-info-block .catalog-copyright { text-align: center; font-size: .8rem; color: var(--muted); padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--border); }
 .catalog-cat-group { margin-bottom: 28px; }
 .catalog-cat-header { box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 12px; padding: 6px 10px 8px; margin-right: -10px; margin-left: -10px; border-bottom: 2px solid var(--teal-lt); border-radius: 10px; transition: background .2s ease; }
 .catalog-cat-header:hover { background: var(--teal-lt); }
@@ -538,19 +534,20 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 <!-- ===== HEADER ===== -->
 <header class="site-header">
   <div class="header-inner">
-    <div class="logo-area">
-      <img src="גלופה%20001-logo.jpg" alt="יד תמר" class="logo-img" width="44" height="44" />
-      <div class="logo-text">
-        <h1>יד תמר</h1>
-        <p>גם חוויה וגם ידע</p>
+    <div class="header-brand">
+      <div class="logo-area">
+        <img src="גלופה%20001-logo.jpg" alt="יד תמר" class="logo-img" width="44" height="44" />
+        <div class="logo-text">
+          <h1>יד תמר</h1>
+          <p>גם חוויה וגם ידע</p>
+        </div>
       </div>
+      <nav class="header-nav">
+        <button class="nav-btn" id="nav-back-btn" onclick="showTab('store')" style="display:none">🏠 חזרה לעמוד הראשי</button>
+      </nav>
     </div>
-    <span class="header-phone">📞 04-9846776</span>
-    <a class="header-phone" href="mailto:yadtamar613@gmail.com">✉️ yadtamar613@gmail.com</a>
-    <nav class="header-nav">
-      <button class="nav-btn active" onclick="showTab('store')">חנות</button>
-      <button class="nav-btn" onclick="window.location='admin.html'">ניהול</button>
-    </nav>
+    <span class="header-phone phone-main">📞 04-9846776</span>
+    <a class="header-phone email-cta" href="mailto:yadtamar613@gmail.com">✉️ yadtamar613@gmail.com</a>
   </div>
 </header>
 
@@ -609,6 +606,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
       <div class="product-card card-about" id="card-about" onclick="showAboutSection()">
         <div class="card-icon">📖</div>
         <h3>אודות</h3>
+        <div class="card-desc">מגיל 5 ומעלה ו423 קבצים</div>
       </div>
       <div class="product-card card-catalog" id="card-catalog" onclick="showCatalogSection()">
         <div class="card-icon">📚</div>
@@ -946,7 +944,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 
         <div class="about-intro">
           <div class="about-intro-name">הרב עמנואל תהילה</div>
-          <div class="about-intro-years">40 שנות יצירה</div>
         </div>
 
         <h2 class="about-main-title">ספורי חז"ל ותנ"ך לילדים עם מסר חינוכי</h2>
@@ -955,8 +952,8 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <div class="about-badges-row">
           <span class="about-badge">✨ 40 שנה של יצירה מנצחת</span>
           <span class="about-badge">🏠 אוצר בלום של ידע תורני אצלכם בבית</span>
-          <span class="about-badge">🎓 מגיל 7 ומעלה</span>
-          <span class="about-badge">📖 433 סיפורים</span>
+          <span class="about-badge">🎓 מגיל 5 ומעלה</span>
+          <span class="about-badge">📖 423 סיפורים</span>
         </div>
 
         <div class="about-grid">
@@ -971,42 +968,49 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
             <p>הסיפורים ממלאים את שעות הפנאי של הילדים בידע תורני טהור. הילדים זוכים לשעות של הנאה וההורים לשקט. חוויה ייחודית שמשפיעה לכל החיים.</p>
           </div>
           <div class="about-card">
+            <div class="about-card-icon">📜</div>
+            <h4>בהסכמת גדולי ישראל</h4>
+            <p>הסיפורים בהסכמת ובהמלצת הגה"צ רבי דב יפה זצוק"ל — משגיח רוחני דישיבת "כנסת חזקיהו" כפר חסידים.</p>
+          </div>
+          <div class="about-card">
+            <div class="about-card-icon">🎁</div>
+            <h4>מבצע מתנה</h4>
+            <p>בקניית 315 קבצים ומעלה — מצורפת מתנה: 33 הרצאות "הכוח לצמוח", כלים לבנייה והעצמה אישית לנוער ולמבוגרים.</p>
+          </div>
+          <div class="about-card full">
+            <div class="about-card-icon">📦</div>
+            <h4>מה כלול?</h4>
+            <ul>
+              <li>כ-423 סיפורי שמע לילדים בפורמט דיגיטלי בנושאים שונים (ראה קטלוג מפורט)</li>
+              <li>אורך כל קובץ בין 45-60 דקות</li>
+              <li>מסופק באמצעות קישור למייל / על דיסק און קי</li>
+              <li>5 קבצי גמרא "אלו מציעות" בקטגוריה נפרדת — לרכישה רק בדיסק און קי</li>
+              <li>קטלוג הרצאות ושיעורים למבוגרים (כ-283 שיעורים) — לרכישה רק בדיסק און קי</li>
+            </ul>
+          </div>
+          <div class="about-card">
             <div class="about-card-icon">👨‍👩‍👧‍👦</div>
             <h4>למי מתאים?</h4>
             <ul>
-              <li>ילדים מגיל 7 ומעלה</li>
+              <li>מגיל 5 ומעלה</li>
+              <li>נביאים וסיפורי מופת — מגיל 7 ומעלה</li>
               <li>לכל המשפחה — הורים וילדים יחד</li>
               <li>מורות, מלמדים וגננות</li>
               <li>אנשי חינוך והוראת התנ"ך</li>
             </ul>
           </div>
           <div class="about-card">
-            <div class="about-card-icon">📜</div>
-            <h4>בהסכמת גדולי ישראל</h4>
-            <p>הסיפורים בהסכמת ובהמלצת הגה"צ רבי דב יפה זצוק"ל — משגיח רוחני דישיבת "כנסת חזקיהו" כפר חסידים.</p>
-          </div>
-          <div class="about-card full">
-            <div class="about-card-icon">📦</div>
-            <h4>מה כלול?</h4>
-            <p>423 סיפורי שמע לילדים בפורמט דיגיטלי, כל קובץ שמע כ-45–60 דקות, מסופקים באמצעות קישור למייל / דיסק און קי. בנוסף, 5 קבצי גמרא (בקטגוריה נפרדת) וקטלוג הרצאות ושיעורים למבוגרים בנפרד (24 דיסקים, כ-283 שיעורים) — ניתן לרכישה רק על גבי דיסק און קי.</p>
-          </div>
-          <div class="about-card full">
-            <div class="about-card-icon">🎁</div>
-            <h4>מבצע מתנה</h4>
-            <p>בקניית 315 קבצים ומעלה — מצורפת מתנה: 33 הרצאות "הכוח לצמוח", כלים לבנייה והעצמה אישית לנוער ולמבוגרים.</p>
-          </div>
-          <div class="about-card full">
             <div class="about-card-icon">🚚</div>
             <h4>פרטי משלוח ואספקה</h4>
             <ul>
-              <li>מחיר דיסק און קי: ₪15</li>
-              <li>מעל 50 סיפורים — דיסק און קי במתנה, כולל משלוח חינם בדואר 24 (עד שבוע)</li>
-              <li>בקניית סדרה שלמה — שליח אישי עד הבית</li>
+              <li>אפשר להזמין על דיסק און קי מ-10 קבצים ומעלה</li>
+              <li>משלוח חינם בדואר 24 (כשבוע)</li>
+              <li>מחיר דיסק און קי — ₪15</li>
+              <li>מ-50 קבצים ומעלה — דיסק און קי מהודר במתנה</li>
+              <li>בקנייה מעל ₪1,000 — שליח אישי</li>
             </ul>
           </div>
         </div>
-
-        <p class="about-copyright">© יד תמר — כל הזכויות שמורות. החומר נמכר לשימוש אישי בלבד.</p>
 
       </div>
     </div>
@@ -1023,7 +1027,6 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
             <li>ניתן לקבל על גבי דיסק און קי או כרטיס לנגן — כל קובץ שמע: 45–60 דקות</li>
             <li>מכבדים כרטיסי אשראי</li>
           </ul>
-          <p class="catalog-copyright">© כל הזכויות שמורות. אין להפיץ, לשכפל, לצרוב, לשדר, או להעביר חומר כלשהו ללא רשות מ"יד תמר"</p>
         </div>
 
         <div class="catalog-download-bar">
@@ -1088,7 +1091,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 <!-- ===== FOOTER ===== -->
 <footer class="site-footer">
   <div class="footer-copy">© יד תמר — כל הזכויות שמורות. החומר נמכר לשימוש אישי בלבד.</div>
-  <div class="footer-credit">האתר פותח ועוצב על ידי חיה סילבר — <a href="mailto:c0548496744@gmail.com" class="footer-credit-link">✉️ c0548496744@gmail.com</a></div>
+  <div class="footer-credit">האתר פותח ועוצב על ידי חיה סילבר — <a href="https://mail.google.com/mail/u/0/?fs=1&amp;tf=cm&amp;source=mailto&amp;to=c0548496744%40gmail.com&amp;su=%D7%94%D7%92%D7%A2%D7%AA%D7%99+%D7%9E%D7%90%D7%AA%D7%A8+%D7%99%D7%93+%D7%AA%D7%9E%D7%A8" class="footer-credit-link" target="_blank" rel="noopener">✉️ c0548496744@gmail.com</a></div>
   <div class="footer-links">
     <a href="accessibility.html">הצהרת נגישות</a>
     <a href="privacy.html">מדיניות פרטיות</a>
@@ -1348,12 +1351,7 @@ function showTab(t) {
     document.getElementById('gift-phone').value = '';
     document.getElementById('gift-error').textContent = '';
   }
-  document.querySelectorAll('.nav-btn').forEach((b, i) => {
-    b.classList.toggle('active',
-      (i === 0 && t === 'store') ||
-      (i === 1 && t === 'gift')
-    );
-  });
+  document.getElementById('nav-back-btn').style.display = t === 'store' ? 'none' : '';
 }
 
 function showAboutSection() {
