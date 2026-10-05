@@ -25,6 +25,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { Pool } = require('pg');
 const { createSuite } = require('./lib/runner');
 const { request } = require('./lib/http');
+const { isMockMode } = require('../server/services/payment');
 
 const suite = createSuite('qa/load-payment-lock.test.js');
 
@@ -33,6 +34,11 @@ const CONCURRENT_CONFIRMS = 20;
 async function main() {
   if (process.env.QA_ALLOW_MUTATIONS !== '1' || process.env.QA_ALLOW_LOAD_TEST !== '1') {
     console.log('qa/load-payment-lock.test.js | SKIPPED | דורש גם QA_ALLOW_MUTATIONS=1 וגם QA_ALLOW_LOAD_TEST=1');
+    return;
+  }
+
+  if (!isMockMode()) {
+    console.log('qa/load-payment-lock.test.js | SKIPPED | /mock-confirm מנוטרל (מסוף HYP אמיתי או HYP_SANDBOX=false) — מכוון (server/routes/payment.js), והבדיקה תלויה בו');
     return;
   }
 
@@ -58,11 +64,11 @@ async function main() {
       assert.equal(body?.success, true);
       orderId = body.id;
       assert.ok(orderId, 'לא התקבל id להזמנה');
-      assert.equal(body?.fulfillment, undefined, 'fulfillment אמור להיות undefined ל-CREDIT_CARD (נקרא רק מה-webhook)');
+      assert.equal(body?.fulfillment, undefined, 'fulfillment אמור להיות undefined ל-CREDIT_CARD (נקרא רק מ-/return)');
     });
 
-    // נוצר ישירות מול ה-DB (לא דרך /init) כדי לא להיות תלוי בהגדרות HYP_API_BASE_URL/
-    // HYP_API_KEY שעדיין לא נמסרו (ראה qa/payment-hyp-sandbox.test.js) — המטרה כאן
+    // נוצר ישירות מול ה-DB (לא דרך /init) כדי לא להיות תלוי בהגדרות פרטי המסוף של HYP (HYP_TERMINAL_ID/
+    // HYP_API_KEY/HYP_PASSP) (ראה qa/payment-hyp-sandbox.test.js) — המטרה כאן
     // היא לבדוק את הנעילה עצמה, לא את זרימת ה-init/session מול HYP.
     await suite.test('נוצרת שורת payments PENDING אחת ישירות ב-DB (setup, לא דרך /init)', async () => {
       const { rows } = await pool.query(

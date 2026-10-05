@@ -11,15 +11,13 @@
 // שחוסמת את triggerFulfillment לפני שהוא מגיע ל-webhook Drive אמיתי
 // (server/services/fulfillment.js — NOT_APPLICABLE). ניקוי: node qa/cleanup.js.
 //
-// TBD: שלבי ה-init/webhook המלאים תלויים בפרטי API/sandbox אמיתיים של HYP
-// (HYP_API_BASE_URL, HYP_WEBHOOK_SECRET) שטרם נמסרו — עד אז הבדיקות האלה
-// מוודאות רק שהשרת מגיב בצורה צפויה (CONFIG_MISSING/502) ושה-idempotency
-// logic ב-DB עובד נכון מול payload סינתטי, לא זרימת HYP אמיתית מקצה לקצה.
+// הבדיקה לא מבצעת חיוב: /init עם פרטי מסוף מלאים שולח APISign (יצירת עמוד תשלום
+// בלבד), ו-/return מקבל פרמטרים סינתטיים. זרימת חיוב אמיתית נבדקת ידנית (שקל אחד).
 const assert = require('assert/strict');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { createSuite } = require('./lib/runner');
-const { request } = require('./lib/http');
+const { request, BASE_URL } = require('./lib/http');
 
 const suite = createSuite('qa/payment-hyp-sandbox.test.js');
 
@@ -54,13 +52,13 @@ async function main() {
     orderId = body.id;
     assert.ok(orderId, 'לא התקבל id להזמנה');
     // רגרסיה ל-P1/P2 (FOLLOWUPS.md): fulfillment לא אמור להיקרא מיידית עבור
-    // CREDIT_CARD יותר — רק ה-webhook קורא לו, אחרי אישור תשלום אמיתי.
+    // CREDIT_CARD יותר — רק /return קורא לו, אחרי אישור תשלום אמיתי.
     assert.equal(body?.fulfillment, undefined,
       `⚠️ fulfillment=${JSON.stringify(body?.fulfillment)} — אמור להיות undefined! ` +
       `אם זה חזר, ה-fix ל-P1/P2 נסוג לאחור: תוכן עלול להימסר בלי תשלום אמיתי.`);
   });
 
-  await suite.test('POST /api/payment/:orderId/init מחזיר redirectUrl או CONFIG_MISSING (502) אם HYP_API_BASE_URL ריק', async () => {
+  await suite.test('POST /api/payment/:orderId/init מחזיר redirectUrl או CONFIG_MISSING (502) אם חסרים פרטי מסוף', async () => {
     if (!orderId) throw new Error('אין orderId מהבדיקה הקודמת');
     const { status, body } = await request(`/api/payment/${orderId}/init`, { method: 'POST' });
     if (status === 200) {
@@ -68,7 +66,7 @@ async function main() {
     } else {
       assert.equal(status, 502, `סטטוס לא צפוי: ${status} — ${JSON.stringify(body)}`);
       assert.equal(body?.errorCode, 'CONFIG_MISSING', `errorCode לא צפוי: ${body?.errorCode}`);
-      console.log('qa/payment-hyp-sandbox.test.js | (מידע) HYP_API_BASE_URL/HYP_API_KEY/HYP_TERMINAL_ID עדיין לא מוגדרים — init לא יכול להשלים מול HYP אמיתי, כצפוי (TBD)');
+      console.log('qa/payment-hyp-sandbox.test.js | (מידע) HYP_TERMINAL_ID/HYP_API_KEY/HYP_PASSP חסרים — init לא יכול להשלים מול HYP אמיתי');
     }
   });
 
@@ -78,36 +76,27 @@ async function main() {
     assert.ok([200, 502].includes(status), `סטטוס לא צפוי בניסיון שני: ${status}`);
   });
 
-  const webhookSecretAvailable = Boolean(process.env.HYP_WEBHOOK_SECRET);
-  if (webhookSecretAvailable && orderId) {
-    let firstWebhookOk = false;
-    await suite.test('POST /api/payment/webhook (payload סינתטי, APPROVED) מעדכן את ההזמנה', async () => {
-      const { status, body } = await request('/api/payment/webhook', {
-        method: 'POST',
-        body: { secret: process.env.HYP_WEBHOOK_SECRET, orderId, status: 'APPROVED', transactionId: `qa-${Date.now()}` },
-      });
-      assert.equal(status, 200);
-      assert.equal(body?.received, true);
-      firstWebhookOk = true;
+  // GET /api/payment/return — מדמה את חזרת הדפדפן מ-HYP. כשהאימות (VERIFY) פעיל,
+  // פרמטרים סינתטיים נדחים בכוונה ולכן השלבים האלה מדולגים.
+  if (process.env.HYP_VERIFY_ENABLED !== 'true' && orderId) {
+    const returnUrl = (ccode) => `${BASE_URL}/api/payment/return?Order=${orderId}&CCode=${ccode}&Amount=360.00&Id=qa-${Date.now()}`;
+
+    await suite.test('GET /api/payment/return עם CCode=6 (דחייה) מפנה חזרה ל-index.html ומסמן את ההזמנה failed', async () => {
+      const res = await fetch(returnUrl(6), { redirect: 'manual' });
+      assert.equal(res.status, 302);
+      assert.ok((res.headers.get('location') || '').includes(`orderId=${orderId}`), `Location לא צפוי: ${res.headers.get('location')}`);
+      const { body } = await request(`/api/orders/${orderId}`);
+      assert.equal(body?.status, 'failed', `status לא צפוי: ${body?.status}`);
     });
 
-    await suite.test('GET /api/orders/:id אחרי ה-webhook מראה status=paid/fulfilled', async () => {
-      if (!firstWebhookOk) throw new Error('ה-webhook הראשון לא הצליח');
-      const { status, body } = await request(`/api/orders/${orderId}`);
-      assert.equal(status, 200);
-      assert.ok(['paid', 'fulfilled'].includes(body?.status), `status לא צפוי: ${body?.status}`);
-    });
-
-    await suite.test('idempotency: אותו payload webhook פעם שנייה מוחזר 200 בלי לזרוק', async () => {
-      const { status, body } = await request('/api/payment/webhook', {
-        method: 'POST',
-        body: { secret: process.env.HYP_WEBHOOK_SECRET, orderId, status: 'APPROVED', transactionId: `qa-dup-${Date.now()}` },
-      });
-      assert.equal(status, 200);
-      assert.equal(body?.received, true);
+    await suite.test('חזרה כפולה עם CCode=0 אחרי כישלון לא הופכת את ההזמנה ל-paid (idempotency)', async () => {
+      const res = await fetch(returnUrl(0), { redirect: 'manual' });
+      assert.equal(res.status, 302);
+      const { body } = await request(`/api/orders/${orderId}`);
+      assert.equal(body?.status, 'failed', `⚠️ status=${body?.status} — חזרה כפולה שינתה הזמנה שכבר הוכרעה`);
     });
   } else {
-    suite.skip('שלבי ה-webhook (APPROVED + idempotency)', 'HYP_WEBHOOK_SECRET ריק ב-.env — אין דרך לבנות payload מאומת (TBD, ראה server/services/payment.js)');
+    suite.skip('שלבי /api/payment/return', 'HYP_VERIFY_ENABLED=true — פרמטרים סינתטיים לא יעברו VERIFY (מכוון)');
   }
 
   if (orderId) {

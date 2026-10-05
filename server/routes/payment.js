@@ -8,7 +8,7 @@ const { sendPurchaseConfirmation, sendFileDelivery, sendPaymentApprovedOfficeNot
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 // לוגיקת ה-side-effects אחרי שסטטוס תשלום נקבע (APPROVED/FAILED) — משותפת
-// ל-/webhook האמיתי ול-/mock-confirm (סימולציה, ראה למטה), כדי לא לשכפל אותה.
+// ל-/return האמיתי ול-/mock-confirm (סימולציה, ראה למטה), כדי לא לשכפל אותה.
 async function finalizePaymentResult(orderId, status) {
   if (status === 'APPROVED') {
     const fulfillment = await triggerFulfillment(orderId);
@@ -73,7 +73,7 @@ async function finalizePaymentResult(orderId, status) {
 // POST /api/payment/:orderId/init — פותח עסקת תשלום מול HYP ומחזיר redirectUrl
 // לדף התשלום המאובטח שלהם. נקרא מ-index.html מיד אחרי POST /api/orders להזמנת
 // CREDIT_CARD (ראה server/routes/orders.js — triggerFulfillment לא נקרא שם עבור
-// CREDIT_CARD בכלל; זה קורה רק מה-webhook למטה, אחרי אישור תשלום אמיתי).
+// CREDIT_CARD בכלל; זה קורה רק מ-/return למטה, אחרי אישור תשלום אמיתי).
 router.post('/:orderId/init', async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -112,44 +112,57 @@ router.post('/:orderId/init', async (req, res) => {
   }
 });
 
-// POST /api/payment/webhook — קלט לא-מהימן מבחוץ (HYP). try/catch מפורש חובה:
-// Express 4 עם async handler שזורק ללא טיפול מפיל את כל תהליך ה-Node, לא רק
-// את הבקשה (ראה qa/README.md). לעולם לא לזרוק מכאן.
-router.post('/webhook', async (req, res) => {
+// GET /api/payment/return — כתובת ההצלחה שמוגדרת בפורטל HYP ("עסקה שהצליחה" ←
+// "לינק מותאם אישית"). הדפדפן של הלקוח מגיע לכאן עם פרמטרי העסקה, ולכן זה קלט
+// לא-מהימן: ההכרעה (CCode=0 + VERIFY כש-HYP_VERIFY_ENABLED=true + התאמת סכום)
+// נעשית בשרת. HYP לא מציעה webhook — אם הלקוח סוגר את הדפדפן לפני החזרה, ההזמנה
+// נשארת PENDING (ראה FOLLOWUPS.md). try/catch מפורש חובה (Express 4 + async).
+router.get('/return', async (req, res) => {
+  const rawQuery = req.originalUrl.split('?')[1] || '';
+  // ה-front (handlePaymentReturn) מכריע לפי GET /api/orders/:id, לא לפי פרמטרים כאן.
+  const back = (orderId) =>
+    res.redirect(`/index.html?payment=return${orderId ? `&orderId=${orderId}` : ''}`);
   try {
-    const parsed = paymentService.verifyAndParseWebhook(req.body, req.headers, req.query);
-    if (!parsed.verified) {
-      console.error(`[payment] webhook rejected: ${parsed.errorCode} — ${parsed.errorMessage}`);
-      return res.status(401).json({ error: 'unauthorized' });
+    const result = await paymentService.verifyReturn(req.query, rawQuery);
+    const orderId = result.orderId;
+    if (!orderId || !UUID_RE.test(orderId)) {
+      console.error('[payment] /return without a valid Order parameter');
+      return back(null);
+    }
+    if (!result.ok) {
+      console.error(`[payment] /return order ${orderId} not verified: ${result.errorCode} — ${result.errorMessage}`);
+      return back(orderId);
     }
 
-    const result = await db.recordPaymentResult({
-      orderId: parsed.orderId,
-      providerTransactionId: parsed.providerTransactionId,
-      status: parsed.status,
-      rawResponse: parsed.raw,
+    const order = await db.getOrderForPayment(orderId);
+    if (!order) return back(null);
+    if (order.paymentStatus !== 'PENDING') return back(orderId); // רענון/חזרה כפולה — כבר טופל
+
+    // הסכום ש-HYP חייבה חייב להיות זה שמחושב אצלנו, אחרת לא מאשרים (נרשם ללוג בלבד;
+    // ההזמנה נשארת PENDING לבדיקה ידנית — ייתכן שחויב סכום שגוי).
+    // Amount חסר/לא מספרי (NaN) נדחה גם הוא — השוואה עם NaN תמיד false ולכן הייתה מדלגת.
+    const chargedAmount = typeof result.amount === 'string' ? Number(result.amount) : NaN;
+    if (result.approved && !(Math.abs(chargedAmount - Number(order.totalAmount)) <= 0.005)) {
+      console.error(`[payment] /return order ${orderId} AMOUNT MISMATCH: charged ${result.amount}, expected ${order.totalAmount} (HYP Id ${result.providerTransactionId})`);
+      return back(orderId);
+    }
+
+    const status = result.approved ? 'APPROVED' : 'FAILED';
+    const recorded = await db.recordPaymentResult({
+      orderId,
+      providerTransactionId: result.providerTransactionId,
+      status,
+      rawResponse: result.raw,
     });
-
-    if (result.duplicate) {
-      console.log(`[payment] webhook for order ${parsed.orderId} ignored — no pending payment found (duplicate/late)`);
-      return res.status(200).json({ received: true });
+    back(orderId);
+    if (!recorded.duplicate) {
+      finalizePaymentResult(orderId, status).catch(e =>
+        console.error(`[payment] return order ${orderId} background finalize failed: ${e.message}`)
+      );
     }
-
-    // עונים ל-HYP מיד אחרי שרישום התשלום הושלם — לא ממתינים ל-fulfillment (עד שתי
-    // קריאות רשת אמיתיות ל-Google Apps Script, עד 60 שניות כל אחת) ולשליחת המיילים.
-    // אם HYP מגביל בעצמו כמה זמן הוא מוכן לחכות לתגובת webhook, המתנה סינכרונית
-    // ארוכה עלולה לגרום לו "להתייאש" ולשלוח את אותו webhook שוב — מוגן ע"י בדיקת
-    // ה-duplicate למעלה, אבל מיותר ומעכב. finalizePaymentResult רץ ברקע; היא לא
-    // זורקת בעצמה (ראה fulfillment.js/email.js), אבל ה-.catch כאן הוא רשת ביטחון.
-    res.status(200).json({ received: true });
-    finalizePaymentResult(parsed.orderId, parsed.status).catch(e =>
-      console.error(`[payment] webhook order ${parsed.orderId} background finalize failed: ${e.message}`)
-    );
   } catch (e) {
-    console.error(`[payment] /webhook unexpected error: ${e.message}`);
-    // 500 (לא 200) בכוונה: זו יכולה להיות תקלה חולפת (DB זמנית לא זמין) — עדיף
-    // ש-HYP ינסה שוב (רוב ספקי סליקה עושים retry על 5xx) מאשר לאבד אישור תשלום בשקט.
-    res.status(500).json({ error: 'שגיאת שרת' });
+    console.error(`[payment] /return unexpected error: ${e.message}`);
+    back(null);
   }
 });
 
@@ -160,6 +173,11 @@ router.post('/webhook', async (req, res) => {
 // סימולציה זמנית בלבד וללא כסף אמיתי מעורב (ראה FOLLOWUPS.md).
 router.post('/mock-confirm', async (req, res) => {
   try {
+    // הנתיב פעיל רק במצב מדומה (פיתוח, בלי מסוף מלא ו-HYP_SANDBOX!=='false') — אחרת מי
+    // שמכיר orderId (נחשף בכתובת החזרה) היה מסמן הזמנה כשולמה בלי חיוב.
+    if (!paymentService.isMockMode()) {
+      return res.status(404).json({ error: 'not found' });
+    }
     const { orderId, cardNumber, expiry, cvv } = req.body || {};
     if (!orderId || !UUID_RE.test(orderId)) return res.status(400).json({ error: 'orderId לא תקין' });
 
@@ -179,7 +197,7 @@ router.post('/mock-confirm', async (req, res) => {
       rawResponse: { mock: true, cardLast4: String(cardNumber || '').slice(-4) },
     });
 
-    // עונים ללקוח מיד אחרי שהתשלום נרשם — ראו ההערה המקבילה ב-/webhook למעלה על
+    // עונים ללקוח מיד אחרי שהתשלום נרשם — ראו ההערה המקבילה ב-/return למעלה על
     // הסיבה (fulfillment יכול לקחת עד 2 דקות, זה מה שגרם ל"שלם עכשיו" להיתקע).
     res.status(200).json({ success: true, status });
 

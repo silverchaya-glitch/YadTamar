@@ -21,8 +21,16 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { createSuite } = require('./lib/runner');
 const { request } = require('./lib/http');
+const { isMockMode } = require('../server/services/payment');
 
 const suite = createSuite('qa/e2e-payment-flows.test.js');
+
+// /mock-confirm פעיל רק במצב מדומה (server/services/payment.js isMockMode). עם מסוף
+// HYP אמיתי או HYP_SANDBOX=false הוא מחזיר 404 בכוונה, ובדיקות כרטיס האשראי מדולגות.
+const mockOpen = isMockMode();
+const ccTest = (name, fn) => mockOpen
+  ? suite.test(name, fn)
+  : Promise.resolve(suite.skip(name, '/mock-confirm מנוטרל (מסוף HYP אמיתי או HYP_SANDBOX=false) — מכוון'));
 
 // polling קצר — finalizePaymentResult (server/routes/payment.js) רץ ברקע אחרי
 // שה-HTTP response כבר חזר (כדי לא לעכב את הלקוח), אז הסטטוס הסופי לא בהכרח
@@ -77,14 +85,14 @@ async function main() {
   const createdOrders = [];
 
   // --- CREDIT_CARD, אישור מוצלח (mock-confirm) ---------------------------
-  await suite.test('CREDIT_CARD מקצה-לקצה: הזמנה -> mock-confirm (הצלחה) -> status=paid', async () => {
+  await ccTest('CREDIT_CARD מקצה-לקצה: הזמנה -> mock-confirm (הצלחה) -> status=paid', async () => {
     const { orderId, demoEmail } = await createAdultCollectionOrder('cc-ok', 'CREDIT_CARD');
     createdOrders.push({ orderId, demoEmail, label: 'CREDIT_CARD (הצלחה)' });
 
     const { status: initStatus } = await request(`/api/payment/${orderId}/init`, { method: 'POST' });
     assert.ok([200, 502].includes(initStatus), `סטטוס init לא צפוי: ${initStatus}`);
     if (initStatus !== 200) {
-      console.log('qa/e2e-payment-flows.test.js | (מידע) /init החזיר 502 (HYP_API_BASE_URL לא מוגדר) — ' +
+      console.log('qa/e2e-payment-flows.test.js | (מידע) /init החזיר 502 (פרטי מסוף HYP חסרים/שגויים) — ' +
         'mock-confirm עדיין אמור לעבוד כי הוא לא תלוי ב-init, אבל אין payments.PENDING שנוצר דרך init; ' +
         'ראה גם qa/load-payment-lock.test.js שמייצר PENDING ישירות מול ה-DB לאותה סיבה.');
     }
@@ -108,7 +116,7 @@ async function main() {
   });
 
   // --- CREDIT_CARD, אישור נכשל (mock-confirm עם פרטי כרטיס שגויים) -------
-  await suite.test('CREDIT_CARD מקצה-לקצה: הזמנה -> mock-confirm (כישלון) -> status=failed', async () => {
+  await ccTest('CREDIT_CARD מקצה-לקצה: הזמנה -> mock-confirm (כישלון) -> status=failed', async () => {
     const { orderId, demoEmail } = await createAdultCollectionOrder('cc-fail', 'CREDIT_CARD');
     createdOrders.push({ orderId, demoEmail, label: 'CREDIT_CARD (כישלון)' });
 

@@ -18,9 +18,9 @@
 | `load-readonly.test.js` | נמוך-בינוני — **read-only, אבל 30 בקשות מקבילות אמיתיות** | **לא** (דורש `QA_ALLOW_LOAD_TEST=1`) | מדמה 30 משתמשים במקביל על `/api/catalog`; בודק שאין כשל/קריסה תחת עומס |
 | `orders-mutating.test.js` | **בינוני** — כותב הזמנת ADULT_COLLECTION אמיתית ל-Postgres | **לא** | מתויג `demo.*`; מאומת בקוד שהוא לא נוגע ב-webhook Drive |
 | `e2e-payment-flows.test.js` | **בינוני** — כותב 2-4 הזמנות ADULT_COLLECTION אמיתיות (CREDIT_CARD/BANK_TRANSFER/CALLBACK) | **לא** (דורש `QA_ALLOW_MUTATIONS=1`) | מקצה-לקצה לכל אמצעי תשלום נתמך: יצירת הזמנה ← אישור תשלום (mock-confirm / אישור ידני אדמין) ← סטטוס סופי |
-| `load-payment-lock.test.js` | **בינוני-גבוה** — כותב הזמנה אמיתית + 20 בקשות מקביליות שמנסות "לאשר" אותו תשלום | **לא** (דורש `QA_ALLOW_MUTATIONS=1` וגם `QA_ALLOW_LOAD_TEST=1`) | בודק את הנעילה (`SELECT ... FOR UPDATE`) ב-`recordPaymentResult` (server/db/index.js) מול webhook כפול/מקבילי אמיתי — מוודא דרך `email_logs` שרק "עיבוד" אחד קרה בפועל, לא N |
+| `load-payment-lock.test.js` | **בינוני-גבוה** — כותב הזמנה אמיתית + 20 בקשות מקביליות שמנסות "לאשר" אותו תשלום | **לא** (דורש `QA_ALLOW_MUTATIONS=1` וגם `QA_ALLOW_LOAD_TEST=1`) | **מדולג כשפרטי מסוף HYP אמיתיים מוגדרים** (`/mock-confirm` מנוטרל אז). בודק את הנעילה (`SELECT ... FOR UPDATE`) ב-`recordPaymentResult` (server/db/index.js) מול חזרות כפולות/מקביליות — מוודא דרך `email_logs` שרק "עיבוד" אחד קרה בפועל, לא N |
 | `orders-fulfillment-webhook.test.js` | **גבוה** — יוצר תיקיית Drive אמיתית + שיתוף אמיתי | **לא** | הבדיקה העיקרית לפי בקשת המשתמש — ראה אזהרה בקובץ עצמו |
-| `payment-hyp-sandbox.test.js` | **בינוני-גבוה** — כותב הזמנת ADULT_COLLECTION+CREDIT_CARD אמיתית, קורא ל-`/api/payment/*` | **לא** | מסרב לרוץ אם `HYP_SANDBOX` אינו `'true'`; זרימת webhook מלאה תלויה ב-`HYP_WEBHOOK_SECRET` (TBD) |
+| `payment-hyp-sandbox.test.js` | **בינוני-גבוה** — כותב הזמנת ADULT_COLLECTION+CREDIT_CARD אמיתית, קורא ל-`/api/payment/*` | **לא** | מסרב לרוץ אם `HYP_SANDBOX` אינו `'true'`; בודק `/init` ואת `/api/payment/return` עם פרמטרים סינתטיים (מדולג אם `HYP_VERIFY_ENABLED=true`); לא מבצע חיוב |
 
 ## הרצה
 

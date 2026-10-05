@@ -1,21 +1,71 @@
+// שער תשלום HYP (pay.hyp.co.il) — עמוד תשלום מתארח + אימות עסקה.
+// מקור: https://developers.hyp.co.il/pay (getting-started/creating-a-payment-page,
+// reference/actions, security/transaction-validation). זרימה:
+//   1. createHostedPaymentSession — בקשת APISign&What=SIGN מהשרת; HYP מחזירה מחרוזת
+//      פרמטרים חתומה, והלקוח מופנה עם המחרוזת ל-HYP_PAY_URL.
+//   2. HYP מחזירה את הלקוח לכתובת ההצלחה שהוגדרה בפורטל (GET /api/payment/return).
+//   3. verifyReturn — אם HYP_VERIFY_ENABLED=true, שולח VERIFY עם כל פרמטרי החזרה.
+// אף פונקציה כאן לא זורקת — כמו fulfillment.js/email.js.
+
+const HYP_PAY_URL = 'https://pay.hyp.co.il/p/';
 const TIMEOUT_MS = 60_000;
 
-// TBD מוחלט: כתובת ה-endpoint, שמות שדות הבקשה/תשובה, וצורת ה-redirect (JSON עם URL
-// מול טופס auto-submit) תלויים במסמכי ה-API בפועל של HYP (dashboard.hyp.co.il) —
-// עדיין לא בידינו. מבנה זה נבנה כך שיהיה קל להתאים ברגע שהמסמכים יגיעו: החוזה
-// {success, redirectUrl, providerSessionId, raw, errorCode, errorMessage} לא צריך
-// להשתנות, רק הפנימיות של הפונקציה. לא זורקת לעולם — כמו fulfillment.js/email.js.
+// כל תשלום בחלוקה חייב להיות לפחות 200 ₪, עד 10 תשלומים (החלטת הבעלים).
+const MIN_INSTALLMENT_AMOUNT = 200;
+const MAX_INSTALLMENTS = 10;
+
+function maxInstallments(amount) {
+  const n = Math.floor(Number(amount) / MIN_INSTALLMENT_AMOUNT);
+  return Math.max(1, Math.min(MAX_INSTALLMENTS, n));
+}
+
+function verifyEnabled() {
+  return process.env.HYP_VERIFY_ENABLED === 'true';
+}
+
+function credentials() {
+  return {
+    masof: process.env.HYP_TERMINAL_ID,
+    key: process.env.HYP_API_KEY,
+    passP: process.env.HYP_PASSP,
+  };
+}
+
+// מצב מדומה (payment-mock.html + /mock-confirm) פעיל רק בפיתוח: כשחסר פרט מסוף
+// וגם HYP_SANDBOX אינו 'false'. מקור יחיד לתנאי, כדי שהנתיב וההפניה לא יסטו זה מזה.
+function isMockMode() {
+  const { masof, key, passP } = credentials();
+  return (!masof || !key || !passP) && process.env.HYP_SANDBOX !== 'false';
+}
+
+function toQuery(params) {
+  return Object.entries(params)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join('&');
+}
+
+// GET ל-HYP עם timeout; מחזיר {ok, text} או {ok:false, errorCode, errorMessage}.
+async function hypGet(queryString) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const resp = await fetch(`${HYP_PAY_URL}?${queryString}`, { signal: controller.signal });
+    return { ok: resp.ok, status: resp.status, text: (await resp.text()).trim() };
+  } catch (err) {
+    return { ok: false, errorCode: err.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR', errorMessage: err.message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function createHostedPaymentSession({ orderId, orderNumber, amount, customerName, customerEmail, customerPhone, returnUrl }) {
-  const baseUrl = process.env.HYP_API_BASE_URL;
-  const apiKey = process.env.HYP_API_KEY;
-  const terminalId = process.env.HYP_TERMINAL_ID;
-  if (!baseUrl || !apiKey || !terminalId) {
-    // עדיין אין פרטי סוחר אמיתיים מ-HYP — נופלים לעמוד תשלום מדומה מקומי
-    // (payment-mock.html) כדי שאפשר יהיה להדגים/לבדוק את הזרימה המלאה. ברגע
-    // ש-HYP_API_BASE_URL/HYP_API_KEY/HYP_TERMINAL_ID ימולאו, הענף הזה מפסיק
-    // להתבצע והקוד יעבור אוטומטית לקריאה האמיתית מטה. לא בסביבת "production
-    // אמיתית" (HYP_SANDBOX=false) — שם עדיף להיכשל בבירור.
-    if (process.env.HYP_SANDBOX !== 'false') {
+  const { masof, key, passP } = credentials();
+
+  if (!masof || !key || !passP) {
+    // אין פרטי מסוף מלאים — עמוד תשלום מדומה מקומי (payment-mock.html) לפיתוח.
+    // ב-HYP_SANDBOX=false עדיף להיכשל בבירור ולא ליפול למדומה.
+    if (isMockMode()) {
       const base = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
       const mockUrl = `${base}/payment-mock.html?orderId=${encodeURIComponent(orderId)}`
         + `&orderNumber=${encodeURIComponent(orderNumber || '')}`
@@ -23,97 +73,89 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
         + `&returnUrl=${encodeURIComponent(returnUrl)}`;
       return { success: true, redirectUrl: mockUrl, providerSessionId: null, raw: { mock: true } };
     }
-    return { success: false, errorCode: 'CONFIG_MISSING', errorMessage: 'HYP_API_BASE_URL/HYP_API_KEY/HYP_TERMINAL_ID not configured' };
+    return { success: false, errorCode: 'CONFIG_MISSING', errorMessage: 'HYP_TERMINAL_ID/HYP_API_KEY/HYP_PASSP not configured' };
   }
 
-  // TBD — שמות השדות הבאים הם ניחוש סביר בלבד (נפוץ אצל ספקי סליקה ישראליים),
-  // לא אושרו מול מסמכי HYP בפועל. יש להחליף לפי המסמכים כשיגיעו.
-  const body = {
-    apiKey,
-    terminalId,
-    sandbox: process.env.HYP_SANDBOX !== 'false',
+  const [firstName, ...rest] = String(customerName || '').trim().split(/\s+/);
+  const installments = maxInstallments(amount);
+
+  const query = toQuery({
+    action: 'APISign',
+    What: 'SIGN',
+    Masof: masof,
+    KEY: key,
+    PassP: passP,
+    Sign: verifyEnabled() ? 'True' : undefined,
+    Amount: Number(amount).toFixed(2),
+    Coin: 1, // שקל ישראלי
+    Order: orderId,
+    PageLang: 'HEB',
+    ClientName: firstName,
+    ClientLName: rest.join(' '),
+    email: customerEmail,
+    cell: customerPhone,
+    Tash: installments > 1 ? installments : undefined,
+    SendHesh: 'True',
+  });
+
+  const res = await hypGet(query);
+  if (res.errorCode) return { success: false, errorCode: res.errorCode, errorMessage: res.errorMessage };
+
+  // תשובה תקינה: מחרוזת פרמטרים עם action=pay; שגיאה: CCode (902 = PassP שגוי, 904 = חסר What).
+  const parsed = new URLSearchParams(res.text);
+  if (res.ok && parsed.get('action') === 'pay') {
+    // מחרוזת ה-SIGN נשארת בייט-ב-בייט כפי ש-HYP החזירה (קידוד/סדר משפיעים על החתימה);
+    // מסירים ממנה רק אישורים, למקרה ש-HYP מחזירה אותם (בדוגמת המסמכים הם לא מופיעים).
+    const signed = stripReservedParams(res.text, new Set(['key', 'passp']));
+    return { success: true, redirectUrl: `${HYP_PAY_URL}?${signed}`, providerSessionId: null, raw: { params: [...parsed.keys()] } };
+  }
+  const errorCode = parsed.get('CCode') || `HTTP_${res.status}`;
+  return { success: false, errorCode, errorMessage: `Unexpected SIGN response (HTTP ${res.status})` };
+}
+
+// מעבד את פרמטרי החזרה מ-HYP (req.query + ה-query string הגולמי, שסדרו נדרש ל-VERIFY).
+// הצלחה = CCode=0 בלבד; כל קוד אחר = כישלון (fail-closed). כש-HYP_VERIFY_ENABLED=true
+// נשלח גם VERIFY, ובלעדיו אין אישור. לא זורקת לעולם.
+// פרמטרי החזרה מגיעים מהדפדפן (לא-מהימן) ומועברים ל-VERIFY אחרי האישורים שלנו.
+// מסירים מפתחות שמגדירים את הבקשה עצמה, כדי שלא יידרסו (למשל Masof של מסוף אחר).
+// עובדים על המחרוזת הגולמית — סדר ואנקודינג של שאר הפרמטרים נשמרים כפי ש-HYP דורשת.
+const RESERVED_PARAMS = new Set(['action', 'what', 'masof', 'key', 'passp']);
+function stripReservedParams(rawQueryString, names = RESERVED_PARAMS) {
+  return String(rawQueryString || '')
+    .split('&')
+    .filter(part => {
+      if (!part) return false;
+      let name = part.split('=')[0];
+      try { name = decodeURIComponent(name.replace(/\+/g, ' ')); } catch { /* שם לא תקין — נשאר כפי שהוא */ }
+      return !names.has(name.toLowerCase());
+    })
+    .join('&');
+}
+
+async function verifyReturn(query, rawQueryString) {
+  const orderId = query.Order;
+  const base = {
     orderId,
-    orderNumber,
-    amount,
-    currency: 'ILS',
-    customerName,
-    customerEmail,
-    customerPhone,
-    returnUrl,
+    amount: query.Amount,
+    providerTransactionId: query.Id || null,
+    ccode: String(query.CCode ?? ''),
+    raw: query,
   };
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    const resp = await fetch(`${baseUrl}/payment/init`, { // TBD — נתיב לא מאושר
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    const text = await resp.text();
-    const data = (() => { try { return JSON.parse(text); } catch { return null; } })();
-
-    if (data && (data.redirectUrl || data.url)) { // TBD — שם השדה בפועל
-      return {
-        success: true,
-        redirectUrl: data.redirectUrl || data.url,
-        providerSessionId: data.sessionId || data.transactionId || null,
-        raw: data,
-      };
+  if (verifyEnabled()) {
+    const { masof, key, passP } = credentials();
+    if (!masof || !key || !passP) {
+      return { ...base, ok: false, errorCode: 'CONFIG_MISSING', errorMessage: 'HYP credentials not configured' };
     }
-
-    const errorCode = (data && data.errorCode) || `HTTP_${resp.status}`;
-    const errorMessage = (data && data.errorMessage) || `Unexpected response (HTTP ${resp.status})`;
-    return { success: false, errorCode, errorMessage, raw: data };
-  } catch (err) {
-    const errorCode = err.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR';
-    return { success: false, errorCode, errorMessage: err.message };
-  } finally {
-    clearTimeout(timer);
+    const prefix = toQuery({ action: 'APISign', What: 'VERIFY', Masof: masof, KEY: key, PassP: passP });
+    const res = await hypGet(`${prefix}&${stripReservedParams(rawQueryString)}`);
+    if (res.errorCode) return { ...base, ok: false, errorCode: res.errorCode, errorMessage: res.errorMessage };
+    if (new URLSearchParams(res.text).get('CCode') !== '0') {
+      return { ...base, ok: false, errorCode: 'VERIFY_FAILED', errorMessage: `VERIFY returned: ${res.text}` };
+    }
   }
+
+  return { ...base, ok: true, approved: base.ccode === '0' };
 }
 
-// TBD מוחלט: מנגנון האימות עצמו (HMAC על raw body? header signature? secret קבוע
-// בגוף הבקשה, כמו המוסכמה הקיימת בפרויקט עבור FULFILLMENT_WEBHOOK_SECRET?), שם
-// השדה שבו HYP מחזיר את ה-orderId שהעברנו ב-init, ומיפוי ערכי הסטטוס בפועל
-// ל-'APPROVED'/'FAILED' הפנימיים שלנו. הכשל הוא "סגור" (fail-closed): בלי
-// HYP_WEBHOOK_SECRET מוגדר, שום payload לא ייחשב מאומת. לא זורקת לעולם.
-function verifyAndParseWebhook(body, headers, query) {
-  const secret = process.env.HYP_WEBHOOK_SECRET;
-  if (!secret) {
-    return { verified: false, errorCode: 'CONFIG_MISSING', errorMessage: 'HYP_WEBHOOK_SECRET not configured' };
-  }
-  if (!body || typeof body !== 'object') {
-    return { verified: false, errorCode: 'BAD_PAYLOAD', errorMessage: 'Empty or non-object webhook body' };
-  }
-
-  // TBD — placeholder: משווה secret שקיבלנו ישירות בגוף הבקשה (body.secret), בהשראת
-  // המוסכמה הקיימת ל-FULFILLMENT_WEBHOOK_SECRET. אם HYP חותם HMAC על raw body במקום
-  // זאת, יש להחליף להשוואת חתימה (crypto.timingSafeEqual על HMAC-SHA256 וכו') ברגע
-  // שמנגנון האימות האמיתי יתברר, ולוודא ש-server/index.js תופס את ה-raw body
-  // (verify callback ב-express.json()) אם צריך.
-  const providedSecret = body.secret || headers['x-hyp-secret'] || query.secret;
-  if (!providedSecret || providedSecret !== secret) {
-    return { verified: false, errorCode: 'INVALID_SECRET', errorMessage: 'Webhook secret mismatch' };
-  }
-
-  const orderId = body.orderId; // TBD — שם השדה בפועל
-  if (!orderId || !/^[0-9a-f-]{36}$/i.test(orderId)) {
-    return { verified: false, errorCode: 'BAD_PAYLOAD', errorMessage: 'Missing or invalid orderId in webhook payload' };
-  }
-
-  // TBD — מיפוי ערכי סטטוס HYP בפועל ('approved'/'success'/'0' וכו') לא ידוע.
-  const rawStatus = String(body.status || '').toUpperCase();
-  const status = ['APPROVED', 'SUCCESS', 'PAID', 'OK'].includes(rawStatus) ? 'APPROVED' : 'FAILED';
-
-  return {
-    verified: true,
-    orderId,
-    providerTransactionId: body.transactionId || body.providerTransactionId || null,
-    status,
-    raw: body,
-  };
-}
-
-module.exports = { createHostedPaymentSession, verifyAndParseWebhook };
+module.exports = { createHostedPaymentSession, verifyReturn, maxInstallments, isMockMode, stripReservedParams };
