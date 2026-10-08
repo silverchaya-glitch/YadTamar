@@ -25,12 +25,12 @@ const { isMockMode } = require('../server/services/payment');
 
 const suite = createSuite('qa/e2e-payment-flows.test.js');
 
-// /mock-confirm פעיל רק במצב מדומה (server/services/payment.js isMockMode). עם מסוף
-// HYP אמיתי או HYP_SANDBOX=false הוא מחזיר 404 בכוונה, ובדיקות כרטיס האשראי מדולגות.
+// /mock-confirm פעיל רק במצב מדומה (server/services/payment.js isMockMode). בלי
+// HYP_MOCK=true או עם מסוף HYP אמיתי הוא מחזיר 404 בכוונה, ובדיקות כרטיס האשראי מדולגות.
 const mockOpen = isMockMode();
 const ccTest = (name, fn) => mockOpen
   ? suite.test(name, fn)
-  : Promise.resolve(suite.skip(name, '/mock-confirm מנוטרל (מסוף HYP אמיתי או HYP_SANDBOX=false) — מכוון'));
+  : Promise.resolve(suite.skip(name, '/mock-confirm מנוטרל (בלי HYP_MOCK=true או עם מסוף HYP אמיתי) — מכוון'));
 
 // polling קצר — finalizePaymentResult (server/routes/payment.js) רץ ברקע אחרי
 // שה-HTTP response כבר חזר (כדי לא לעכב את הלקוח), אז הסטטוס הסופי לא בהכרח
@@ -169,6 +169,49 @@ async function main() {
     }
   } else {
     suite.skip('BANK_TRANSFER / CALLBACK (אישור ידני אדמין)', 'ADMIN_EMAIL/ADMIN_PASSWORD חסרים ב-.env');
+  }
+
+  // ---- חזרה מ-HYP (/return) בלי אימות בחתימה: בדיקות השרת + ניסיון חוזר אחרי סירוב ----
+  // /init פונה ל-HYP אמיתי לחתימה בלבד (בלי חיוב). שום /return כאן לא עובר את כל
+  // הבדיקות, כך ששום הזמנה לא מסומנת PAID ושום מייל "תשלום אושר" לא נשלח.
+  {
+    const { orderId, demoEmail } = await createAdultCollectionOrder('return-checks', 'CREDIT_CARD');
+    createdOrders.push({ label: 'return-checks', orderId, demoEmail });
+    const ret = (q) => request(`/api/payment/return?Order=${orderId}&${q}`);
+    const statusNow = async () => (await request(`/api/orders/${orderId}`)).body?.status;
+    const fakeId = String(Date.now()).slice(-9);
+
+    await suite.test('/init שולח ל-HYP את המחיר שהשרת חישב (₪360.00)', async () => {
+      const { status, body } = await request(`/api/payment/${orderId}/init`, { method: 'POST' });
+      assert.equal(status, 200, JSON.stringify(body));
+      assert.match(body.redirectUrl, /[?&]Amount=360\.00(&|$)/, 'הסכום בעמוד התשלום שונה ממחיר השרת');
+    });
+
+    await suite.test('/return עם CCode=0 וסכום שגוי לא מאשר', async () => {
+      await ret(`Id=${fakeId}1&CCode=0&Amount=1&ACode=0001`);
+      assert.equal(await statusNow(), 'pending');
+    });
+
+    await suite.test('/return עם CCode=0 בלי ACode לא מאשר', async () => {
+      await ret(`Id=${fakeId}2&CCode=0&Amount=360`);
+      assert.equal(await statusNow(), 'pending');
+    });
+
+    await suite.test('כרטיס נדחה (CCode=6): ההזמנה מוצגת כנכשלה אבל נשארת פתוחה', async () => {
+      await ret(`Id=${fakeId}3&CCode=6&Amount=360`);
+      assert.equal(await waitForStatus(orderId, ['failed']).then(b => b.status), 'failed');
+    });
+
+    await suite.test('אחרי סירוב — /init שוב מחזיר 200 (לא 409) והסטטוס חוזר ל-pending', async () => {
+      const { status, body } = await request(`/api/payment/${orderId}/init`, { method: 'POST' });
+      assert.equal(status, 200, JSON.stringify(body));
+      assert.equal(await statusNow(), 'pending');
+    });
+
+    await suite.test('/return שממחזר מספר עסקה שכבר נרשם לא מאשר, גם עם סכום ו-ACode תקינים', async () => {
+      await ret(`Id=${fakeId}3&CCode=0&Amount=360&ACode=0505293`);
+      assert.equal(await statusNow(), 'pending');
+    });
   }
 
   if (createdOrders.length) {

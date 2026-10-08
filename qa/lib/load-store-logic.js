@@ -17,7 +17,9 @@ function loadStoreLogic() {
 
   const exportLine = `
 ;globalThis.__EXPORTS__ = {
-  getSelectionBreakdown, getSelectionTotal, state,
+  getSelectionBreakdown, getSelectionTotal, getOrderTotal,
+  get state() { return state; },
+  setState: (patch) => Object.assign(state, patch),
   BUNDLE_ONLY_PRICE, BUNDLE_ONLY_CATEGORY_NAME,
   setLiveCatalog: (categories, stories) => {
     liveCategories = categories;
@@ -32,6 +34,7 @@ function loadStoreLogic() {
     document: { addEventListener() {} },
     window: undefined,
     console,
+    URLSearchParams,
   };
   sandbox.globalThis = sandbox;
   sandbox.window = sandbox;

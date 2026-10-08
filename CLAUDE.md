@@ -54,6 +54,8 @@ git push "https://${GITHUB_TOKEN}@github.com/silverchaya-glitch/YadTamar.git" ma
 
 ## Key Constants (quick ref)
 
+**מחירים מחושבים גם בשרת** (`server/services/pricing.js`, טוען את `js/data.js` עצמו) — הזמנה שה-total שלה מהדפדפן שונה נדחית. **אנחנו לא משנים מחירים** (החלטת הבעלים 2026-10-08). כל שינוי בלוגיקת המחיר ב-`index.html` חייב להיות זהה ב-`pricing.js` — `qa/pricing-parity.test.js` בודק.
+
 | Constant | Value |
 |---|---|
 | `FULL_LIBRARY_PRICE` | 1550 |

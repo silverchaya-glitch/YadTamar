@@ -18,8 +18,9 @@ const EMAIL_COLORS = {
   green: '#27AE60',
 };
 
+// כל ערך שמגיע מלקוח/DB/רשת משובץ ב-HTML רק דרך escapeHtml — גם בתוך href.
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 // עטיפת HTML משותפת לכל המיילים — לוגו + כרטיס בגבול עדין בצבעי האתר.
@@ -182,9 +183,9 @@ async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, cust
     ? '<p>הקבצים בדרך אליכם — בתוך זמן קצר יישלח אליכם מייל נפרד עם קישור ההורדה. אם הוא לא מגיע תוך זמן סביר, אפשר לפנות אלינו במענה למייל זה.</p>'
     : '';
   const bodyHtml = `
-      <h2>תודה על ההזמנה, ${customerName}!</h2>
-      <p>הזמנה מספר <strong>${orderNumber}</strong> התקבלה בהצלחה.</p>
-      <p>סכום לתשלום: <strong>${total} ₪</strong></p>
+      <h2>תודה על ההזמנה, ${escapeHtml(customerName)}!</h2>
+      <p>הזמנה מספר <strong>${escapeHtml(orderNumber)}</strong> התקבלה בהצלחה.</p>
+      <p>סכום לתשלום: <strong>${escapeHtml(total)} ₪</strong></p>
       <p>אופן קבלת התוכן: ${deliveryLine}</p>
       ${followUpLine}
       <p>לכל שאלה ניתן לפנות אלינו במענה למייל זה.</p>`;
@@ -203,9 +204,9 @@ async function sendPurchaseConfirmation({ orderId, customerId, orderNumber, cust
 
 async function sendFileDelivery({ orderId, customerId, customerName, email, folderUrl }) {
   const bodyHtml = `
-      <h2>התוכן שלך מוכן, ${customerName}!</h2>
+      <h2>התוכן שלך מוכן, ${escapeHtml(customerName)}!</h2>
       <p>ניתן לגשת לתיקיית ההורדה כאן:</p>
-      <p><a href="${folderUrl}" style="color:${EMAIL_COLORS.tealDk};">${folderUrl}</a></p>`;
+      <p><a href="${escapeHtml(folderUrl)}" style="color:${EMAIL_COLORS.tealDk};">${escapeHtml(folderUrl)}</a></p>`;
   const footerHtml = `${buildCustomerFooterCompact()}
       <p>בברכה,<br>צוות יד תמר</p>`;
   const html = buildEmailWrapper({ bodyHtml, footerHtml });
@@ -221,9 +222,9 @@ async function sendFileDelivery({ orderId, customerId, customerName, email, fold
 
 async function sendGiftStory({ customerId, name, email, storyTitle, storyLink }) {
   const bodyHtml = `
-      <h2>הסיפור במתנה שלך, ${name}!</h2>
-      <p>מצורף הקישור לסיפור "<strong>${storyTitle}</strong>":</p>
-      <p><a href="${storyLink}" style="color:${EMAIL_COLORS.tealDk};">${storyLink}</a></p>`;
+      <h2>הסיפור במתנה שלך, ${escapeHtml(name)}!</h2>
+      <p>מצורף הקישור לסיפור "<strong>${escapeHtml(storyTitle)}</strong>":</p>
+      <p><a href="${escapeHtml(storyLink)}" style="color:${EMAIL_COLORS.tealDk};">${escapeHtml(storyLink)}</a></p>`;
   const footerHtml = `${buildCustomerFooter()}
       <p>בברכה,<br>צוות יד תמר</p>`;
   const html = buildEmailWrapper({ bodyHtml, footerHtml });
@@ -240,11 +241,11 @@ const PAY_LABELS = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'הע�
 
 function buildOrderSummaryHtml({ title, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, statusLine, feedback, contactMePhone, notes }) {
   return `
-      <h2>${title} — ${orderNumber}</h2>
+      <h2>${escapeHtml(title)} — ${escapeHtml(orderNumber)}</h2>
       <p><span style="color:${EMAIL_COLORS.muted};">לקוח:</span> ${escapeHtml(customerName)} | ${escapeHtml(phone)} | ${escapeHtml(email)}</p>
-      <p><span style="color:${EMAIL_COLORS.muted};">אמצעי תשלום:</span> ${PAY_LABELS[paymentType] || paymentType}</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">אמצעי תשלום:</span> ${escapeHtml(PAY_LABELS[paymentType] || paymentType)}</p>
       <p><span style="color:${EMAIL_COLORS.muted};">סוג משלוח:</span> ${deliveryType === 'USB' ? 'דיסק און קי' : 'קישור הורדה'}</p>
-      <p><span style="color:${EMAIL_COLORS.muted};">סכום:</span> ${totalAmount} ₪</p>
+      <p><span style="color:${EMAIL_COLORS.muted};">סכום:</span> ${escapeHtml(totalAmount)} ₪</p>
       ${contactMePhone ? `<p>📞 הלקוח/ה ביקש/ה שניצור קשר טלפוני</p>` : ''}
       ${feedback ? `<p>💬 משוב מהלקוח/ה: ${escapeHtml(feedback)}</p>` : ''}
       ${notes ? `<p>📝 ${escapeHtml(notes)}</p>` : ''}
@@ -256,12 +257,13 @@ function buildFulfillmentStatusLine(fulfillment) {
     return `<p>סטטוס מילוי: ממתין לאישור תשלום (כרטיס אשראי)</p>`;
   }
   if (fulfillment.success && fulfillment.externalFolderUrl) {
-    return `<p style="color:${EMAIL_COLORS.green};">תיקייה: <a href="${fulfillment.externalFolderUrl}" style="color:${EMAIL_COLORS.tealDk};">${fulfillment.externalFolderUrl}</a> (${fulfillment.sharingStatus})</p>`;
+    const url = escapeHtml(fulfillment.externalFolderUrl);
+    return `<p style="color:${EMAIL_COLORS.green};">תיקייה: <a href="${url}" style="color:${EMAIL_COLORS.tealDk};">${url}</a> (${escapeHtml(fulfillment.sharingStatus)})</p>`;
   }
   if (!fulfillment.success && fulfillment.errorCode === 'NOT_APPLICABLE') {
     return `<p>סטטוס מילוי: לא רלוונטי — נדרש מילוי ידני (דיסק און קי)</p>`;
   }
-  return `<p style="color:${fulfillment.success ? EMAIL_COLORS.green : EMAIL_COLORS.red};">סטטוס מילוי: ${fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע')}</p>`;
+  return `<p style="color:${fulfillment.success ? EMAIL_COLORS.green : EMAIL_COLORS.red};">סטטוס מילוי: ${escapeHtml(fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע'))}</p>`;
 }
 
 async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, feedback, contactMePhone }) {
@@ -277,12 +279,17 @@ async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNum
   });
 }
 
-async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, notes }) {
+// transactionId/approvalCode (Id/ACode של HYP) — להשוואה מול רשימת העסקאות בפורטל HYP:
+// בלי אימות בחתימה (פרמטר האימות במסוף הוא PassP) זו הדרך לגלות חזרה מזויפת.
+async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, notes, transactionId, approvalCode }) {
+  const txLine = transactionId
+    ? `<p><span style="color:${EMAIL_COLORS.muted};">HYP — מספר עסקה:</span> ${escapeHtml(transactionId)} | <span style="color:${EMAIL_COLORS.muted};">מספר אישור:</span> ${escapeHtml(approvalCode || '—')}</p>`
+    : '';
   return sendOfficeNotification({
     subject: `תשלום אושר — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום אושר', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
-      statusLine: buildFulfillmentStatusLine(fulfillment),
+      statusLine: txLine + buildFulfillmentStatusLine(fulfillment),
       notes,
     }),
     orderId,
@@ -295,7 +302,7 @@ async function sendPaymentFailedOfficeNotification({ orderId, customerId, orderN
     subject: `תשלום נכשל — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום נכשל', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
-      statusLine: `<p style="color:${EMAIL_COLORS.red}">⚠️ התשלום לא הושלם — יש ליצור קשר עם הלקוח.</p>`,
+      statusLine: `<p style="color:${EMAIL_COLORS.red}">⚠️ התשלום לא הושלם. ההזמנה נשארת פתוחה והלקוח יכול לנסות לשלם שוב — אם לא ישלים, כדאי ליצור איתו קשר.</p>`,
       notes,
     }),
     orderId,
@@ -323,7 +330,39 @@ async function sendErrorNotification({ subject, html, orderId = null }) {
   });
 }
 
+// סיכום יומי למשרד: כל עסקאות האשראי שאושרו ביום הקודם, להשוואה מול פורטל HYP
+// (בלי VERIFY זו הבקרה על חזרות מזויפות). rows מ-db.getApprovedCardPayments.
+async function sendDailyPaymentsDigest({ dateLabel, rows }) {
+  const total = rows.reduce((sum, r) => sum + Number(r.amount), 0);
+  const cell = 'padding:6px 8px;border-bottom:1px solid ' + EMAIL_COLORS.border + ';';
+  const tableRows = rows.map(r => `<tr>
+      <td style="${cell}">${escapeHtml(r.order_number)}</td>
+      <td style="${cell}">${escapeHtml(r.customer_name)}</td>
+      <td style="${cell}">${escapeHtml(Number(r.amount).toFixed(2))} ₪</td>
+      <td style="${cell}">${escapeHtml(r.provider_transaction_id)}</td>
+      <td style="${cell}">${escapeHtml(r.acode || '—')}</td>
+    </tr>`).join('');
+  const bodyHtml = rows.length
+    ? `<h2>סיכום עסקאות אשראי — ${escapeHtml(dateLabel)}</h2>
+      <p>${rows.length} עסקאות שאושרו, סה"כ ${escapeHtml(total.toFixed(2))} ₪.
+         יש לוודא שכל שורה מופיעה בפורטל HYP (רשימת עסקאות) עם אותו מספר עסקה וסכום.
+         עסקה שלא מופיעה בפורטל = הקבצים נמסרו בלי תשלום.</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" dir="rtl" style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr style="color:${EMAIL_COLORS.muted};"><td style="${cell}">הזמנה</td><td style="${cell}">לקוח</td><td style="${cell}">סכום</td><td style="${cell}">מספר עסקה</td><td style="${cell}">מספר אישור</td></tr>
+        ${tableRows}
+      </table>`
+    : `<h2>סיכום עסקאות אשראי — ${escapeHtml(dateLabel)}</h2><p>לא אושרו עסקאות אשראי ביום זה.</p>`;
+  return sendRawEmail({
+    emailType: 'DAILY_PAYMENTS_DIGEST',
+    to: process.env.MAIL_TO,
+    subject: `סיכום עסקאות אשראי ${dateLabel} — להשוואה מול HYP`,
+    html: buildEmailWrapper({ bodyHtml, footerHtml: buildAdminFooter() }),
+  });
+}
+
 module.exports = {
+  escapeHtml,
+  sendDailyPaymentsDigest,
   sendPurchaseConfirmation,
   sendFileDelivery,
   sendGiftStory,

@@ -142,9 +142,10 @@ async function triggerFulfillment(orderId) {
     let itemResults;
 
     if (order.orderType === 'FULL_LIBRARY' || order.coversFullLibrary) {
-      // גם STORY_SELECTION של כל הסיפורים / במחיר התקרה — ראו getOrderForFulfillment.
+      // גם STORY_SELECTION של כל סיפורי הילדים — ראו getOrderForFulfillment.
       if (order.gemaraItemsCount > 0) {
-        console.warn(`[fulfillment] order ${orderId}: shared master folder, but ${order.gemaraItemsCount} gemara item(s) are not in it — deliver manually`);
+        console.warn(`[fulfillment] order ${orderId}: master folder has no gemara — ${order.gemaraItemsCount} item(s) to deliver manually`);
+        await db.appendOfficeNote(orderId, `⚠️ לספק גמרא ידנית (${order.gemaraItemsCount} קבצים) — לא נמצאת בתיקיית כל הספרייה`);
       }
       const masterFolderId = process.env.MASTER_LIBRARY_FOLDER_ID;
       if (!masterFolderId) {
@@ -155,9 +156,22 @@ async function triggerFulfillment(orderId) {
       }
       folderId = masterFolderId;
       folderUrl = `https://drive.google.com/drive/folders/${masterFolderId}`;
-      // אין כאן את הסקריפט שמחליט לפי paymentType — משתפים רק הזמנה ששולמה. העברה
-      // בנקאית/טלפון ממתינה, ו-confirmManualPayment משתף את אותה תיקייה אחרי "שולם".
-      sharingDecision = order.paymentStatus === 'PAID' ? 'SHARE_NOW' : 'WAITING_MANUAL';
+      // אין כאן את הסקריפט שמחליט לפי paymentType — משתפים רק הזמנה ששולמה.
+      if (order.paymentStatus !== 'PAID') {
+        // לא שומרים/מחזירים את מזהה התיקייה לפני תשלום — זו כל הספרייה, והתשובה
+        // ל-POST /api/orders ו-GET /api/orders/:id מגיעה ללקוח. אחרי "שולם",
+        // confirmManualPayment לא מוצא תיקייה ונופל ל-triggerFulfillment, שרואה PAID ומשתף.
+        await db.recordFulfillmentSuccess(orderId, {
+          requestStatus: 'COMPLETED',
+          sharingStatus: 'WAITING_MANUAL',
+          externalFolderId: null,
+          externalFolderUrl: null,
+          sharedEmail: null,
+          responseReceivedAt: new Date(),
+        });
+        return { success: true, externalFolderUrl: null, sharingStatus: 'WAITING_MANUAL' };
+      }
+      sharingDecision = 'SHARE_NOW';
     } else {
       const stage1 = await callFolderCreationWebhook(orderId, order, requestId);
       if (!stage1.success) {

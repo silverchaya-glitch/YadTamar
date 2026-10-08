@@ -32,11 +32,13 @@ function credentials() {
   };
 }
 
-// מצב מדומה (payment-mock.html + /mock-confirm) פעיל רק בפיתוח: כשחסר פרט מסוף
-// וגם HYP_SANDBOX אינו 'false'. מקור יחיד לתנאי, כדי שהנתיב וההפניה לא יסטו זה מזה.
+// מצב מדומה (payment-mock.html + /mock-confirm, שבו כל אחד יכול לסמן הזמנה כשולמה)
+// פעיל רק בהפעלה מפורשת HYP_MOCK=true — לא כברירת מחדל כשחסר פרט מסוף, כדי שהגדרה
+// חסרה בפרודקשן תיכשל בבירור (CONFIG_MISSING) ולא תפתח תשלום מדומה. מקור יחיד לתנאי.
+// גם עם HYP_MOCK=true — לא כשמוגדר מסוף אמיתי מלא (הגנה כפולה מפני הדלקה בפרודקשן).
 function isMockMode() {
   const { masof, key, passP } = credentials();
-  return (!masof || !key || !passP) && process.env.HYP_SANDBOX !== 'false';
+  return process.env.HYP_MOCK === 'true' && !(masof && key && passP);
 }
 
 function toQuery(params) {
@@ -64,8 +66,7 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
   const { masof, key, passP } = credentials();
 
   if (!masof || !key || !passP) {
-    // אין פרטי מסוף מלאים — עמוד תשלום מדומה מקומי (payment-mock.html) לפיתוח.
-    // ב-HYP_SANDBOX=false עדיף להיכשל בבירור ולא ליפול למדומה.
+    // אין פרטי מסוף מלאים — עמוד תשלום מדומה מקומי (payment-mock.html) רק כש-HYP_MOCK=true.
     if (isMockMode()) {
       const base = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
       const mockUrl = `${base}/payment-mock.html?orderId=${encodeURIComponent(orderId)}`
@@ -117,6 +118,9 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
   return { success: false, errorCode, errorMessage: `Unexpected SIGN response (HTTP ${res.status})` };
 }
 
+// VERIFY דורש "אימות בחתימה" בפורטל HYP. במסוף שלנו פרמטר האימות הוא PassP (החלטת
+// הבעלים 2026-10-08 לא לשנות), ולכן HYP_VERIFY_ENABLED כבוי וההגנה היא הבדיקות
+// ב-/return (סכום מול מחיר השרת, Id/ACode, Id לא ממוחזר) + סיכום יומי למשרד.
 // מעבד את פרמטרי החזרה מ-HYP (req.query + ה-query string הגולמי, שסדרו נדרש ל-VERIFY).
 // הצלחה = CCode=0 בלבד; כל קוד אחר = כישלון (fail-closed). כש-HYP_VERIFY_ENABLED=true
 // נשלח גם VERIFY, ובלעדיו אין אישור. לא זורקת לעולם.
@@ -142,6 +146,7 @@ async function verifyReturn(query, rawQueryString) {
     orderId,
     amount: query.Amount,
     providerTransactionId: query.Id || null,
+    acode: query.ACode || null,
     ccode: String(query.CCode ?? ''),
     raw: query,
   };

@@ -61,16 +61,40 @@ async function main() {
     assert.ok(!('fulfillment' in (body || {})));
   });
 
-  await suite.test('POST /api/orders עם total שלילי — CHECK constraint גורם ל-ROLLBACK (פער ידוע: 500 גולמי במקום 400)', async () => {
-    // total_amount >= 0 CHECK (schema.sql) נכשל בתוך db.createOrder, שזורק ותופס ROLLBACK.
-    // הראוט תופס את זה ב-catch (orders.js:17-18) ומחזיר 500 גנרי, בלי לקרוא ל-triggerFulfillment
-    // בכלל (השורה הזו לא מגיעה אליה) — כלומר אין סיכון לwebhook אמיתי, רק תגובת שגיאה לא-אידיאלית.
+  // השרת מחשב את המחיר בעצמו (server/services/pricing.js) ודוחה כל total שונה —
+  // לפני כל כתיבה (ROLLBACK), כך שאף אחת מהבדיקות כאן לא יוצרת הזמנה.
+  for (const [label, total] of [['₪1 במקום ₪360', 1], ['₪0', 0], ['אגורה פחות (₪359.99)', 359.99], ['שלילי', -1], ['יותר מהמחיר (₪361)', 361]]) {
+    await suite.test(`POST /api/orders עם total מזויף (${label}) מחזיר 400 ולא נוצרת הזמנה`, async () => {
+      const { status, body } = await request('/api/orders', { method: 'POST', body: { ...VALID_ORDER_BASE, total } });
+      assert.equal(status, 400, `total=${total}`);
+      assert.match(body?.error || '', /המחיר אינו תואם|סכום הזמנה לא תקין/);
+      assert.ok(!body?.id, 'נוצרה הזמנה למרות מחיר מזויף');
+    });
+  }
+
+  await suite.test('POST /api/orders עם product=FULL_LIBRARY (לא נמכר כמוצר) מחזיר 400', async () => {
+    const { status, body } = await request('/api/orders', {
+      method: 'POST', body: { ...VALID_ORDER_BASE, items: { product: 'FULL_LIBRARY', stories: [] }, total: 1550 },
+    });
+    assert.equal(status, 400);
+    assert.ok(!body?.id);
+  });
+
+  await suite.test('POST /api/orders עם סיפור שלא קיים בקטלוג מחזיר 400', async () => {
     const { status, body } = await request('/api/orders', {
       method: 'POST',
-      body: { ...VALID_ORDER_BASE, total: -1 },
+      body: { ...VALID_ORDER_BASE, items: { product: 'STORY_SELECTION', stories: ['00000000-0000-0000-0000-000000000000'] }, total: 8 },
     });
-    assert.equal(status, 500, `ציפינו לפער הידוע (500 גולמי); אם זה 400 עכשיו — מישהו כבר הוסיף ולידציה, אפשר להדק את הבדיקה`);
-    assert.ok(!('fulfillment' in (body || {})), 'אם total שלילי הגיע ל-fulfillment, זו רגרסיה אמיתית');
+    assert.equal(status, 400);
+    assert.ok(!body?.id);
+  });
+
+  await suite.test('POST /api/orders עם STORY_SELECTION ריק מחזיר 400', async () => {
+    const { status, body } = await request('/api/orders', {
+      method: 'POST', body: { ...VALID_ORDER_BASE, items: { product: 'STORY_SELECTION', stories: [] }, total: 0 },
+    });
+    assert.equal(status, 400);
+    assert.ok(!body?.id);
   });
 
   await suite.test('POST /api/leads בלי name/email מחזיר 400, בלי כתיבה ל-DB', async () => {

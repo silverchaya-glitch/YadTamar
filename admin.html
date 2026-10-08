@@ -360,7 +360,8 @@ const ORDER_QUICK_FILTERS = {
   },
   failedPayments: {
     label: 'תשלומים שנכשלו/בוטלו',
-    test: o => ['FAILED', 'CANCELLED'].includes(o.paymentStatus),
+    // כרטיס שנדחה משאיר את ההזמנה PENDING (אפשר לנסות שוב) — נספר לפי הניסיון האחרון.
+    test: o => ['FAILED', 'CANCELLED'].includes(o.paymentStatus) || (o.paymentStatus === 'PENDING' && o.lastPaymentStatus === 'FAILED'),
   },
   paidCreditOrders: {
     label: 'שולמו',

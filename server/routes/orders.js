@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
         email: order.email,
         paymentType,
         deliveryType: delivery_type,
-        totalAmount: total,
+        totalAmount: order.total,
         fulfillment,
         feedback: items.feedback,
         contactMePhone: items.contactMePhone,
@@ -43,6 +43,8 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ success: true, id: order.id, orderNumber: order.orderNumber, fulfillment });
   } catch (e) {
+    if (e instanceof db.OrderValidationError) return res.status(400).json({ error: e.message });
+    console.error(`[orders] create failed: ${e.message}`);
     res.status(500).json({ error: 'שגיאת שרת' });
   }
 });

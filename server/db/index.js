@@ -2,9 +2,15 @@ const { Pool } = require('pg');
 
 const pool = new Pool(); // מתחבר לפי PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD (או DATABASE_URL) מתוך .env
 
-const USB_PRICE = 15;
-const FREE_USB_MIN_FILES = 50;
-const FULL_LIBRARY_PRICE = 1550;
+const { computeOrderPrice, amountsEqual } = require('../services/pricing');
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// מוצרים שהחנות מוכרת. "כל הספרייה" נמכרת כ-STORY_SELECTION של כל הסיפורים
+// (ר' coversFullLibrary ב-getOrderForFulfillment), לא כמוצר נפרד.
+const SELLABLE_PRODUCTS = ['STORY_SELECTION', 'ADULT_COLLECTION', 'GEMARA'];
+
+// שגיאת קלט של לקוח (400) — לא שגיאת שרת.
+class OrderValidationError extends Error {}
 
 function mapProductToOrderType(product) {
   if (product === 'MASTER_LIBRARY' || product === 'FULL_LIBRARY') return 'FULL_LIBRARY';
@@ -22,8 +28,14 @@ function mapProductToDeliveryType(product) {
 
 // גוזר סטטוס מאוחד (legacy) מתוך payment_status/processing_status/payment_type —
 // נשמר עבור GET /api/orders/:id (מסלול ציבורי ישן, לא בשימוש כרגע ע"י אף עמוד חי)
+// SQL: סטטוס ניסיון התשלום האחרון של ההזמנה (o = orders).
+const LAST_PAYMENT_STATUS_SQL = `(SELECT p.status FROM payments p WHERE p.order_id = o.id ORDER BY p.created_at DESC LIMIT 1)`;
+
+// כרטיס שנדחה לא סוגר את ההזמנה (נשארת PENDING, אפשר לנסות שוב — החלטת הבעלים
+// 2026-10-08), אבל החנות צריכה לדעת שהניסיון האחרון נכשל כדי להציג "נסו שוב".
 function deriveLegacyStatus(row) {
   if (row.payment_status === 'FAILED' || row.payment_status === 'CANCELLED') return 'failed';
+  if (row.payment_status === 'PENDING' && row.last_payment_status === 'FAILED') return 'failed';
   if (row.processing_status === 'COMPLETED') return 'fulfilled';
   if (row.payment_status === 'PAID') return 'paid';
   if (row.payment_status === 'PENDING' && ['BANK_TRANSFER', 'CALLBACK'].includes(row.payment_type)) return 'pending_manual';
@@ -34,7 +46,7 @@ const STATUS_FILTERS = {
   pending:        "o.payment_status = 'PENDING' AND o.payment_type = 'CREDIT_CARD'",
   pending_manual: "o.payment_status = 'PENDING' AND o.payment_type IN ('BANK_TRANSFER','CALLBACK')",
   paid:           "o.payment_status = 'PAID' AND o.processing_status <> 'COMPLETED'",
-  failed:         "o.payment_status IN ('FAILED','CANCELLED')",
+  failed:         `(o.payment_status IN ('FAILED','CANCELLED') OR (o.payment_status = 'PENDING' AND ${LAST_PAYMENT_STATUS_SQL} = 'FAILED'))`,
   fulfilled:      "o.processing_status = 'COMPLETED'",
 };
 
@@ -48,6 +60,7 @@ function mapOrderRow(row) {
     amount:            Number(row.total_amount),
     paymentType:       row.payment_type,
     paymentStatus:     row.payment_status,
+    lastPaymentStatus: row.last_payment_status || null,
     processingStatus:  row.processing_status,
     deliveryType:      row.delivery_type,
     fulfillmentStatus: row.fulfillment_status || null,
@@ -61,6 +74,18 @@ function mapOrderRow(row) {
 }
 
 module.exports = {
+  OrderValidationError,
+
+  // מוסיף הערה ל-office_notes (פעם אחת — לא משכפל אם כבר קיימת).
+  async appendOfficeNote(orderId, note) {
+    await pool.query(
+      `UPDATE orders SET office_notes = CASE WHEN office_notes IS NULL OR office_notes = '' THEN $2
+                                             ELSE office_notes || ' | ' || $2 END
+        WHERE id = $1 AND position($2 in COALESCE(office_notes, '')) = 0`,
+      [orderId, note]
+    );
+  },
+
   async createOrder(data) {
     const { customer_name, phone, email, delivery_type, items = {}, total } = data;
     const client = await pool.connect();
@@ -81,16 +106,38 @@ module.exports = {
       }
 
       const product = items.product || 'STORY_SELECTION';
-      const stories = Array.isArray(items.stories) ? items.stories : [];
+      if (!SELLABLE_PRODUCTS.includes(product)) throw new OrderValidationError('מוצר לא תקין');
+      const stories = product === 'STORY_SELECTION' && Array.isArray(items.stories) ? [...new Set(items.stories)] : [];
       const orderType = mapProductToOrderType(product);
       const deliveryTypeErd = mapProductToDeliveryType(product);
       const paymentType = items.paymentType || 'CREDIT_CARD';
 
-      const usbRequested = delivery_type === 'USB';
-      const usbAmount = usbRequested
-        ? ((product === 'ADULT_COLLECTION' || product === 'GEMARA' || stories.length >= FREE_USB_MIN_FILES) ? 0 : USB_PRICE)
-        : null;
-      const subtotalAmount = total - (usbAmount || 0);
+      // המחיר מחושב כאן מהקטלוג החי ומ-js/data.js — לא מה-total של הדפדפן.
+      // רק סיפורים שהחנות מציגה (פעילים, קטגוריה פעילה, לא גמרא — כמו getCatalog).
+      let storyRows = [];
+      if (product === 'STORY_SELECTION') {
+        if (!stories.length || stories.some(id => typeof id !== 'string' || !UUID_RE.test(id)))
+          throw new OrderValidationError('בחירת סיפורים לא תקינה');
+        ({ rows: storyRows } = await client.query(
+          `SELECT s.id, s.story_code, s.title, c.name AS category_name
+             FROM stories s JOIN categories c ON c.id = s.category_id
+            WHERE s.id = ANY($1::uuid[]) AND s.is_active AND c.is_active AND c.name NOT LIKE 'גמרא%'`,
+          [stories]
+        ));
+        if (storyRows.length !== stories.length) throw new OrderValidationError('חלק מהסיפורים שנבחרו אינם זמינים — נא לרענן את הדף');
+      }
+      const price = computeOrderPrice({
+        product,
+        stories: storyRows.map(r => ({ id: r.id, categoryName: r.category_name })),
+        useUsb: delivery_type === 'USB',
+      });
+      if (!(price.total > 0)) throw new OrderValidationError('סכום הזמנה לא תקין');
+      if (!amountsEqual(price.total, total)) {
+        console.warn(`[orders] price mismatch: client sent ${total}, server computed ${price.total} (product ${product}, ${storyRows.length} stories, ${email})`);
+        throw new OrderValidationError('המחיר אינו תואם — נא לרענן את הדף ולנסות שוב');
+      }
+      const usbAmount = price.usbAmount;
+      const subtotalAmount = price.subtotal;
 
       const noteParts = [];
       if (items.dedication) noteParts.push('הקדשה: ' + items.dedication);
@@ -109,28 +156,20 @@ module.exports = {
       const { rows: orderRows } = await client.query(
         `INSERT INTO orders (order_number, customer_id, order_type, delivery_type, payment_type, payment_status, processing_status, subtotal_amount, usb_amount, total_amount, office_notes)
          VALUES ($1,$2,$3,$4,$5,'PENDING','WAITING_PAYMENT',$6,$7,$8,$9) RETURNING id`,
-        [orderNumber, customerId, orderType, deliveryTypeErd, paymentType, subtotalAmount, usbAmount, total, officeNotes]
+        [orderNumber, customerId, orderType, deliveryTypeErd, paymentType, subtotalAmount, usbAmount, price.total, officeNotes]
       );
       const orderId = orderRows[0].id;
 
-      const storyIds = stories.filter(id => /^[0-9a-f-]{36}$/i.test(id));
-      if (storyIds.length) {
-        const { rows: storyRows } = await client.query(
-          'SELECT id, story_code, title FROM stories WHERE id = ANY($1::uuid[])',
-          [storyIds]
+      for (const s of storyRows) {
+        await client.query(
+          `INSERT INTO order_items (order_id, story_id, story_code_snapshot, story_title_snapshot, unit_price)
+           VALUES ($1,$2,$3,$4,$5)`,
+          [orderId, s.id, s.story_code, s.title, price.itemPrices.get(s.id) || 0]
         );
-        const unitPrice = storyRows.length ? +(subtotalAmount / storyRows.length).toFixed(2) : 0;
-        for (const s of storyRows) {
-          await client.query(
-            `INSERT INTO order_items (order_id, story_id, story_code_snapshot, story_title_snapshot, unit_price)
-             VALUES ($1,$2,$3,$4,$5)`,
-            [orderId, s.id, s.story_code, s.title, unitPrice]
-          );
-        }
       }
 
       await client.query('COMMIT');
-      return { id: orderId, orderNumber, customerId, customerName: customer_name, email, phone, total };
+      return { id: orderId, orderNumber, customerId, customerName: customer_name, email, phone, total: price.total };
     } catch (e) {
       await client.query('ROLLBACK');
       throw e;
@@ -202,10 +241,10 @@ module.exports = {
     // FULL_LIBRARY -> fileIds נשאר [] (PRD §13: משתפים Master folder קבוע, לא מכפילים 428 קבצים)
     // ADULT_COLLECTION -> fileIds נשאר [] (אין מיפוי Drive לדיסקים — ראה FOLLOWUPS.md)
 
-    // בחירה ששקולה לכל הספרייה (כל סיפורי הילדים, או מחיר שהגיע לתקרה ₪1550) מסופקת
-    // מתיקיית ה-Master — החנות שולחת "בחר הכל" כ-STORY_SELECTION, ו-433 מזהים ב-URL
-    // של ה-webhook נדחים ע"י Google (HTTP 400). תיקיית ה-Master מכילה את כל סיפורי
-    // הילדים (c1–c17), לא את הגמרא.
+    // בחירה של כל סיפורי הילדים מסופקת מתיקיית ה-Master — החנות שולחת "בחר הכל" כ-
+    // STORY_SELECTION, ו-433 מזהים ב-URL של ה-webhook נדחים ע"י Google (HTTP 400).
+    // רק בחירה מלאה (החלטת הבעלים) — לא לפי מחיר, אחרת 310 סיפורים ב-₪1550 קיבלו
+    // את כל 433. התיקייה מכילה את כל סיפורי הילדים (c1–c17), לא את הגמרא.
     let coversFullLibrary = false;
     let gemaraItemsCount = 0;
     if (order.order_type === 'STORY_SELECTION') {
@@ -213,18 +252,16 @@ module.exports = {
         `SELECT
            (SELECT count(DISTINCT oi.story_id) FROM order_items oi
               JOIN stories s ON s.id = oi.story_id JOIN categories c ON c.id = s.category_id
-             WHERE oi.order_id = $1 AND c.name <> 'גמרא')::int AS selected_children,
+             WHERE oi.order_id = $1 AND s.is_active AND c.is_active AND c.name NOT LIKE 'גמרא%')::int AS selected_children,
            (SELECT count(*) FROM stories s JOIN categories c ON c.id = s.category_id
-             WHERE s.is_active AND c.name <> 'גמרא')::int AS total_children,
+             WHERE s.is_active AND c.is_active AND c.name NOT LIKE 'גמרא%')::int AS total_children,
            (SELECT count(*) FROM order_items oi
               JOIN stories s ON s.id = oi.story_id JOIN categories c ON c.id = s.category_id
-             WHERE oi.order_id = $1 AND c.name = 'גמרא')::int AS gemara_items,
-           (SELECT total_amount - COALESCE(usb_amount, 0) FROM orders WHERE id = $1) AS stories_amount`,
+             WHERE oi.order_id = $1 AND c.name LIKE 'גמרא%')::int AS gemara_items`,
         [id]
       );
       gemaraItemsCount = cov.gemara_items;
-      coversFullLibrary = (cov.total_children > 0 && cov.selected_children >= cov.total_children)
-        || Number(cov.stories_amount) >= FULL_LIBRARY_PRICE;
+      coversFullLibrary = cov.total_children > 0 && cov.selected_children >= cov.total_children;
     }
 
     return {
@@ -352,42 +389,62 @@ module.exports = {
     return rows[0].id;
   },
 
-  // אטומית: מעדכנת payments + orders יחד. idempotent — אם אין עוד תשלום PENDING
-  // ממתין להזמנה הזו (webhook כפול/מאוחר), לא נוגעת ב-orders בכלל ומחזירה duplicate:true.
-  // מכבדת את הטריגר prevent_paid_to_pending (DB) ולא "מתקנת" הזמנה PAID בחזרה,
-  // וגם לא מורידה הזמנה PAID ל-FAILED אם webhook FAILED מגיע אחרי webhook APPROVED.
-  async recordPaymentResult({ orderId, providerTransactionId, status, rawResponse }) {
+  // אטומית: מעדכנת payments + orders יחד, תחת נעילת שורת ההזמנה (חזרות במקביל
+  // מסודרות בתור). idempotent — הזמנה שכבר PAID, או מספר עסקה שכבר נרשם, מחזירים
+  // duplicate:true בלי לגעת בכלום. כרטיס שנדחה מסמן רק את ניסיון התשלום FAILED —
+  // ההזמנה נשארת PENDING כדי שהלקוח יוכל לנסות שוב (החלטת הבעלים 2026-10-08).
+  // אישור שמגיע בלי ניסיון PENDING פתוח (למשל אחרי שסירוב סגר אותו והלקוח ניסה שוב
+  // בעמוד HYP) נרשם כניסיון חדש — לא נבלע כ"כפול" כשהלקוח חויב בפועל.
+  async recordPaymentResult({ orderId, providerTransactionId, status, rawResponse, amount }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
+
+      const { rows: orderRows } = await client.query(
+        'SELECT payment_status, total_amount FROM orders WHERE id = $1 FOR UPDATE', [orderId]
+      );
+      if (!orderRows.length || orderRows[0].payment_status !== 'PENDING') {
+        await client.query('COMMIT');
+        return { duplicate: true, orderId, status };
+      }
+      if (providerTransactionId) {
+        const { rows: seen } = await client.query(
+          'SELECT 1 FROM payments WHERE provider_transaction_id = $1', [providerTransactionId]
+        );
+        if (seen.length) {
+          await client.query('COMMIT');
+          return { duplicate: true, orderId, status };
+        }
+      }
 
       const { rows: pendingRows } = await client.query(
         `SELECT id FROM payments WHERE order_id = $1 AND status = 'PENDING'
          ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
         [orderId]
       );
-      if (!pendingRows.length) {
+      const raw = rawResponse ? JSON.stringify(rawResponse) : null;
+      if (pendingRows.length) {
+        await client.query(
+          `UPDATE payments SET status = $1, provider_transaction_id = $2, raw_response_json = $3 WHERE id = $4`,
+          [status, providerTransactionId || null, raw, pendingRows[0].id]
+        );
+      } else if (status === 'APPROVED' || providerTransactionId) {
+        await client.query(
+          `INSERT INTO payments (order_id, provider, amount, status, provider_transaction_id, raw_response_json)
+           VALUES ($1,'HYP',$2,$3,$4,$5)`,
+          [orderId, amount ?? orderRows[0].total_amount, status, providerTransactionId || null, raw]
+        );
+      } else {
+        // סירוב בלי ניסיון פתוח ובלי מספר עסקה — כנראה רענון של אותה חזרה.
         await client.query('COMMIT');
         return { duplicate: true, orderId, status };
       }
-      const paymentId = pendingRows[0].id;
-
-      await client.query(
-        `UPDATE payments SET status = $1, provider_transaction_id = $2, raw_response_json = $3 WHERE id = $4`,
-        [status, providerTransactionId || null, rawResponse ? JSON.stringify(rawResponse) : null, paymentId]
-      );
 
       if (status === 'APPROVED') {
         await client.query(
           `UPDATE orders SET payment_status = 'PAID',
              processing_status = CASE WHEN processing_status IN ('COMPLETED','PROCESSING') THEN processing_status ELSE 'READY_FOR_FULFILLMENT' END
            WHERE id = $1`,
-          [orderId]
-        );
-      } else if (status === 'FAILED') {
-        await client.query(
-          `UPDATE orders SET payment_status = 'FAILED', processing_status = 'FAILED'
-           WHERE id = $1 AND payment_status <> 'PAID'`,
           [orderId]
         );
       }
@@ -400,6 +457,33 @@ module.exports = {
     } finally {
       client.release();
     }
+  },
+
+  // מספר עסקה של HYP שכבר נרשם (לכל הזמנה) — חזרה מזויפת שממחזרת Id אמיתי.
+  async isProviderTransactionUsed(providerTransactionId) {
+    const { rows } = await pool.query('SELECT 1 FROM payments WHERE provider_transaction_id = $1', [providerTransactionId]);
+    return rows.length > 0;
+  },
+
+  // עסקאות אשראי שאושרו בטווח זמנים — לסיכום היומי למשרד (השוואה מול פורטל HYP).
+  async getApprovedCardPayments(from, to) {
+    const { rows } = await pool.query(
+      `SELECT o.order_number, c.full_name AS customer_name, p.amount, p.provider_transaction_id,
+              p.raw_response_json->>'ACode' AS acode, p.created_at
+         FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id
+        WHERE p.status = 'APPROVED' AND p.created_at >= $1 AND p.created_at < $2
+          AND p.provider_transaction_id NOT LIKE 'MOCK-%'
+        ORDER BY p.created_at`,
+      [from, to]
+    );
+    return rows;
+  },
+
+  async hasEmailLog(emailType, sinceDate) {
+    const { rows } = await pool.query(
+      "SELECT 1 FROM email_logs WHERE email_type = $1 AND send_status = 'SENT' AND created_at >= $2 LIMIT 1", [emailType, sinceDate]
+    );
+    return rows.length > 0;
   },
 
   async logEmail({ orderId = null, customerId = null, emailType, recipientEmail, sendStatus, sentAt = null }) {
@@ -418,7 +502,7 @@ module.exports = {
 
   async getOrder(id) {
     const { rows } = await pool.query(
-      `SELECT o.*, c.full_name AS customer_name, c.email, c.phone
+      `SELECT o.*, ${LAST_PAYMENT_STATUS_SQL} AS last_payment_status, c.full_name AS customer_name, c.email, c.phone
        FROM orders o JOIN customers c ON c.id = o.customer_id
        WHERE o.id = $1`,
       [id]
@@ -439,6 +523,7 @@ module.exports = {
       SELECT
         o.id, o.order_number, o.payment_type, o.payment_status, o.processing_status,
         o.delivery_type, o.usb_amount, o.total_amount, o.folder_url, o.office_notes, o.created_at,
+        ${LAST_PAYMENT_STATUS_SQL} AS last_payment_status,
         c.full_name AS customer_name, c.email, c.phone,
         fr.request_status AS fulfillment_status,
         COALESCE(oi.files_count, 0) AS files_count
@@ -519,7 +604,7 @@ module.exports = {
     const [ordersToday, requiresAttention, failedPayments, leadsOnly, paidCreditOrders, monthlyRevenue, usbOrders, systemErrors] = await Promise.all([
       pool.query('SELECT COUNT(*)::int AS n FROM orders WHERE created_at::date = $1', [today]),
       pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status = 'PENDING' AND payment_type IN ('BANK_TRANSFER','CALLBACK')"),
-      pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status IN ('FAILED','CANCELLED')"),
+      pool.query(`SELECT COUNT(*)::int AS n FROM orders o WHERE ${STATUS_FILTERS.failed}`),
       pool.query('SELECT COUNT(*)::int AS n FROM leads'),
       pool.query("SELECT COUNT(*)::int AS n FROM orders WHERE payment_status = 'PAID'"),
       pool.query("SELECT COALESCE(SUM(total_amount),0)::float AS n FROM orders WHERE payment_status = 'PAID' AND created_at >= $1", [firstOfMonth]),

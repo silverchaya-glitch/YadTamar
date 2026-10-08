@@ -39,6 +39,10 @@ const ADULT_DISCS = [
 const FULL_LIBRARY_PRICE    = 1550;
 const ADULT_COLLECTION_PRICE = 360;
 const GEMARA_PRICE           = 90;
+// חבילת בר/בת מצוה — כל הקטגוריה יחד במחיר קבוע (נפתרת לפי שם, לא לפי ID).
+// משותף לחנות (index.html) ולשרת (server/services/pricing.js) — מקור יחיד למחיר.
+const BUNDLE_ONLY_CATEGORY_NAME = 'בר מצוה/בת מצוה';
+const BUNDLE_ONLY_PRICE         = 15;
 const USB_PRICE             = 15;
 const FREE_USB_MIN_FILES    = 50;
 const TOTAL_STORIES         = 438;

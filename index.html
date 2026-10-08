@@ -927,7 +927,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <div id="payment-failed-box" style="display:none">
           <div style="font-size:2.5rem;margin-bottom:12px">❌</div>
           <h2>התשלום נכשל</h2>
-          <p>העסקה לא הושלמה. הבחירה שלכם נשמרה — אפשר לנסות שוב.</p>
+          <p>העסקה לא הושלמה. ההזמנה שלכם שמורה — אפשר לנסות לשלם שוב.</p>
           <button class="btn btn-pink" onclick="retryFailedPayment()">🔄 נסו שוב</button>
         </div>
         <div id="order-success-box">
@@ -1118,9 +1118,8 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 // ========== BUNDLE-ONLY CATEGORY (בר/בת מצוה) ==========
 // הקטלוג נטען מה-DB החי (/api/catalog) עם UUID אמיתיים, לא הקודים 'c1'..'c18' של
 // js/data.js — לכן ה-ID נפתר בזמן ריצה לפי שם הקטגוריה (ר' loadCatalog), לא hardcoded.
-const BUNDLE_ONLY_CATEGORY_NAME = 'בר מצוה/בת מצוה';
+// BUNDLE_ONLY_CATEGORY_NAME / BUNDLE_ONLY_PRICE מוגדרים ב-js/data.js (משותף עם השרת).
 let BUNDLE_ONLY_CATEGORY_ID = null;
-const BUNDLE_ONLY_PRICE = 15;
 
 // מפרידה את הבחירה לכמות "רגילה" (נכנסת לנוסחת התמחור המדורגת) לעומת חבילת
 // בר/בת מצוה (מחיר קבוע, כל 11 הקבצים יחד או כלום — ר' toggleCatalogCategorySelect)
@@ -1262,7 +1261,11 @@ function stopPayWait() {
 function reopenPayPopup() {
   if (!payWait) return;
   payPopup = window.open(payWait.url, 'yt_pay', 'width=520,height=760');
-  if (!payPopup) window.location.href = payWait.url; // עדיין נחסם — ניווט מלא
+  if (!payPopup) {
+    // עדיין נחסם — ניווט מלא. הדגל נמחק, אחרת הדף שיחזור מ-HYP בחלון הזה יחשוב שהוא החלון הקופץ.
+    try { localStorage.removeItem('yadtamar_paypopup'); } catch {}
+    window.location.href = payWait.url;
+  }
 }
 
 function cancelPayWait() {
@@ -1286,14 +1289,22 @@ async function handlePaymentReturn(forcedOrderId) {
     if (params.get('payment') !== 'return') return;
     orderId = params.get('orderId');
     if (!orderId) return;
-    // אנחנו בחלון הקופץ של התשלום: מודיעים לחלון המקורי וסוגרים את עצמנו.
-    if (localStorage.getItem('yadtamar_paypopup') === orderId) {
-      localStorage.removeItem('yadtamar_paypopup');
-      try { const bc = new BroadcastChannel('yadtamar_pay'); bc.postMessage({ orderId }); bc.close(); } catch {}
-      try { if (window.opener) window.opener.postMessage({ type: 'yt-payment-return', orderId }, location.origin); } catch {}
-      window.close();
-      document.body.innerHTML = '<div style="font-family:Heebo,sans-serif;text-align:center;padding:48px 16px;font-size:1.1rem">התשלום הושלם — אפשר לסגור חלון זה ולחזור לאתר.</div>';
-      return;
+    // אנחנו בחלון הקופץ של התשלום (דגל תואם וגם יש חלון מקורי פתוח): מודיעים לחלון
+    // המקורי וסוגרים את עצמנו. בלי window.opener (ניווט מלא, או שהחלון המקורי נסגר)
+    // ממשיכים לבדיקת הסטטוס הרגילה למטה — לא מכריזים "הושלם" בלי לבדוק מול השרת.
+    let flag = null;
+    try { flag = localStorage.getItem('yadtamar_paypopup'); } catch {}
+    if (flag === orderId) {
+      try { localStorage.removeItem('yadtamar_paypopup'); } catch {}
+      let hasOpener = false;
+      try { hasOpener = !!window.opener && !window.opener.closed; } catch {}
+      if (hasOpener) {
+        try { const bc = new BroadcastChannel('yadtamar_pay'); bc.postMessage({ orderId }); bc.close(); } catch {}
+        try { window.opener.postMessage({ type: 'yt-payment-return', orderId }, location.origin); } catch {}
+        document.body.innerHTML = '<div style="font-family:Heebo,sans-serif;text-align:center;padding:48px 16px;font-size:1.1rem">חוזרים לאתר… אפשר לסגור חלון זה.</div>';
+        window.close();
+        return;
+      }
     }
   }
 
@@ -1364,8 +1375,34 @@ async function handlePaymentReturn(forcedOrderId) {
     'עדיין מעבדים את התשלום. ברגע שהוא יאושר תישלח הודעת אישור למייל שלכם.';
 }
 
-function retryFailedPayment() {
+// כרטיס שנדחה לא סוגר את ההזמנה בשרת — מנסים לשלם שוב על אותה הזמנה (/init חדש).
+// אם השרת מסרב (הזמנה ישנה שנסגרה כ-FAILED וכו') — חוזרים לשחזור הטופס.
+async function retryFailedPayment() {
   const orderId = document.getElementById('payment-failed-box').dataset.orderId;
+  if (!orderId) return restoreFailedOrderForm(orderId);
+  // נפתח סינכרונית בתוך הלחיצה, לפני ה-await (אחרת הדפדפן חוסם)
+  payPopup = window.open('', 'yt_pay', 'width=520,height=760');
+  try {
+    const payRes = await fetch('/api/payment/' + orderId + '/init', { method: 'POST', credentials: 'include' });
+    const payData = await payRes.json();
+    if (payRes.ok && payData.redirectUrl) {
+      history.replaceState(null, '', location.pathname); // מנקה ?payment=return מה-URL
+      document.getElementById('payment-failed-box').style.display = 'none';
+      document.getElementById('payment-pending-box').style.display = '';
+      if (payPopup && !payPopup.closed) {
+        payPopup.location.href = payData.redirectUrl;
+        startPayWait(orderId, payData.redirectUrl);
+      } else {
+        window.location.href = payData.redirectUrl;
+      }
+      return;
+    }
+  } catch {}
+  try { if (payPopup && !payPopup.closed) payPopup.close(); } catch {}
+  restoreFailedOrderForm(orderId);
+}
+
+function restoreFailedOrderForm(orderId) {
   history.replaceState(null, '', location.pathname); // מנקה ?payment=return מה-URL
   document.getElementById('payment-pending-box').style.display = 'none';
   document.getElementById('payment-failed-box').style.display = 'none';
@@ -2086,7 +2123,11 @@ async function submitOrder() {
       }),
       credentials: 'include'
     });
-    if (!res.ok) throw new Error(res.status);
+    if (!res.ok) {
+      let serverMsg = '';
+      try { serverMsg = (await res.json()).error || ''; } catch {}
+      throw new Error(res.status === 400 && serverMsg ? serverMsg : String(res.status));
+    }
     const data = await res.json();
     const stored = JSON.parse(localStorage.getItem('yadtamar_orders') || '[]');
     stored.unshift(order);
@@ -2142,10 +2183,14 @@ async function submitOrder() {
     btn.textContent = '🛒 בצע הזמנה';
     goToStep(4);
     showToast('ההזמנה נקלטה בהצלחה!', 'success');
-  } catch {
+  } catch (e) {
+    // החלון הקופץ נפתח לפני ה-await — סוגרים אותו, אחרת נשאר חלון ריק פתוח
+    try { if (payPopup && !payPopup.closed) payPopup.close(); } catch {}
+    payPopup = null;
     btn.disabled = false;
     btn.textContent = '🛒 בצע הזמנה';
-    showToast('שגיאה בשליחת ההזמנה — אנא נסה שוב', 'error');
+    const msg = e && e.message && !/^\d+$/.test(e.message) ? e.message : 'שגיאה בשליחת ההזמנה — אנא נסה שוב';
+    showToast(msg, 'error');
   }
 }
 
@@ -2161,11 +2206,12 @@ function resetOrder() {
   document.getElementById('drive-check').checked = true;
   document.getElementById('usb-toggle').classList.remove('active');
   document.getElementById('usb-check').checked = false;
-  document.getElementById('search-box').value = '';
-  document.querySelectorAll('#category-chips .chip').forEach(c => c.classList.remove('active'));
-  document.querySelector('#category-chips .chip[data-cat="all"]').classList.add('active');
-  const categorySelectEl = document.getElementById('category-select');
-  if (categorySelectEl) categorySelectEl.value = 'all';
+  // שני סרגלי הסינון (שלב 1 ו"מאגר סיפורי ילדים") — מאפסים את שניהם
+  ['search-box', 'search-box-2'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['category-chips', 'category-chips-2'].forEach(id => {
+    document.querySelectorAll('#' + id + ' .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === 'all'));
+  });
+  ['category-select', 'category-select-2'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 'all'; });
   selectPayment('CREDIT_CARD');
   selectProduct('STORY_SELECTION');
   renderCatalogAll();

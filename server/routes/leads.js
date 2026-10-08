@@ -3,7 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const db = require('../db');
 const { callShareWebhook } = require('../services/fulfillment');
-const { sendGiftStory, sendOfficeNotification } = require('../services/email');
+const { sendGiftStory, sendOfficeNotification, escapeHtml } = require('../services/email');
 
 // סיפור המתנה הקבוע — story_code '76' ("שלמה המלך ומלכות שבא"). ה-Google Drive file ID
 // עצמו נשלף מה-DB בכל בקשה (לא נשמר כקבוע כאן) כדי להישאר מסונכרן אוטומטית אם יתעדכן
@@ -36,9 +36,9 @@ router.post('/', async (req, res) => {
         subject: `סיפור מתנה — ${name}`,
         html: `<div dir="rtl" style="font-family:sans-serif">
           <h2>בקשת סיפור מתנה</h2>
-          <p>פרטי הפונה: ${name} | ${email}${phone ? ' | ' + phone : ''}</p>
-          <p>סיפור: ${story.title} (מס' ${GIFT_STORY_CODE})</p>
-          <p>סטטוס שיתוף: ${shareResult.success ? '✅ נשלח בהצלחה' : '❌ נכשל — ' + (shareResult.errorCode || 'לא ידוע') + (shareResult.errorMessage ? ' (' + shareResult.errorMessage + ')' : '')}</p>
+          <p>פרטי הפונה: ${escapeHtml(name)} | ${escapeHtml(email)}${phone ? ' | ' + escapeHtml(phone) : ''}</p>
+          <p>סיפור: ${escapeHtml(story.title)} (מס' ${escapeHtml(GIFT_STORY_CODE)})</p>
+          <p>סטטוס שיתוף: ${shareResult.success ? '✅ נשלח בהצלחה' : '❌ נכשל — ' + escapeHtml((shareResult.errorCode || 'לא ידוע') + (shareResult.errorMessage ? ' (' + shareResult.errorMessage + ')' : ''))}</p>
         </div>`,
       });
     } else {

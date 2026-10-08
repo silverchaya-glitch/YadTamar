@@ -38,7 +38,7 @@ async function main() {
   }
 
   if (!isMockMode()) {
-    console.log('qa/load-payment-lock.test.js | SKIPPED | /mock-confirm מנוטרל (מסוף HYP אמיתי או HYP_SANDBOX=false) — מכוון (server/routes/payment.js), והבדיקה תלויה בו');
+    console.log('qa/load-payment-lock.test.js | SKIPPED | /mock-confirm מנוטרל (בלי HYP_MOCK=true או עם מסוף HYP אמיתי) — מכוון (server/routes/payment.js), והבדיקה תלויה בו');
     return;
   }
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const paymentService = require('../services/payment');
+const { amountsEqual } = require('../services/pricing');
 const { triggerFulfillment } = require('../services/fulfillment');
 const { sendPurchaseConfirmation, sendFileDelivery, sendPaymentApprovedOfficeNotification, sendPaymentFailedOfficeNotification } = require('../services/email');
 
@@ -9,7 +10,7 @@ const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 // לוגיקת ה-side-effects אחרי שסטטוס תשלום נקבע (APPROVED/FAILED) — משותפת
 // ל-/return האמיתי ול-/mock-confirm (סימולציה, ראה למטה), כדי לא לשכפל אותה.
-async function finalizePaymentResult(orderId, status) {
+async function finalizePaymentResult(orderId, status, { transactionId, approvalCode } = {}) {
   if (status === 'APPROVED') {
     const fulfillment = await triggerFulfillment(orderId);
     const order = await db.getOrderForPayment(orderId);
@@ -46,6 +47,8 @@ async function finalizePaymentResult(orderId, status) {
         totalAmount: order.totalAmount,
         fulfillment,
         notes: order.notes,
+        transactionId,
+        approvalCode,
       });
     }
     console.log(`[payment] order ${orderId} approved, fulfillment: ${fulfillment.success ? fulfillment.sharingStatus : 'FAILED — ' + fulfillment.errorCode}`);
@@ -138,25 +141,36 @@ router.get('/return', async (req, res) => {
     if (!order) return back(null);
     if (order.paymentStatus !== 'PENDING') return back(orderId); // רענון/חזרה כפולה — כבר טופל
 
-    // הסכום ש-HYP חייבה חייב להיות זה שמחושב אצלנו, אחרת לא מאשרים (נרשם ללוג בלבד;
-    // ההזמנה נשארת PENDING לבדיקה ידנית — ייתכן שחויב סכום שגוי).
-    // Amount חסר/לא מספרי (NaN) נדחה גם הוא — השוואה עם NaN תמיד false ולכן הייתה מדלגת.
-    const chargedAmount = typeof result.amount === 'string' ? Number(result.amount) : NaN;
-    if (result.approved && !(Math.abs(chargedAmount - Number(order.totalAmount)) <= 0.005)) {
-      console.error(`[payment] /return order ${orderId} AMOUNT MISMATCH: charged ${result.amount}, expected ${order.totalAmount} (HYP Id ${result.providerTransactionId})`);
-      return back(orderId);
+    // אין אימות בחתימה (פרמטר האימות במסוף HYP הוא PassP — החלטת הבעלים), ולכן פרמטרי
+    // החזרה מהדפדפן נבדקים בקפדנות לפני אישור. כל כישלון: ההזמנה נשארת PENDING, שורה
+    // ביומן, בלי מסירה. מה שעבר נבדק בסיכום היומי למשרד מול פורטל HYP.
+    if (result.approved) {
+      const reject = (why) => {
+        console.error(`[payment] /return order ${orderId} REJECTED (${why}): Amount=${result.amount} expected=${order.totalAmount} Id=${result.providerTransactionId} ACode=${result.acode}`);
+        back(orderId);
+      };
+      // הסכום שנגבה חייב להיות המחיר שהשרת חישב בעת יצירת ההזמנה (server/services/pricing.js).
+      // Amount חסר/לא מספרי (NaN) נדחה גם הוא.
+      const chargedAmount = typeof result.amount === 'string' && result.amount.trim() !== '' ? Number(result.amount) : NaN;
+      if (!amountsEqual(chargedAmount, order.totalAmount)) return reject('amount mismatch');
+      if (!/^\d{1,20}$/.test(String(result.providerTransactionId || ''))) return reject('missing/invalid Id');
+      if (!/^[0-9A-Za-z]{1,20}$/.test(String(result.acode || ''))) return reject('missing/invalid ACode');
+      if (await db.isProviderTransactionUsed(result.providerTransactionId)) return reject('Id already used');
     }
 
+    // CCode שאינו 0 = כרטיס נדחה: רק ניסיון התשלום נרשם FAILED, ההזמנה נשארת פתוחה
+    // לניסיון חוזר (ר' recordPaymentResult).
     const status = result.approved ? 'APPROVED' : 'FAILED';
     const recorded = await db.recordPaymentResult({
       orderId,
       providerTransactionId: result.providerTransactionId,
       status,
       rawResponse: result.raw,
+      amount: result.approved ? order.totalAmount : undefined,
     });
     back(orderId);
     if (!recorded.duplicate) {
-      finalizePaymentResult(orderId, status).catch(e =>
+      finalizePaymentResult(orderId, status, { transactionId: result.providerTransactionId, approvalCode: result.acode }).catch(e =>
         console.error(`[payment] return order ${orderId} background finalize failed: ${e.message}`)
       );
     }
@@ -173,7 +187,7 @@ router.get('/return', async (req, res) => {
 // סימולציה זמנית בלבד וללא כסף אמיתי מעורב (ראה FOLLOWUPS.md).
 router.post('/mock-confirm', async (req, res) => {
   try {
-    // הנתיב פעיל רק במצב מדומה (פיתוח, בלי מסוף מלא ו-HYP_SANDBOX!=='false') — אחרת מי
+    // הנתיב פעיל רק במצב מדומה (HYP_MOCK=true ובלי מסוף מלא) — אחרת מי
     // שמכיר orderId (נחשף בכתובת החזרה) היה מסמן הזמנה כשולמה בלי חיוב.
     if (!paymentService.isMockMode()) {
       return res.status(404).json({ error: 'not found' });
