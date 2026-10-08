@@ -10,7 +10,8 @@
 const HYP_PAY_URL = 'https://pay.hyp.co.il/p/';
 const TIMEOUT_MS = 60_000;
 
-// כל תשלום בחלוקה חייב להיות לפחות 100 ₪, עד 10 תשלומים (החלטת הבעלים).
+// תשלומים רק מ-200 ₪; כל תשלום בחלוקה לפחות 100 ₪, עד 10 תשלומים (החלטת הבעלים).
+// את Tash שולחים תמיד, גם 1 — בלעדיו HYP חוזרת לברירת המחדל של המסוף (עד 36 תשלומים).
 const MIN_INSTALLMENT_AMOUNT = 100;
 const MAX_INSTALLMENTS = 10;
 
@@ -97,7 +98,7 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
     ClientLName: rest.join(' '),
     email: customerEmail,
     cell: customerPhone,
-    Tash: installments > 1 ? installments : undefined,
+    Tash: installments,
     SendHesh: 'True',
   });
 
