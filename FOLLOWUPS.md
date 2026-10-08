@@ -5,6 +5,8 @@ Severities: P0 (blocker), P1 (must fix before launch), P2 (should fix), P3 (nit)
 
 ---
 
+- [P0] QA 2026-10-08 | **סיכום בדיקות מקיפות (הצלחות + 10 כשלונות פתוחים) — `qa/reports/2026-10-08-full-e2e-summary.md`** (לא ב-git) | לעבור עליו בסשן נקי: VERIFY כבוי, מחיר מהלקוח, 7 תשלומים במקום 10, fulfillment במקביל נכשל, CALLBACK לא נתמך ב-Apps Script, גמרא חסרה בקטלוג.
+
 - [~~P1~~FIXED 2026-06-28] admin.html:doLogin() | Admin login accepts any credentials — no real authentication | Fixed: JWT + httpOnly cookie, route guard in Express, separate admin-login.html.
 
 - [~~P1~~FIXED 2026-07-20] index.html:payment | HYP payment gateway is placeholder UI only — no real API call is made | Complete checkout → payment step shows HYP UI but submits without charging. Orders go through for free. **Fixed:** `submitOrder()` now calls `POST /api/payment/:orderId/init` (server/routes/payment.js, new) and does a full-page redirect to HYP's Hosted Page; `handlePaymentReturn()` polls `GET /api/orders/:id` after redirect back. **Open:** HYP_API_KEY/HYP_TERMINAL_ID/HYP_API_BASE_URL/HYP_WEBHOOK_SECRET are still empty in `.env` — no real charge can complete until real HYP merchant/API details are received and `server/services/payment.js` (marked TBD throughout) is updated to match. See PROGRESS.txt 2026-07-20 (hyp-payment-integration). **עדכון 2026-07-20:** בזמן שהפרטים האמיתיים חסרים, `createHostedPaymentSession` מפנה במקום זאת ל-`payment-mock.html` (סימולציה מקומית — ראו הפריט הבא) כדי לאפשר בדיקה מקצה-לקצה.

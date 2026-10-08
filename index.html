@@ -479,6 +479,12 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 
 /* ===== Toast ===== */
 #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+.pay-wait-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; padding: 16px; }
+.pay-wait-overlay.show { display: flex; }
+.pay-wait-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 28px 24px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,.25); }
+.pay-wait-box h2 { margin: 8px 0; font-size: 1.2rem; }
+.pay-wait-box p { color: var(--muted); font-size: .92rem; margin-bottom: 16px; }
+.pay-wait-box .btn { margin: 4px; }
 .toast { padding: 12px 24px; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: .9rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.15); animation: slideUp .3s ease; white-space: nowrap; }
 .toast-success { background: var(--green); color: #fff; }
 .toast-error   { background: var(--red); color: #fff; }
@@ -902,6 +908,15 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
     </div>
 
     <!-- ===== STEP 4: CONFIRMATION ===== -->
+    <div class="pay-wait-overlay" id="pay-wait-overlay" role="dialog" aria-modal="true" aria-labelledby="pay-wait-title">
+      <div class="pay-wait-box">
+        <div style="font-size:2.2rem">💳</div>
+        <h2 id="pay-wait-title">ממתינים להשלמת התשלום</h2>
+        <p>חלון התשלום המאובטח נפתח בחלון נפרד. בסיום התשלום תחזרו לכאן אוטומטית — אין לסגור את הדף הזה.</p>
+        <button class="btn btn-pink" onclick="reopenPayPopup()">🔄 לא נפתח? פתחו שוב</button>
+        <button class="btn" onclick="cancelPayWait()">ביטול</button>
+      </div>
+    </div>
     <div class="page-section" id="section-4">
       <div class="success-screen">
         <div id="payment-pending-box" style="display:none">
@@ -1207,15 +1222,80 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { initSparkleTrail(); } catch (e) { console.error('initSparkleTrail failed', e); }
 });
 
+// ========== PAYMENT POPUP (תשלום HYP בחלון נפרד) ==========
+let payPopup = null, payWait = null;
+
+function startPayWait(orderId, url) {
+  stopPayWait();
+  try { localStorage.setItem('yadtamar_paypopup', orderId); } catch {}
+  payWait = { orderId, url, bc: null, timer: null, done: false };
+  const finish = () => {
+    if (!payWait || payWait.done) return;
+    const id = payWait.orderId;
+    payWait.done = true;
+    stopPayWait();
+    try { localStorage.removeItem('yadtamar_paypopup'); } catch {}
+    try { if (payPopup && !payPopup.closed) payPopup.close(); } catch {}
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').textContent = '🛒 בצע הזמנה';
+    handlePaymentReturn(id);
+  };
+  payWait.finish = finish;
+  try { payWait.bc = new BroadcastChannel('yadtamar_pay'); payWait.bc.onmessage = e => { if (e.data && e.data.orderId === orderId) finish(); }; } catch {}
+  // גיבוי: אם ההודעה לא הגיעה (חלון נסגר/נחסם) — בודקים מצב הזמנה מול השרת
+  payWait.timer = setInterval(async () => {
+    try {
+      const r = await fetch('/api/orders/' + orderId);
+      if (r.ok) { const d = await r.json(); if (['paid', 'fulfilled', 'failed'].includes(d.status)) finish(); }
+    } catch {}
+  }, 3000);
+  document.getElementById('pay-wait-overlay').classList.add('show');
+}
+
+function stopPayWait() {
+  if (!payWait) return;
+  clearInterval(payWait.timer);
+  if (payWait.bc) payWait.bc.close();
+  document.getElementById('pay-wait-overlay').classList.remove('show');
+}
+
+function reopenPayPopup() {
+  if (!payWait) return;
+  payPopup = window.open(payWait.url, 'yt_pay', 'width=520,height=760');
+  if (!payPopup) window.location.href = payWait.url; // עדיין נחסם — ניווט מלא
+}
+
+function cancelPayWait() {
+  // ההזמנה נשארת PENDING; הלקוח יכול לנסות שוב מהטופס
+  try { localStorage.removeItem('yadtamar_paypopup'); } catch {}
+  try { if (payPopup && !payPopup.closed) payPopup.close(); } catch {}
+  stopPayWait();
+  payWait = null;
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = '🛒 בצע הזמנה';
+}
+
 // ========== PAYMENT RETURN (חזרה מ-HYP אחרי redirect) ==========
 // נקרא בכל טעינת דף שיש בה ?payment=return&orderId=... ב-URL. אמת יחידה על מצב
 // התשלום היא GET /api/orders/:id (מבוסס על מה שהwebhook כתב ל-DB) — לעולם לא
 // מסתמכים על פרמטרים אחרים שאולי HYP מוסיף ל-return URL בעצמו.
-async function handlePaymentReturn() {
-  const params = new URLSearchParams(location.search);
-  if (params.get('payment') !== 'return') return;
-  const orderId = params.get('orderId');
-  if (!orderId) return;
+async function handlePaymentReturn(forcedOrderId) {
+  let orderId = forcedOrderId;
+  if (!orderId) {
+    const params = new URLSearchParams(location.search);
+    if (params.get('payment') !== 'return') return;
+    orderId = params.get('orderId');
+    if (!orderId) return;
+    // אנחנו בחלון הקופץ של התשלום: מודיעים לחלון המקורי וסוגרים את עצמנו.
+    if (localStorage.getItem('yadtamar_paypopup') === orderId) {
+      localStorage.removeItem('yadtamar_paypopup');
+      try { const bc = new BroadcastChannel('yadtamar_pay'); bc.postMessage({ orderId }); bc.close(); } catch {}
+      try { if (window.opener) window.opener.postMessage({ type: 'yt-payment-return', orderId }, location.origin); } catch {}
+      window.close();
+      document.body.innerHTML = '<div style="font-family:Heebo,sans-serif;text-align:center;padding:48px 16px;font-size:1.1rem">התשלום הושלם — אפשר לסגור חלון זה ולחזור לאתר.</div>';
+      return;
+    }
+  }
 
   state.currentStep = 4;
   for (let i = 1; i <= 4; i++) {
@@ -1946,6 +2026,10 @@ async function submitOrder() {
   btn.disabled = true;
   btn.textContent = '⏳ שולח...';
 
+  // חייב להיפתח סינכרונית בתוך לחיצת המשתמש (לפני כל await), אחרת הדפדפן חוסם.
+  // HYP חוסמת הטמעה ב-iframe (X-Frame-Options), לכן חלון נפרד; אם נחסם — redirect מלא.
+  payPopup = state.paymentType === 'CREDIT_CARD' ? window.open('', 'yt_pay', 'width=520,height=760') : null;
+
   const payLabels = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
   let msg = '';
   if (state.paymentType === 'CREDIT_CARD') {
@@ -2031,11 +2115,17 @@ async function submitOrder() {
         const payRes = await fetch('/api/payment/' + data.id + '/init', { method: 'POST', credentials: 'include' });
         const payData = await payRes.json();
         if (payRes.ok && payData.redirectUrl) {
-          window.location.href = payData.redirectUrl;
-          return; // ניווט מלא ל-HYP — לא נשארים על העמוד הזה
+          if (payPopup && !payPopup.closed) {
+            payPopup.location.href = payData.redirectUrl;
+            startPayWait(data.id, payData.redirectUrl);
+            return; // נשארים באתר; startPayWait מטפל בחזרה
+          }
+          window.location.href = payData.redirectUrl; // popup נחסם — ניווט מלא ל-HYP
+          return;
         }
         throw new Error('no redirectUrl');
       } catch {
+        if (payPopup && !payPopup.closed) payPopup.close();
         btn.disabled = false;
         btn.textContent = '🛒 בצע הזמנה';
         showToast('ההזמנה נשמרה אך חלה שגיאה בהעברה לתשלום — נסו שוב', 'error');
