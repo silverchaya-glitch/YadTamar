@@ -1120,10 +1120,7 @@ function getSelectionBreakdown() {
   return { regularQty, bundleSelected };
 }
 
-// מצב בדיקה: כניסה דרך index.html?test=1 — סיפור בודד אחד עולה ₪1 (לבדיקת סליקה אמיתית). להסיר אחרי הבדיקות.
-const TEST_PRICE_MODE = new URLSearchParams(location.search).get('test') === '1';
 function getSelectionTotal() {
-  if (TEST_PRICE_MODE && state.selectedStories.size === 1) return 1;
   const { regularQty, bundleSelected } = getSelectionBreakdown();
   return calcTotal(regularQty) + (bundleSelected ? BUNDLE_ONLY_PRICE : 0);
 }
