@@ -90,6 +90,9 @@ async function createHostedPaymentSession({ orderId, orderNumber, amount, custom
     Coin: 1, // שקל ישראלי
     Order: orderId,
     PageLang: 'HEB',
+    // בלי זה HYP מפרשת את הפרמטרים כ-windows-1255 והשם בעברית מוצג כג'יבריש (׳—׳™׳”)
+    UTF8: 'True',
+    UTF8out: 'True',
     ClientName: firstName,
     ClientLName: rest.join(' '),
     email: customerEmail,
