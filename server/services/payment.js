@@ -10,8 +10,8 @@
 const HYP_PAY_URL = 'https://pay.hyp.co.il/p/';
 const TIMEOUT_MS = 60_000;
 
-// כל תשלום בחלוקה חייב להיות לפחות 200 ₪, עד 10 תשלומים (החלטת הבעלים).
-const MIN_INSTALLMENT_AMOUNT = 200;
+// כל תשלום בחלוקה חייב להיות לפחות 100 ₪, עד 10 תשלומים (החלטת הבעלים).
+const MIN_INSTALLMENT_AMOUNT = 100;
 const MAX_INSTALLMENTS = 10;
 
 function maxInstallments(amount) {
