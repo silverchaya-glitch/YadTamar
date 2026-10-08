@@ -4,6 +4,7 @@ const pool = new Pool(); // מתחבר לפי PGHOST/PGPORT/PGDATABASE/PGUSER/PG
 
 const USB_PRICE = 15;
 const FREE_USB_MIN_FILES = 50;
+const FULL_LIBRARY_PRICE = 1550;
 
 function mapProductToOrderType(product) {
   if (product === 'MASTER_LIBRARY' || product === 'FULL_LIBRARY') return 'FULL_LIBRARY';
@@ -180,7 +181,7 @@ module.exports = {
 
   async getOrderForFulfillment(id) {
     const { rows } = await pool.query(
-      `SELECT o.id, o.order_number, o.order_type, o.payment_type, c.email
+      `SELECT o.id, o.order_number, o.order_type, o.payment_type, o.payment_status, c.email
        FROM orders o JOIN customers c ON c.id = o.customer_id
        WHERE o.id = $1`,
       [id]
@@ -201,12 +202,40 @@ module.exports = {
     // FULL_LIBRARY -> fileIds נשאר [] (PRD §13: משתפים Master folder קבוע, לא מכפילים 428 קבצים)
     // ADULT_COLLECTION -> fileIds נשאר [] (אין מיפוי Drive לדיסקים — ראה FOLLOWUPS.md)
 
+    // בחירה ששקולה לכל הספרייה (כל סיפורי הילדים, או מחיר שהגיע לתקרה ₪1550) מסופקת
+    // מתיקיית ה-Master — החנות שולחת "בחר הכל" כ-STORY_SELECTION, ו-433 מזהים ב-URL
+    // של ה-webhook נדחים ע"י Google (HTTP 400). תיקיית ה-Master מכילה את כל סיפורי
+    // הילדים (c1–c17), לא את הגמרא.
+    let coversFullLibrary = false;
+    let gemaraItemsCount = 0;
+    if (order.order_type === 'STORY_SELECTION') {
+      const { rows: [cov] } = await pool.query(
+        `SELECT
+           (SELECT count(DISTINCT oi.story_id) FROM order_items oi
+              JOIN stories s ON s.id = oi.story_id JOIN categories c ON c.id = s.category_id
+             WHERE oi.order_id = $1 AND c.name <> 'גמרא')::int AS selected_children,
+           (SELECT count(*) FROM stories s JOIN categories c ON c.id = s.category_id
+             WHERE s.is_active AND c.name <> 'גמרא')::int AS total_children,
+           (SELECT count(*) FROM order_items oi
+              JOIN stories s ON s.id = oi.story_id JOIN categories c ON c.id = s.category_id
+             WHERE oi.order_id = $1 AND c.name = 'גמרא')::int AS gemara_items,
+           (SELECT total_amount - COALESCE(usb_amount, 0) FROM orders WHERE id = $1) AS stories_amount`,
+        [id]
+      );
+      gemaraItemsCount = cov.gemara_items;
+      coversFullLibrary = (cov.total_children > 0 && cov.selected_children >= cov.total_children)
+        || Number(cov.stories_amount) >= FULL_LIBRARY_PRICE;
+    }
+
     return {
       orderNumber: order.order_number,
       orderType: order.order_type,
       paymentType: order.payment_type,
+      paymentStatus: order.payment_status,
       recipientEmail: order.email,
       fileIds,
+      coversFullLibrary,
+      gemaraItemsCount,
     };
   },
 

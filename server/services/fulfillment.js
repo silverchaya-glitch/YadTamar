@@ -141,8 +141,11 @@ async function triggerFulfillment(orderId) {
     let sharingDecision; // 'WAITING_MANUAL' עוצר לפני שלב 2; כל ערך אחר = שתף עכשיו
     let itemResults;
 
-    if (order.orderType === 'FULL_LIBRARY') {
-      // נקודה פתוחה: MASTER_LIBRARY_FOLDER_ID עדיין לא נמסר — ראו FOLLOWUPS.md.
+    if (order.orderType === 'FULL_LIBRARY' || order.coversFullLibrary) {
+      // גם STORY_SELECTION של כל הסיפורים / במחיר התקרה — ראו getOrderForFulfillment.
+      if (order.gemaraItemsCount > 0) {
+        console.warn(`[fulfillment] order ${orderId}: shared master folder, but ${order.gemaraItemsCount} gemara item(s) are not in it — deliver manually`);
+      }
       const masterFolderId = process.env.MASTER_LIBRARY_FOLDER_ID;
       if (!masterFolderId) {
         const errorMessage = 'MASTER_LIBRARY_FOLDER_ID not configured — FULL_LIBRARY sharing blocked (see FOLLOWUPS.md)';
@@ -152,7 +155,9 @@ async function triggerFulfillment(orderId) {
       }
       folderId = masterFolderId;
       folderUrl = `https://drive.google.com/drive/folders/${masterFolderId}`;
-      sharingDecision = 'SHARE_NOW';
+      // אין כאן את הסקריפט שמחליט לפי paymentType — משתפים רק הזמנה ששולמה. העברה
+      // בנקאית/טלפון ממתינה, ו-confirmManualPayment משתף את אותה תיקייה אחרי "שולם".
+      sharingDecision = order.paymentStatus === 'PAID' ? 'SHARE_NOW' : 'WAITING_MANUAL';
     } else {
       const stage1 = await callFolderCreationWebhook(orderId, order, requestId);
       if (!stage1.success) {
