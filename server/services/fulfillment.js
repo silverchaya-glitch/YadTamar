@@ -1,7 +1,25 @@
 const crypto = require('crypto');
 const db = require('../db');
 
-const TIMEOUT_MS = 60_000;
+const TIMEOUT_MS = 90_000;
+const RETRY_DELAY_MS = 3_000;
+
+// ה-Apps Scripts לפעמים איטיים/עסוקים (נצפה TIMEOUT ב-60 שניות, שהצליח בניסיון חוזר
+// תוך 20 שניות) — ניסיון חוזר אחד על תקלה זמנית בלבד. בטוח לשני השלבים: סקריפט
+// יצירת התיקיות idempotent לפי orderId (מחזיר את התיקייה הקיימת, גם אם הניסיון
+// הקודם עוד רץ — הוא מחכה לנעילה), ושיתוף חוזר לאותו מייל רק מאשר הרשאה קיימת.
+function isTransientError(result) {
+  return ['TIMEOUT', 'NETWORK_ERROR', 'LOCK_TIMEOUT'].includes(result.errorCode)
+    || /^HTTP_5\d\d$/.test(result.errorCode || '');
+}
+
+async function withRetry(label, orderId, call) {
+  const first = await call();
+  if (first.success || !isTransientError(first)) return first;
+  console.warn(`[fulfillment] order ${orderId} ${label} failed (${first.errorCode}) — retrying once`);
+  await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+  return call();
+}
 
 // שלב 1: קורא ל-webhook החיצוני (Google Apps Script) שיוצר תיקיית Drive ומעתיק
 // אליה את הקבצים הרלוונטיים להזמנה. מחזיר folder ID + החלטת שיתוף-מיידי מול
@@ -173,7 +191,7 @@ async function triggerFulfillment(orderId) {
       }
       sharingDecision = 'SHARE_NOW';
     } else {
-      const stage1 = await callFolderCreationWebhook(orderId, order, requestId);
+      const stage1 = await withRetry('folder creation', orderId, () => callFolderCreationWebhook(orderId, order, requestId));
       if (!stage1.success) {
         console.error(`[fulfillment] order ${orderId} folder creation failed: ${stage1.errorCode} — ${stage1.errorMessage}`);
         await db.recordFulfillmentFailure(orderId, {
@@ -205,7 +223,7 @@ async function triggerFulfillment(orderId) {
       return { success: true, externalFolderUrl: folderUrl, sharingStatus: 'WAITING_MANUAL' };
     }
 
-    const stage2 = await callShareWebhook(folderId, order.recipientEmail, requestId);
+    const stage2 = await withRetry('share', orderId, () => callShareWebhook(folderId, order.recipientEmail, requestId));
     if (!stage2.success) {
       console.error(`[fulfillment] order ${orderId} share failed: ${stage2.errorCode} — ${stage2.errorMessage}`);
       await db.recordFulfillmentFailure(orderId, {
@@ -259,7 +277,7 @@ async function confirmManualPayment(orderId) {
       }
 
       const requestId = crypto.randomUUID();
-      const stage2 = await callShareWebhook(existing.externalFolderId, order.recipientEmail, requestId);
+      const stage2 = await withRetry('share', orderId, () => callShareWebhook(existing.externalFolderId, order.recipientEmail, requestId));
       if (!stage2.success) {
         console.error(`[fulfillment] confirmManualPayment: share failed for order ${orderId}: ${stage2.errorCode} — ${stage2.errorMessage}`);
         await db.recordFulfillmentFailure(orderId, {
