@@ -266,6 +266,12 @@ function buildFulfillmentStatusLine(fulfillment) {
   return `<p style="color:${fulfillment.success ? EMAIL_COLORS.green : EMAIL_COLORS.red};">סטטוס מילוי: ${escapeHtml(fulfillment.success ? fulfillment.sharingStatus : 'נכשל — ' + (fulfillment.errorCode || 'לא ידוע'))}</p>`;
 }
 
+// הזמנה ששולמה והמסירה נכשלה נכנסת לתור הניסיונות החוזרים (fulfillment-queue.js)
+function buildQueuedRetryLine(fulfillment) {
+  if (!fulfillment || fulfillment.success || fulfillment.errorCode === 'NOT_APPLICABLE') return '';
+  return `<p>המערכת תנסה שוב למסור את הקבצים אוטומטית במשך כ-40 דקות. אם לא תצליח — יישלח מייל התראה נפרד. אין צורך לעשות כלום עד אז.</p>`;
+}
+
 async function sendOrderPlacedOfficeNotification({ orderId, customerId, orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount, fulfillment, feedback, contactMePhone }) {
   return sendOfficeNotification({
     subject: `הזמנה חדשה ${orderNumber}`,
@@ -289,7 +295,7 @@ async function sendPaymentApprovedOfficeNotification({ orderId, customerId, orde
     subject: `תשלום אושר — הזמנה ${orderNumber}`,
     html: buildOrderSummaryHtml({
       title: 'תשלום אושר', orderNumber, customerName, phone, email, paymentType, deliveryType, totalAmount,
-      statusLine: txLine + buildFulfillmentStatusLine(fulfillment),
+      statusLine: txLine + buildFulfillmentStatusLine(fulfillment) + buildQueuedRetryLine(fulfillment),
       notes,
     }),
     orderId,
@@ -330,6 +336,28 @@ async function sendErrorNotification({ subject, html, orderId = null }) {
   });
 }
 
+// התראה למשרד: לקוח שילם, וכל הניסיונות למסור לו את הקבצים נכשלו (fulfillment-queue.js).
+async function sendFulfillmentFailedAlert({ order, errorCode, errorMessage, attempts }) {
+  const orderNumber = order ? order.orderNumber : '(לא ידוע)';
+  const bodyHtml = `
+      <h2 style="color:${EMAIL_COLORS.red};">⚠️ לקוח שילם ולא קיבל קבצים — הזמנה ${escapeHtml(orderNumber)}</h2>
+      <p>התשלום התקבל, אבל מסירת הקבצים ב-Google Drive נכשלה גם אחרי ${escapeHtml(attempts)} ניסיונות חוזרים לאורך כ-40 דקות.
+         <strong>הלקוח עדיין לא קיבל את הקבצים.</strong></p>
+      ${order ? `<p>לקוח: ${escapeHtml(order.customerName)} | טלפון: ${escapeHtml(order.phone || '—')} | מייל: ${escapeHtml(order.email)}<br>
+         סכום: ${escapeHtml(order.totalAmount)} ₪</p>` : ''}
+      <p style="color:${EMAIL_COLORS.muted};">שגיאה: ${escapeHtml(errorCode || 'לא ידוע')}${errorMessage ? ' — ' + escapeHtml(errorMessage) : ''}</p>
+      <p><strong>מה לעשות:</strong> להיכנס לניהול, לפתוח את ההזמנה וללחוץ "שולם" — זה מנסה שוב לשתף את התיקייה ושולח ללקוח את הקישור.
+         אם גם זה נכשל, לשלוח ללקוח את הקבצים ידנית ולעדכן אותו בטלפון.</p>`;
+  return sendRawEmail({
+    emailType: 'ERROR_NOTIFICATION',
+    to: process.env.MAIL_TO,
+    subject: `⚠️ דחוף: לקוח שילם ולא קיבל קבצים — הזמנה ${orderNumber}`,
+    html: buildEmailWrapper({ bodyHtml, footerHtml: buildAdminFooter() }),
+    orderId: order ? order.id : null,
+    customerId: order ? order.customerId : null,
+  });
+}
+
 // סיכום יומי למשרד: כל עסקאות האשראי שאושרו ביום הקודם, להשוואה מול פורטל HYP
 // (בלי VERIFY זו הבקרה על חזרות מזויפות). rows מ-db.getApprovedCardPayments.
 async function sendDailyPaymentsDigest({ dateLabel, rows }) {
@@ -363,6 +391,7 @@ async function sendDailyPaymentsDigest({ dateLabel, rows }) {
 module.exports = {
   escapeHtml,
   sendDailyPaymentsDigest,
+  sendFulfillmentFailedAlert,
   sendPurchaseConfirmation,
   sendFileDelivery,
   sendGiftStory,

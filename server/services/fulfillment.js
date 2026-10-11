@@ -5,11 +5,12 @@ const TIMEOUT_MS = 90_000;
 const RETRY_DELAY_MS = 3_000;
 
 // ה-Apps Scripts לפעמים איטיים/עסוקים (נצפה TIMEOUT ב-60 שניות, שהצליח בניסיון חוזר
-// תוך 20 שניות) — ניסיון חוזר אחד על תקלה זמנית בלבד. בטוח לשני השלבים: סקריפט
+// תוך 20 שניות, ו-HTTP 404 אקראי מ-Google שעבר בניסיון חוזר — YT-0180) — ניסיון חוזר
+// אחד מיידי על תקלה זמנית בלבד. מה שנכשל גם בו עובר לתור (fulfillment-queue.js). בטוח לשני השלבים: סקריפט
 // יצירת התיקיות idempotent לפי orderId (מחזיר את התיקייה הקיימת, גם אם הניסיון
 // הקודם עוד רץ — הוא מחכה לנעילה), ושיתוף חוזר לאותו מייל רק מאשר הרשאה קיימת.
 function isTransientError(result) {
-  return ['TIMEOUT', 'NETWORK_ERROR', 'LOCK_TIMEOUT'].includes(result.errorCode)
+  return ['TIMEOUT', 'NETWORK_ERROR', 'LOCK_TIMEOUT', 'HTTP_404', 'HTTP_408', 'HTTP_429'].includes(result.errorCode)
     || /^HTTP_5\d\d$/.test(result.errorCode || '');
 }
 
@@ -302,7 +303,16 @@ async function confirmManualPayment(orderId) {
     }
 
     // מעולם לא רץ (אין שורה) או נכשל בעבר — להריץ את כל הצינור מהתחלה.
-    return triggerFulfillment(orderId);
+    const result = await triggerFulfillment(orderId);
+    // שלב 1 מחליט WAITING_MANUAL לפי paymentType (העברה בנקאית/טלפון) גם כשההזמנה
+    // כבר שולמה — אז התיקייה מוכנה, ומשתפים אותה עכשיו (הקריאה החוזרת נכנסת לענף
+    // WAITING_MANUAL-עם-תיקייה למעלה).
+    if (result.success && result.sharingStatus === 'WAITING_MANUAL') {
+      const order = await db.getOrderForPayment(orderId);
+      const fr = await db.getFulfillmentRequest(orderId);
+      if (order && order.paymentStatus === 'PAID' && fr && fr.externalFolderId) return confirmManualPayment(orderId);
+    }
+    return result;
   } catch (err) {
     console.error(`[fulfillment] confirmManualPayment unexpected error for order ${orderId}: ${err.message}`);
     return { success: false, errorCode: 'INTERNAL_ERROR', errorMessage: err.message };

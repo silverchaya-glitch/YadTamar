@@ -294,7 +294,8 @@ module.exports = {
   // אם לקרוא לשלב 2 (שיתוף) מחדש או להריץ את כל הצינור מהתחלה.
   async getFulfillmentRequest(orderId) {
     const { rows } = await pool.query(
-      `SELECT request_status, sharing_status, external_folder_id, external_folder_url, shared_email
+      `SELECT request_status, sharing_status, external_folder_id, external_folder_url, shared_email,
+              error_code, error_message, retry_count
        FROM fulfillment_requests WHERE order_id = $1`,
       [orderId]
     );
@@ -306,6 +307,9 @@ module.exports = {
       externalFolderId: row.external_folder_id,
       externalFolderUrl: row.external_folder_url,
       sharedEmail: row.shared_email,
+      errorCode: row.error_code,
+      errorMessage: row.error_message,
+      retryCount: row.retry_count,
     };
   },
 
@@ -328,7 +332,7 @@ module.exports = {
            request_status = $2, sharing_status = $3,
            external_folder_id = $4, external_folder_url = $5, shared_email = $6, shared_at = $7,
            item_results = $8, error_code = NULL, error_message = NULL,
-           response_received_at = $9, updated_at = now()
+           response_received_at = $9, next_retry_at = NULL, updated_at = now()
          WHERE order_id = $1`,
         [orderId, requestStatus, sharingStatus, externalFolderId, externalFolderUrl, sharedEmail, sharedAt,
          itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
@@ -345,15 +349,58 @@ module.exports = {
 
   // UPSERT (לא UPDATE רגיל) — חייב לעבוד גם אם נקרא לפני recordFulfillmentAttempt
   // (למשל FULFILLMENT_WEBHOOK_URL/SECRET חסרים — אין עדיין שורה להזמנה הזו)
+  // הזמנה ששולמה נכנסת לתור הניסיונות החוזרים (services/fulfillment-queue.js) בעוד דקה,
+  // עם מונה מאופס — אלא אם היא כבר בתור (next_retry_at לא NULL: התור עצמו מריץ אותה
+  // עכשיו וקובע לבד את הניסיון הבא).
   async recordFulfillmentFailure(orderId, { errorCode, errorMessage, externalFolderId = null, externalFolderUrl = null, itemResults = null, responseReceivedAt }) {
     await pool.query(
-      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, external_folder_id, external_folder_url, item_results, response_received_at)
-       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4, $5, $6, $7)
+      `INSERT INTO fulfillment_requests (order_id, request_status, sharing_status, error_code, error_message, external_folder_id, external_folder_url, item_results, response_received_at, next_retry_at)
+       VALUES ($1, 'FAILED', 'FAILED', $2, $3, $4, $5, $6, $7,
+               CASE WHEN (SELECT payment_status FROM orders WHERE id = $1) = 'PAID' THEN now() + interval '1 minute' END)
        ON CONFLICT (order_id) DO UPDATE SET
          request_status = 'FAILED', sharing_status = 'FAILED', error_code = $2, error_message = $3,
-         external_folder_id = $4, external_folder_url = $5, item_results = $6, response_received_at = $7, updated_at = now()`,
+         external_folder_id = $4, external_folder_url = $5, item_results = $6, response_received_at = $7,
+         retry_count = CASE WHEN fulfillment_requests.next_retry_at IS NULL AND EXCLUDED.next_retry_at IS NOT NULL THEN 0 ELSE fulfillment_requests.retry_count END,
+         alert_sent_at = CASE WHEN fulfillment_requests.next_retry_at IS NULL AND EXCLUDED.next_retry_at IS NOT NULL THEN NULL ELSE fulfillment_requests.alert_sent_at END,
+         next_retry_at = COALESCE(fulfillment_requests.next_retry_at, EXCLUDED.next_retry_at),
+         updated_at = now()`,
       [orderId, errorCode, errorMessage, externalFolderId, externalFolderUrl, itemResults ? JSON.stringify(itemResults) : null, responseReceivedAt]
     );
+  },
+
+  // תור הניסיונות החוזרים: לוקח את ההזמנה הבאה שהגיע זמנה (ששולמה ולא שותפה), מעלה
+  // את המונה ונועל אותה ל-15 דקות (אם התהליך נופל באמצע — היא תחזור לבד אחרי זה).
+  async claimFulfillmentRetry() {
+    const { rows } = await pool.query(
+      `UPDATE fulfillment_requests SET retry_count = retry_count + 1, next_retry_at = now() + interval '15 minutes', updated_at = now()
+       WHERE id = (
+         SELECT f.id FROM fulfillment_requests f JOIN orders o ON o.id = f.order_id
+         WHERE f.next_retry_at <= now() AND o.payment_status = 'PAID' AND f.sharing_status <> 'SHARED'
+         ORDER BY f.next_retry_at LIMIT 1 FOR UPDATE SKIP LOCKED)
+       RETURNING order_id, retry_count`
+    );
+    return rows[0] ? { orderId: rows[0].order_id, retryCount: rows[0].retry_count } : null;
+  },
+
+  async scheduleFulfillmentRetry(orderId, delayMs) {
+    await pool.query(
+      `UPDATE fulfillment_requests SET next_retry_at = now() + make_interval(secs => $2), updated_at = now() WHERE order_id = $1`,
+      [orderId, delayMs / 1000]
+    );
+  },
+
+  async markFulfillmentAlerted(orderId) {
+    await pool.query(
+      `UPDATE fulfillment_requests SET next_retry_at = NULL, alert_sent_at = now(), updated_at = now() WHERE order_id = $1`,
+      [orderId]
+    );
+  },
+
+  async hasOrderEmail(orderId, emailType) {
+    const { rows } = await pool.query(
+      "SELECT 1 FROM email_logs WHERE order_id = $1 AND email_type = $2 AND send_status = 'SENT' LIMIT 1", [orderId, emailType]
+    );
+    return rows.length > 0;
   },
 
   async getOrderForPayment(orderId) {

@@ -138,9 +138,13 @@ CREATE TABLE fulfillment_requests (
   item_results JSONB,
   request_sent_at TIMESTAMPTZ,
   response_received_at TIMESTAMPTZ,
+  retry_count INTEGER NOT NULL DEFAULT 0,      -- תור ניסיונות חוזרים (services/fulfillment-queue.js)
+  next_retry_at TIMESTAMPTZ,                   -- NULL = לא בתור
+  alert_sent_at TIMESTAMPTZ,                   -- התראה למשרד: כל הניסיונות נכשלו
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE INDEX idx_fulfillment_next_retry ON fulfillment_requests (next_retry_at) WHERE next_retry_at IS NOT NULL;
 CREATE TRIGGER trg_fulfillment_requests_updated_at BEFORE UPDATE ON fulfillment_requests
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
