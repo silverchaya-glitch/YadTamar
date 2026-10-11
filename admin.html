@@ -672,6 +672,40 @@ async function retryFulfillment(id) {
   }
 }
 
+// אישור ידני של תשלום (העברה בנקאית / "התקשרו אליי"). השרת (PATCH status:'paid')
+// מסמן PAID, משתף את התיקייה עם הלקוח ושולח לו מייל — ראו server/routes/admin.js.
+async function markOrderPaid(id, btn) {
+  const o = ORDERS.find(o => o.id === id);
+  if (!o) return;
+  if (!confirm(`לסמן את הזמנה ${o.orderNumber} (${o.customerName}) כשולמה?\nהתיקייה תשותף עם הלקוח ויישלח אליו מייל עם הקבצים.`)) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ מעדכן...';
+  try {
+    const res = await fetch('/api/admin/orders/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ status: 'paid' }),
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const { fulfillment } = await res.json();
+    closeModal('order-modal');
+    await loadAdminData();
+    renderKPI(); renderRecentOrders(); renderOrders(); renderFulfillment();
+    if (fulfillment?.success && fulfillment.sharingStatus === 'SHARED') {
+      showToast('סומן כשולם — התיקייה שותפה ונשלח מייל ללקוח', 'success');
+    } else if (fulfillment?.errorCode === 'NOT_APPLICABLE') {
+      showToast('סומן כשולם — משלוח ידני (דיסק און קי)', 'success');
+    } else {
+      showToast('סומן כשולם, אך שיתוף התיקייה נכשל — נסו "שלח פולפילמנט" בפרטי ההזמנה', 'error');
+    }
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '✅ סמן כשולם';
+    showToast('שגיאה בסימון התשלום', 'error');
+  }
+}
+
 // ========== LEADS ==========
 function renderLeads() {
   document.getElementById('leads-tbody').innerHTML = LEADS.map(l => `
@@ -789,6 +823,9 @@ function openOrderDetail(id) {
     </div>` : ''}
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-sm btn-outline" onclick="closeModal('order-modal')">סגור</button>
+      ${needsPhoneCall(o)
+        ? `<button class="btn btn-sm btn-primary" onclick="markOrderPaid('${o.id}', this)">✅ סמן כשולם</button>`
+        : ''}
       ${o.fulfillmentStatus !== 'COMPLETED' && o.paymentStatus === 'PAID'
         ? `<button class="btn btn-sm btn-primary" onclick="retryFulfillment('${o.id}');closeModal('order-modal')">שלח פולפילמנט</button>`
         : ''}
