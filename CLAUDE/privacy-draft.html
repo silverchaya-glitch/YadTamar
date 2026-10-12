@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מדיניות פרטיות – יד תמר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" />
+  <style>
+    :root {
+      --bg: #F4FAFB;
+      --card: #FFFFFF;
+      --text: #1A1A2E;
+      --muted: #6B7280;
+      --teal: #00B4CC;
+      --teal-dk: #007A8C;
+      --border: #D1E8EC;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(0,50,60,.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      direction: rtl;
+      line-height: 1.7;
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    header.page-head {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header.page-head .logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--teal-dk);
+      margin-bottom: 6px;
+    }
+    header.page-head h1 {
+      font-size: 1.9rem;
+      margin: 8px 0 4px;
+    }
+    header.page-head .updated {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 1.2rem;
+      color: var(--teal-dk);
+      margin-top: 0;
+    }
+    h3 {
+      font-size: 1.02rem;
+      margin: 18px 0 4px;
+    }
+    p, li { color: var(--text); font-size: .98rem; }
+    ul, ol { padding-inline-start: 22px; margin: 10px 0; }
+    li { margin-bottom: 6px; }
+    a { color: var(--teal-dk); }
+    .back-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: .95rem;
+    }
+    .contact-box {
+      background: #E0F7FA;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: .95rem;
+    }
+    .toc ol { columns: 2; column-gap: 28px; }
+    .toc li { break-inside: avoid; font-size: .93rem; }
+    .table-wrap { overflow-x: auto; margin: 12px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      min-width: 560px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: start;
+      vertical-align: top;
+    }
+    th { background: #E0F7FA; color: var(--teal-dk); font-weight: 600; }
+    .todo {
+      background: #FFF4CC;
+      border-radius: 4px;
+      padding: 0 4px;
+      font-size: .9em;
+    }
+    .footer-credit {
+      text-align: center;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 28px;
+    }
+    .footer-credit-link {
+      color: var(--teal-dk);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color .2s ease;
+    }
+    .footer-credit-link:hover {
+      color: var(--teal);
+      text-decoration: underline;
+    }
+    @media (max-width: 560px) {
+      .card { padding: 22px 18px; }
+      .toc ol { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <div class="logo">יד תמר</div>
+      <h1>מדיניות פרטיות</h1>
+      <div class="updated">עודכן לאחרונה: <span class="todo">[TODO: תאריך הפרסום]</span></div>
+    </header>
+
+    <nav class="card toc" aria-label="תוכן עניינים">
+      <h2>תוכן עניינים</h2>
+      <ol>
+        <li><a href="#who">מי אנחנו</a></li>
+        <li><a href="#summary">בקצרה — טבלת סיכום</a></li>
+        <li><a href="#what">איזה מידע נאסף ולמה</a></li>
+        <li><a href="#required">חובה או רשות?</a></li>
+        <li><a href="#recipients">למי המידע מועבר</a></li>
+        <li><a href="#abroad">העברת מידע לחו"ל</a></li>
+        <li><a href="#google">שימוש ב-Google APIs</a></li>
+        <li><a href="#browser">מידע שנשמר בדפדפן</a></li>
+        <li><a href="#minors">ילדים וקטינים</a></li>
+        <li><a href="#sensitive">מידע רגיש</a></li>
+        <li><a href="#staff">מי אצלנו רואה את המידע</a></li>
+        <li><a href="#retention">כמה זמן שומרים</a></li>
+        <li><a href="#security">אבטחת מידע</a></li>
+        <li><a href="#marketing">דיוור ופרסום</a></li>
+        <li><a href="#rights">הזכויות שלך</a></li>
+        <li><a href="#contact">יצירת קשר</a></li>
+      </ol>
+    </nav>
+
+    <section class="card" id="who">
+      <h2>1. מי אנחנו</h2>
+      <p>
+        יד תמר ("אנחנו") מפעילה חנות דיגיטלית לרכישת סיפורי שמע לילדים ולמבוגרים
+        (<a href="/">shop.emanuel-tehila.co.il</a>). אנחנו בעלי מאגר המידע שנוצר מהשימוש באתר,
+        ומסמך זה מסביר בשפה פשוטה איזה מידע אנחנו אוספים, למה, למי הוא מועבר, כמה זמן הוא נשמר
+        ומה הזכויות שלך.
+      </p>
+      <p>
+        <strong>הגורם המשפטי האחראי:</strong>
+        <span class="todo">[TODO: להשלים — שם הגוף המשפטי (עוסק / עמותה / חברה), מספר עוסק/ח"פ/ע"ר וכתובת למשלוח דואר]</span>
+      </p>
+      <p>פניות בנושא פרטיות: <strong>yadtamar613@gmail.com</strong> (פרטים נוספים בסעיף <a href="#contact">יצירת קשר</a>).</p>
+    </section>
+
+    <section class="card" id="summary">
+      <h2>2. בקצרה — טבלת סיכום</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">סוג המידע</th>
+              <th scope="col">למה</th>
+              <th scope="col">חובה או רשות</th>
+              <th scope="col">למי מועבר</th>
+              <th scope="col">כמה זמן נשמר</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>שם, טלפון, דוא"ל (בהזמנה)</td>
+              <td>ביצוע ההזמנה, מסירת הקבצים, קשר איתך</td>
+              <td>תנאי לביצוע הזמנה</td>
+              <td>Google, HYP (בתשלום באשראי)</td>
+              <td><span class="todo">[TODO]</span></td>
+            </tr>
+            <tr>
+              <td>כתובת למשלוח</td>
+              <td>משלוח דיסק און קי</td>
+              <td>תנאי, רק כשבוחרים דיסק און קי</td>
+              <td>Google (מייל פנימי למשרד); <span class="todo">[TODO: חברת שליחויות/דואר]</span></td>
+              <td><span class="todo">[TODO]</span></td>
+            </tr>
+            <tr>
+              <td>פרטי ההזמנה והתשלום</td>
+              <td>ביצוע ההזמנה, הנהלת חשבונות, אימות תשלום</td>
+              <td>תנאי לביצוע הזמנה</td>
+              <td>HYP, Google</td>
+              <td><span class="todo">[TODO: לאמת חובת שמירה למס]</span></td>
+            </tr>
+            <tr>
+              <td>הקדשה, משוב, בקשה לשיחה טלפונית</td>
+              <td>הוספת הקדשה, שיפור השירות, חזרה אליך</td>
+              <td>רשות</td>
+              <td>Google (מייל פנימי למשרד)</td>
+              <td><span class="todo">[TODO]</span></td>
+            </tr>
+            <tr>
+              <td>שם, דוא"ל, טלפון (סיפור מתנה)</td>
+              <td>שליחת סיפור המתנה</td>
+              <td>שם ודוא"ל — תנאי; טלפון — רשות</td>
+              <td>Google</td>
+              <td><span class="todo">[TODO]</span></td>
+            </tr>
+            <tr>
+              <td>נתונים טכניים (כתובת IP, יומני שרת)</td>
+              <td>הפעלה תקינה ואבטחה של האתר</td>
+              <td>נאסף אוטומטית</td>
+              <td>ספק האחסון, Google Fonts</td>
+              <td><span class="todo">[TODO]</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="what">
+      <h2>3. איזה מידע נאסף ולמה</h2>
+
+      <h3>פרטי קשר בהזמנה — שם מלא, טלפון, דוא"ל</h3>
+      <ul>
+        <li>כדי לבצע את ההזמנה ולזהות אותה.</li>
+        <li>הדוא"ל משמש לשיתוף תיקיית Google Drive עם הסיפורים שרכשת, ולשליחת מיילים על ההזמנה (אישור הזמנה, הודעה שהקבצים מוכנים).</li>
+        <li>הטלפון משמש ליצירת קשר בנוגע להזמנה — למשל בתשלום בהעברה בנקאית, כשבוחרים "התקשרו אליי", או כשיש תקלה במסירה.</li>
+      </ul>
+
+      <h3>כתובת למשלוח</h3>
+      <p>רחוב, מספר בית, דירה, ת"ד, עיר ומיקוד — נאספים <strong>רק</strong> כשבוחרים מסירה בדיסק און קי, ומשמשים רק למשלוח שלו.</p>
+
+      <h3>פרטי ההזמנה</h3>
+      <p>
+        הסיפורים או האוספים שנבחרו, אופן המסירה, אמצעי התשלום שנבחר, הסכום ומספר ההזמנה. משמשים
+        לביצוע ההזמנה, לתיעוד עסקי וחשבונאי, ולמענה אם תפנה/י אלינו בהמשך.
+      </p>
+
+      <h3>פרטי תשלום</h3>
+      <p>
+        <strong>פרטי כרטיס האשראי לא מגיעים אלינו ולא נשמרים אצלנו.</strong> התשלום מתבצע בדף
+        מאובטח של חברת הסליקה HYP. לצורך התשלום אנחנו מעבירים ל-HYP את השם, הדוא"ל, הטלפון
+        והסכום. אחרי התשלום HYP מחזירה אלינו אישור עסקה (מספר עסקה, מספר אישור, סכום, ונתונים
+        נוספים שהיא מצרפת לאישור), ואנחנו שומרים אותו כדי לאמת שהתשלום התקבל.
+        <span class="todo">[TODO: לאמת אילו שדות HYP מחזירה בפועל ונשמרים — למשל 4 ספרות אחרונות של הכרטיס או מספר תעודת זהות — ולפרט כאן]</span>
+      </p>
+
+      <h3>הקדשה, משוב ובקשה לשיחה</h3>
+      <p>
+        שדות רשות בטופס ההזמנה. ההקדשה מצורפת להזמנה, המשוב עוזר לנו לשפר את השירות, ואם סימנת
+        "צרו איתי קשר טלפוני" — נחזור אליך בטלפון.
+      </p>
+
+      <h3>סיפור מתנה חינם</h3>
+      <p>
+        שם ודוא"ל (וטלפון, אם בחרת למסור) — כדי לשתף איתך את סיפור המתנה ב-Google Drive ולשלוח
+        לך אותו בדוא"ל. הפרטים נשמרים אצלנו ונשלחת עליהם הודעה פנימית למשרד.
+      </p>
+
+      <h3>נתונים טכניים</h3>
+      <p>
+        כמו כל אתר, השרת מקבל את כתובת ה-IP ופרטים טכניים על הדפדפן. יומני השרת משמשים לאיתור תקלות
+        ולאבטחה, וייתכן שיופיעו בהם גם כתובת דוא"ל או מספר הזמנה כשיש תקלה בטיפול בהזמנה.
+      </p>
+    </section>
+
+    <section class="card" id="required">
+      <h2>4. חובה או רשות?</h2>
+      <p>אין חובה לפי חוק למסור לנו מידע. עם זאת:</p>
+      <ul>
+        <li><strong>שם, טלפון ודוא"ל</strong> — בלעדיהם אי אפשר לבצע הזמנה ולמסור את הקבצים (תנאי לקבלת השירות).</li>
+        <li><strong>כתובת</strong> — נדרשת רק אם בוחרים מסירה בדיסק און קי. בלעדיה אי אפשר לשלוח את הדיסק.</li>
+        <li><strong>שם ודוא"ל לסיפור המתנה</strong> — נדרשים כדי לשלוח את הסיפור. הטלפון רשות.</li>
+        <li><strong>הקדשה, משוב ובקשה לשיחה</strong> — רשות לגמרי. אם לא ממלאים אותם, אין שום השפעה על ההזמנה.</li>
+      </ul>
+      <p>
+        אחרי שבוצעה הזמנה, ייתכן שתחול עלינו חובה חוקית לשמור חלק מהנתונים (למשל רישומים
+        חשבונאיים).
+        <span class="todo">[TODO: להשלים התייעצות משפטית/רו"ח — המקור החוקי ומשך החובה]</span>
+      </p>
+    </section>
+
+    <section class="card" id="recipients">
+      <h2>5. למי המידע מועבר</h2>
+      <p>אנחנו לא מוכרים מידע ולא מעבירים אותו לפרסום. המידע מועבר רק לספקים שנחוצים לתפעול החנות:</p>
+      <ul>
+        <li>
+          <strong>Google (Gmail, Google Drive, Google Apps Script)</strong> — תחת חשבון Google
+          עסקי של יד תמר. דרכו נשלחים המיילים אליך ולמשרד, ודרכו נוצרות ומשותפות תיקיות הסיפורים.
+          כששיתוף התיקייה מתבצע, Google יודעת שכתובת הדוא"ל שלך קיבלה גישה לתיקייה של יד תמר.
+          המיילים הפנימיים למשרד כוללים את פרטי ההזמנה (שם, טלפון, דוא"ל, משוב והערות).
+          מדיניות הפרטיות של Google:
+          <a href="https://policies.google.com/privacy?hl=iw" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+        </li>
+        <li>
+          <strong>HYP — חברת הסליקה</strong> — מקבלת שם, דוא"ל, טלפון וסכום, ואת פרטי הכרטיס שמוזנים
+          ישירות בדף התשלום שלה. HYP מטפלת בפרטי הכרטיס באחריותה.
+          <span class="todo">[TODO: להוסיף קישור למדיניות הפרטיות של HYP]</span>
+        </li>
+        <li>
+          <strong>ספק האחסון של השרת</strong> — מסד הנתונים (PostgreSQL) ויומני השרת נמצאים בשרת
+          ייעודי. <span class="todo">[TODO: להשלים פרטי מיקום/ספק האחסון]</span>
+        </li>
+        <li>
+          <strong>Google Fonts</strong> — הגופן של האתר נטען משרתי Google, ולכן הדפדפן שלך שולח
+          ל-Google את כתובת ה-IP שלך בזמן טעינת הדף.
+        </li>
+        <li>
+          <strong>משלוח דיסק און קי</strong> —
+          <span class="todo">[TODO: להשלים — האם השם, הכתובת והטלפון מועברים לחברת שליחויות או לדואר ישראל, ולאיזו]</span>
+        </li>
+      </ul>
+      <p>
+        ייתכן שנמסור מידע גם אם נידרש לכך על פי דין (למשל צו של בית משפט או רשות מוסמכת).
+      </p>
+    </section>
+
+    <section class="card" id="abroad">
+      <h2>6. העברת מידע לחו"ל</h2>
+      <p>
+        Google שומרת ומעבדת מידע בשרתים במדינות שונות, ובהן ארצות הברית. כלומר, המידע שעובר דרך
+        Gmail ו-Google Drive (פרטי קשר, פרטי הזמנה ומיילים) <strong>נשמר גם מחוץ לישראל</strong>.
+        Google פועלת לפי התחייבויות חוזיות להגנה על מידע בהעברה בין מדינות.
+        <span class="todo">[TODO: התייעצות משפטית — לאשר שההעברה עומדת בתקנות הגנת הפרטיות (העברת מידע אל מאגרי מידע שמחוץ לגבולות המדינה), ולציין על איזה בסיס]</span>
+      </p>
+      <p>
+        HYP היא חברת סליקה ישראלית.
+        <span class="todo">[TODO: לאמת היכן HYP מאחסנת את הנתונים]</span>
+        מיקום השרת שלנו: <span class="todo">[TODO: להשלים — בישראל או בחו"ל]</span>
+      </p>
+    </section>
+
+    <section class="card" id="google">
+      <h2>7. שימוש ב-Google APIs</h2>
+      <p>
+        לצורך תפעול החנות אנו משתמשים בשני שירותי Google, תחת חשבון Google עסקי של יד תמר בלבד:
+      </p>
+      <ul>
+        <li><strong>Google Drive</strong> — ליצירת ושיתוף תיקיית התוכן שנרכש עם כתובת הדוא"ל של הלקוח.</li>
+        <li>
+          <strong>Gmail API (הרשאת <code>gmail.send</code> בלבד)</strong> — לשליחת הודעות דוא"ל
+          תפעוליות הקשורות להזמנה מתיבת הדוא"ל העסקית של יד תמר. ההרשאה מאפשרת
+          <strong>שליחה בלבד</strong> — לאתר אין ולא תהיה גישה לקריאת תיבת הדואר, אנשי הקשר, או כל
+          מידע אחר בחשבון ה-Gmail.
+        </li>
+      </ul>
+      <p>
+        השימוש שיד תמר עושה במידע המתקבל מ-Google APIs, וההעברה שלו לכל אפליקציה אחרת, יעמוד
+        בדרישות
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">
+          Google API Services User Data Policy</a>, לרבות דרישות ה-Limited Use.
+      </p>
+    </section>
+
+    <section class="card" id="browser">
+      <h2>8. מידע שנשמר בדפדפן שלך</h2>
+      <p>
+        האתר לא משתמש בעוגיות (Cookies) לפרסום או למעקב. כדי שההזמנה תעבוד, האתר שומר מידע
+        באחסון המקומי של הדפדפן שלך (localStorage). המידע הזה נשאר במחשב או בטלפון שלך ולא נשלח
+        אלינו:
+      </p>
+      <ul>
+        <li>עותק של פרטי ההזמנה שביצעת (כולל שם, טלפון, דוא"ל וכתובת, אם מסרת).</li>
+        <li>פרטי הטופס בזמן התשלום — כדי שאם התשלום ייכשל, אפשר יהיה לנסות שוב בלי למלא מחדש.</li>
+      </ul>
+      <p>
+        במחשב משותף מומלץ למחוק את נתוני האתר מהדפדפן (בהגדרות הדפדפן: "ניקוי נתוני גלישה" או
+        "נתוני אתרים").
+      </p>
+      <p>עוגייה נפרדת משמשת רק את צוות יד תמר לכניסה לממשק הניהול.</p>
+    </section>
+
+    <section class="card" id="minors">
+      <h2>9. ילדים וקטינים</h2>
+      <p>
+        הסיפורים מיועדים לילדים, אבל <strong>ההזמנה מיועדת להורים ולמבוגרים</strong>. אנחנו לא
+        מבקשים מידע על ילדים ולא אוספים אותו ביודעין. קטינים מתבקשים לא למסור פרטים באתר בלי
+        הסכמת הורה או אפוטרופוס.
+      </p>
+      <p>
+        אם בחרת לכתוב בהקדשה את שם הילד, נשתמש בו רק לצורך ההקדשה בהזמנה. אם נודע לנו שנמסר מידע
+        על קטין בלי הסכמת הורה, נמחק אותו לבקשה — פנו אלינו (סעיף <a href="#contact">יצירת קשר</a>).
+      </p>
+    </section>
+
+    <section class="card" id="sensitive">
+      <h2>10. מידע רגיש</h2>
+      <p>
+        אנחנו <strong>לא</strong> מבקשים ולא אוספים מידע רגיש — כגון מידע רפואי או נפשי, דת,
+        דעות, מצב משפחתי או מידע ביומטרי. בשדות החופשיים (הקדשה ומשוב) נבקש לא לכתוב מידע כזה.
+        אם בכל זאת נכתב, הוא יישמר יחד עם ההזמנה ויטופל באותה רמת אבטחה, וניתן לבקש למחוק אותו.
+      </p>
+    </section>
+
+    <section class="card" id="staff">
+      <h2>11. מי אצלנו רואה את המידע</h2>
+      <ul>
+        <li><strong>צוות המשרד של יד תמר</strong> — רואה את פרטי ההזמנות והלקוחות בממשק הניהול (בכניסה עם סיסמה), ומקבל מיילים על כל הזמנה ובקשה לסיפור מתנה, וסיכום יומי של התשלומים.</li>
+        <li><strong>מפתחת האתר</strong>, ככל שנדרש לתחזוקה ולטיפול בתקלות.</li>
+      </ul>
+      <p><span class="todo">[TODO: לאשר את רשימת בעלי הגישה ואת מספר בעלי ההרשאה לממשק הניהול]</span></p>
+    </section>
+
+    <section class="card" id="retention">
+      <h2>12. כמה זמן שומרים את המידע</h2>
+      <p>אנחנו שומרים מידע רק כל עוד יש בו צורך למטרות שתוארו כאן, או כל עוד הדין מחייב אותנו.</p>
+      <ul>
+        <li><strong>פרטי לקוח והזמנה:</strong> <span class="todo">[TODO: להשלים מדיניות שמירה/מחיקה]</span></li>
+        <li><strong>רישומי תשלום וחשבונאות:</strong> <span class="todo">[TODO: להשלים — לפי חובת שמירה למס, לאחר התייעצות עם רו"ח]</span></li>
+        <li><strong>כתובת למשלוח:</strong> <span class="todo">[TODO: להשלים — למשל עד שהמשלוח הגיע]</span></li>
+        <li><strong>פרטי סיפור מתנה:</strong> <span class="todo">[TODO: להשלים מדיניות שמירה/מחיקה]</span></li>
+        <li><strong>יומני שרת:</strong> <span class="todo">[TODO: להשלים מדיניות שמירה/מחיקה]</span></li>
+        <li><strong>גישה לתיקיית Google Drive:</strong> <span class="todo">[TODO: להשלים — האם הגישה לתיקייה קבועה או מוגבלת בזמן]</span></li>
+      </ul>
+    </section>
+
+    <section class="card" id="security">
+      <h2>13. אבטחת מידע</h2>
+      <p>
+        התקשורת עם האתר מוצפנת (HTTPS). מסד הנתונים נגיש רק לצוות יד תמר. הכניסה לממשק הניהול
+        דורשת סיסמה, והסיסמאות נשמרות בצורה מוצפנת. פרטי כרטיס אשראי לא נשמרים אצלנו בכלל.
+      </p>
+      <p>
+        אף מערכת אינה חסינה לחלוטין. אם יתרחש אירוע אבטחה חמור, נפעל לפי הדין, כולל דיווח
+        לרשות להגנת הפרטיות כשהדין מחייב זאת.
+      </p>
+      <p><span class="todo">[TODO: לבדוק את החובות שחלות עלינו לפי תקנות הגנת הפרטיות (אבטחת מידע) ותיקון 13 — כולל רישום מאגר ומינוי ממונה על הגנת הפרטיות, אם נדרש]</span></p>
+    </section>
+
+    <section class="card" id="marketing">
+      <h2>14. דיוור ופרסום</h2>
+      <p>
+        המיילים שנשלחים מהאתר הם <strong>תפעוליים בלבד</strong> — על ההזמנה או על סיפור המתנה. לא
+        נשלח לך דיוור שיווקי בלי הסכמה מפורשת מראש. בכל דיוור כזה תהיה אפשרות להסיר את עצמך
+        מהרשימה.
+      </p>
+    </section>
+
+    <section class="card" id="rights">
+      <h2>15. הזכויות שלך</h2>
+      <ul>
+        <li><strong>עיון</strong> — לבקש לראות את המידע ששמור עלייך אצלנו.</li>
+        <li><strong>תיקון</strong> — לבקש לתקן מידע לא נכון, לא שלם או לא מעודכן.</li>
+        <li><strong>מחיקה</strong> — לבקש למחוק את המידע, חוץ ממידע שהדין מחייב אותנו לשמור.</li>
+        <li><strong>הסרה מדיוור</strong> — בכל עת, אם תצורף/י לדיוור בעתיד.</li>
+      </ul>
+      <h3>איך מגישים בקשה</h3>
+      <ol>
+        <li>שלחו מייל ל-<strong>yadtamar613@gmail.com</strong> עם הנושא "בקשה בנושא פרטיות".</li>
+        <li>כתבו את השם, את כתובת הדוא"ל שבה השתמשתם באתר ואת מספר ההזמנה (אם יש), ומה אתם מבקשים.</li>
+        <li>ייתכן שנבקש לאמת את זהותכם לפני שנמסור או נמחק מידע.</li>
+        <li>נשיב תוך <span class="todo">[TODO: להשלים — זמן מענה, לפי חוק]</span>.</li>
+      </ol>
+      <p>
+        שימו לב: אם תבקשו למחוק מידע, ייתכן שגם הגישה לתיקיית הסיפורים ב-Google Drive תבוטל.
+        <span class="todo">[TODO: לאשר את המדיניות מול הבעלים]</span>
+      </p>
+      <p>
+        אם לא קיבלתם מענה, אפשר לפנות לרשות להגנת הפרטיות במשרד המשפטים.
+      </p>
+    </section>
+
+    <section class="card" id="contact">
+      <h2>16. יצירת קשר</h2>
+      <div class="contact-box">
+        לשאלות בנוגע למדיניות פרטיות זו ולמימוש הזכויות, ניתן לפנות אלינו בדוא"ל:
+        <strong>yadtamar613@gmail.com</strong><br />
+        ממונה על הגנת הפרטיות / איש קשר לפרטיות:
+        <span class="todo">[TODO: להשלים — שם וטלפון, או לציין שאין ממונה ושהפניות מטופלות במשרד]</span>
+      </div>
+      <p style="font-size:.9rem;color:var(--muted)">
+        אנחנו עשויים לעדכן מדיניות זו מעת לעת. תאריך העדכון האחרון מופיע בראש העמוד.
+      </p>
+      <a class="back-link" href="/">&larr; חזרה לחנות</a>
+    </section>
+
+    <div class="footer-credit">✨ האתר פותח ועוצב על ידי חיה סילבר — <a href="https://mail.google.com/mail/u/0/?fs=1&amp;tf=cm&amp;source=mailto&amp;to=c0548496744%40gmail.com&amp;su=%D7%94%D7%92%D7%A2%D7%AA%D7%99+%D7%9E%D7%90%D7%AA%D7%A8+%D7%99%D7%93+%D7%AA%D7%9E%D7%A8" class="footer-credit-link" target="_blank" rel="noopener">✉️ c0548496744@gmail.com</a></div>
+  </div>
+</body>
+</html>
