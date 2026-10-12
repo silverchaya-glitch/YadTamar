@@ -433,6 +433,15 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .about-card.full { grid-column: 1 / -1; }
 .about-badges-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
 .about-badge { background: var(--teal-lt); border: 1.5px solid rgba(0,180,204,.2); color: var(--teal-dk); font-size: .85rem; font-weight: 600; padding: 7px 16px; border-radius: 20px; }
+/* ===== Pricelist Tab ===== */
+.product-card.card-pricelist { border: 2px solid var(--clay-border-gold); background: var(--card-cream); }
+.product-card.card-pricelist .card-price { font-size: 1rem; }
+.pricelist-table-wrap { background: var(--card); margin-bottom: 20px; box-shadow: var(--clay-shadow-md); }
+.pricelist-table td { font-size: .95rem; }
+.pricelist-table tbody tr:hover td { transform: none; }
+.pricelist-highlight { background: var(--teal-lt); border: 1.5px solid rgba(0,180,204,.2); color: var(--teal-dk); font-size: 1.1rem; font-weight: 700; text-align: center; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 24px; }
+.pricelist-highlight strong { color: #A84C73; font-weight: 900; }
+.pricelist-legal { text-align: center; font-size: .82rem; color: var(--muted); line-height: 1.8; padding-bottom: 40px; }
 /* ===== Catalog Tab ===== */
 .product-card.card-catalog { border: 2px solid var(--clay-border-gold); background: var(--card-cream); }
 .product-card.card-catalog h3 { color: var(--teal-dk); }
@@ -619,6 +628,12 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
         <h3>קטלוג סיפורי חז"ל ותנ"ך לילדים</h3>
         <div class="card-price">בין 3.8-8 ₪ לסיפור</div>
         <div class="card-desc">כ-423 קבצי שמע במגוון נושאים</div>
+      </div>
+      <div class="product-card card-pricelist" id="card-pricelist" onclick="showPricelistSection()">
+        <div class="card-icon">🏷️</div>
+        <h3>מחירון</h3>
+        <div class="card-price">3.8-8 ₪ לקובץ</div>
+        <div class="card-desc">מחירון קבצי שמע לילדים</div>
       </div>
       <div class="product-card" id="card-adult" onclick="selectProduct('ADULT_COLLECTION')">
         <div class="card-icon">📕</div>
@@ -1028,6 +1043,66 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
               <li>בקנייה מעל ₪1,000 — שליח אישי</li>
             </ul>
           </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PRICELIST SECTION (inside store) ===== -->
+  <div id="store-pricelist-section" style="display:none">
+    <div class="about-tab">
+      <div class="about-tab-inner">
+
+        <h2 class="about-main-title">מחירון קבצי שמע לילדים</h2>
+        <p class="about-main-sub">כל קובץ שמע 45-60 דקות (הדיסק און קי מסופק על ידינו)</p>
+
+        <div class="catalog-table-wrap pricelist-table-wrap">
+          <table class="catalog-table pricelist-table">
+            <thead><tr><th>כמות קבצי שמע</th><th>מחיר לקובץ</th></tr></thead>
+            <tbody>
+              <tr><td>1-20 קבצי שמע</td><td>8 ש"ח</td></tr>
+              <tr><td>20-50 קבצי שמע</td><td>7.00 ש"ח</td></tr>
+              <tr><td>50-100 קבצי שמע</td><td>6.50 ש"ח</td></tr>
+              <tr><td>100-150 קבצי שמע</td><td>6 ש"ח</td></tr>
+              <tr><td>150-315 קבצי שמע</td><td>5 ש"ח</td></tr>
+              <tr><td>315 קבצי שמע ומעלה</td><td>3.80 ש"ח</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pricelist-highlight">מחיר כל הסדרה כ-423 קבצים <strong>1550 ש"ח בלבד!</strong></div>
+
+        <div class="about-grid">
+          <div class="about-card">
+            <div class="about-card-icon">🚚</div>
+            <h4>אספקה ומשלוח</h4>
+            <ul>
+              <li>אפשרי לקבל גם במייל</li>
+              <li>משלוח חינם בדואר 24!</li>
+              <li>מחיר דיסק און קי בהזמנת פחות מ-50 קבצים — 15 ש"ח</li>
+              <li>בקניית 50 קבצים ומעלה דיסק און קי מהודר במתנה!</li>
+            </ul>
+          </div>
+          <div class="about-card">
+            <div class="about-card-icon">🎁</div>
+            <h4>מתנה</h4>
+            <p>בקניית 315 קבצים ומעלה מצורפת מתנה: סדרת "הכח לצמוח" — כלים לבניה אישית, 33 הרצאות לנוער ומבוגרים, אשר תשלח אליכם דרך המשרד.</p>
+          </div>
+          <div class="about-card full">
+            <div class="about-card-icon">💳</div>
+            <h4>תשלום והזמנות</h4>
+            <ul>
+              <li>ניתן לחלק לתשלומים נוחים</li>
+              <li>מכבדים כרטיסי אשראי</li>
+              <li>להזמנות: <a href="tel:049846776" dir="ltr">04-9846776</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pricelist-legal">
+          <p>כל הזכויות שמורות ליד תמר</p>
+          <p>קבצי השמע נמכרים לשימוש אישי בלבד. אין להעביר את הקבצים לאחרים.</p>
         </div>
 
       </div>
@@ -1465,7 +1540,7 @@ async function loadCatalog() {
 function showTab(t) {
   document.getElementById('tab-store').style.display = t === 'store' ? 'block' : 'none';
   document.getElementById('tab-gift').style.display  = t === 'gift'  ? 'block' : 'none';
-  if (t !== 'store') { hideAboutSection(); hideCatalogSection(); }
+  if (t !== 'store') { hideAboutSection(); hideCatalogSection(); hidePricelistSection(); }
   if (t === 'gift') {
     document.getElementById('gift-success').style.display = 'none';
     document.querySelector('.gift-form').style.display = '';
@@ -1479,6 +1554,7 @@ function showTab(t) {
 
 function showAboutSection() {
   hideCatalogSection();
+  hidePricelistSection();
   document.getElementById('store-about-section').style.display = '';
   document.getElementById('card-about').classList.add('selected');
   document.getElementById('steps-bar').style.display = 'none';
@@ -1495,6 +1571,7 @@ function hideAboutSection() {
 
 function showCatalogSection() {
   hideAboutSection();
+  hidePricelistSection();
   document.getElementById('store-catalog-section').style.display = '';
   document.getElementById('card-catalog').classList.add('selected');
   document.getElementById('steps-bar').style.display = 'none';
@@ -1509,10 +1586,28 @@ function hideCatalogSection() {
   document.getElementById('wizard-container').style.display = '';
 }
 
+function showPricelistSection() {
+  hideAboutSection();
+  hideCatalogSection();
+  document.getElementById('store-pricelist-section').style.display = '';
+  document.getElementById('card-pricelist').classList.add('selected');
+  document.getElementById('steps-bar').style.display = 'none';
+  document.getElementById('wizard-container').style.display = 'none';
+  document.getElementById('store-pricelist-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hidePricelistSection() {
+  document.getElementById('store-pricelist-section').style.display = 'none';
+  document.getElementById('card-pricelist').classList.remove('selected');
+  document.getElementById('steps-bar').style.display = '';
+  document.getElementById('wizard-container').style.display = '';
+}
+
 // ========== PRODUCT SELECTION ==========
 function selectProduct(type) {
   hideAboutSection();
   hideCatalogSection();
+  hidePricelistSection();
   if (state.currentStep > 1) goToStep(1);
   state.product = type;
 
