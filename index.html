@@ -441,6 +441,9 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
 .pricelist-table tbody tr:hover td { transform: none; }
 .pricelist-highlight { background: var(--teal-lt); border: 1.5px solid rgba(0,180,204,.2); color: var(--teal-dk); font-size: 1.1rem; font-weight: 700; text-align: center; padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 24px; }
 .pricelist-highlight strong { color: #A84C73; font-weight: 900; }
+.store-cta { text-align: center; background: var(--card-cream); border: 2px solid var(--clay-border-gold); border-radius: var(--radius-md); box-shadow: var(--clay-shadow-md); padding: var(--space-5) var(--space-6); margin-bottom: 24px; }
+.store-cta p { font-size: 1.05rem; font-weight: 700; color: var(--teal-dk); margin-bottom: 14px; }
+#store-about-section, #store-catalog-section, #store-pricelist-section { scroll-margin-top: var(--header-h); }
 .pricelist-legal { text-align: center; font-size: .82rem; color: var(--muted); line-height: 1.8; padding-bottom: 40px; }
 /* ===== Catalog Tab ===== */
 .product-card.card-catalog { border: 2px solid var(--clay-border-gold); background: var(--card-cream); }
@@ -1045,6 +1048,11 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           </div>
         </div>
 
+        <div class="store-cta">
+          <p>לרכישה עבור ל"קטלוג סיפורי חז"ל ותנ"ך לילדים" — בין 3.8-8 ₪ לסיפור</p>
+          <button type="button" class="btn btn-cta-gold btn-shine-auto" onclick="showCatalogSection()">📚 לקטלוג סיפורי חז"ל ותנ"ך לילדים ←</button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1098,6 +1106,11 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
               <li>להזמנות: <a href="tel:049846776" dir="ltr">04-9846776</a></li>
             </ul>
           </div>
+        </div>
+
+        <div class="store-cta">
+          <p>להזמנת הסיפורים — בחרו את הסיפורים בקטלוג סיפורי חז"ל ותנ"ך לילדים</p>
+          <button type="button" class="btn btn-cta-gold btn-shine-auto" onclick="showCatalogSection()">📚 לבחירת סיפורים והזמנה ←</button>
         </div>
 
         <div class="pricelist-legal">
