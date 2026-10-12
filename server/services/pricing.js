@@ -35,8 +35,9 @@ function computeOrderPrice({ product, stories = [], useUsb }) {
   } else {
     const bundle = stories.filter(s => s.categoryName === P.BUNDLE_ONLY_CATEGORY_NAME);
     const regular = stories.filter(s => s.categoryName !== P.BUNDLE_ONLY_CATEGORY_NAME);
-    const regularTotal = P.calcTotal(regular.length);
     const bundleTotal = bundle.length ? P.BUNDLE_ONLY_PRICE : 0;
+    // תקרת FULL_LIBRARY_PRICE חלה על כל ההזמנה, כולל החבילה — ההנחה יורדת מהסיפורים הרגילים
+    const regularTotal = Math.min(P.calcTotal(regular.length), P.FULL_LIBRARY_PRICE - bundleTotal);
     subtotal = regularTotal + bundleTotal;
     for (const s of regular) itemPrices.set(s.id, round2(regularTotal / regular.length));
     for (const s of bundle) itemPrices.set(s.id, round2(bundleTotal / bundle.length));

@@ -1230,7 +1230,8 @@ function getSelectionBreakdown() {
 
 function getSelectionTotal() {
   const { regularQty, bundleSelected } = getSelectionBreakdown();
-  return calcTotal(regularQty) + (bundleSelected ? BUNDLE_ONLY_PRICE : 0);
+  // תקרת FULL_LIBRARY_PRICE חלה על כל ההזמנה, כולל החבילה (זהה ל-server/services/pricing.js)
+  return Math.min(calcTotal(regularQty) + (bundleSelected ? BUNDLE_ONLY_PRICE : 0), FULL_LIBRARY_PRICE);
 }
 
 // ========== STATE ==========
@@ -2081,9 +2082,11 @@ function buildSummary(autoSet = false) {
   if (state.product === 'STORY_SELECTION') {
     const { regularQty, bundleSelected } = getSelectionBreakdown();
     const unitP = calcUnitPrice(regularQty);
+    const capDiscount = +(calcTotal(regularQty) + (bundleSelected ? BUNDLE_ONLY_PRICE : 0) - getSelectionTotal()).toFixed(2);
     bd.innerHTML = `
       ${regularQty > 0 ? `<div class="price-row"><span>${regularQty} סיפורים × ₪${unitP}</span><span>₪${calcTotal(regularQty).toLocaleString()}</span></div>` : ''}
       ${bundleSelected ? `<div class="price-row"><span>בר/בת מצוה (11 סיפורים, חבילה)</span><span>₪${BUNDLE_ONLY_PRICE}</span></div>` : ''}
+      ${capDiscount > 0 ? `<div class="price-row"><span>תקרת ספרייה מלאה (₪${FULL_LIBRARY_PRICE.toLocaleString()})</span><span>−₪${capDiscount.toLocaleString()}</span></div>` : ''}
       ${state.useUsb ? `<div class="price-row"><span>דיסק און קי ${usbFree ? '(חינם)' : ''}</span><span>₪${usbCost}</span></div>` : ''}
       <div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
   } else if (state.product === 'ADULT_COLLECTION') {

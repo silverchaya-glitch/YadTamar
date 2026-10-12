@@ -74,6 +74,9 @@ async function main() {
 
   await suite.test('כל הספרייה (בחר הכל), עם ובלי USB', async () => {
     for (const useUsb of [false, true]) compare(`כל ${all.length} usb=${useUsb}`, { product: 'STORY_SELECTION', stories: all, useUsb });
+    // regression: חבילת בר/בת מצוה נוספה מעל התקרה → ₪1,565 במקום ₪1,550
+    const full = computeOrderPrice({ product: 'STORY_SELECTION', stories: all.map(s => ({ id: s.id, categoryName: catName.get(s.categoryId) })), useUsb: true });
+    assert.ok(amountsEqual(full.total, 1550), `כל הספרייה: ₪${full.total}, ציפינו ל-₪1550`);
   });
 
   await suite.test('אוסף מבוגרים וגמרא, עם ובלי USB', async () => {
