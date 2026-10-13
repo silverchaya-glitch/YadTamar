@@ -72,7 +72,7 @@ const CATEGORIES = [
   { id: 'c14', name: 'סיפורי מופת - סדרה ד\'',        displayOrder: 15 },
   { id: 'c15', name: 'ילדים מספרים בשולחן שבת',       displayOrder: 16 },
   { id: 'c16', name: 'בר מצוה/בת מצוה',              displayOrder: 17 },
-  { id: 'c18', name: 'גמרא "אלו מציעות"',             displayOrder: 18 },
+  { id: 'c18', name: 'גמרא "אלו מציאות"',             displayOrder: 18 },
 ];
 
 // [channelNum, categoryId, title, durationMin]

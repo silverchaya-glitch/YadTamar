@@ -646,7 +646,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
       </div>
       <div class="product-card" id="card-gemara" onclick="selectProduct('GEMARA')">
         <div class="card-icon"><img src="gemara-icon.svg" alt="גמרא" style="width:36px;height:36px;object-fit:contain" /></div>
-        <h3>גמרא<br>"אלו מציעות"</h3>
+        <h3>גמרא<br>"אלו מציאות"</h3>
         <div class="card-price">₪90</div>
         <div class="card-desc">5 קבצי שמע</div>
       </div>
@@ -1020,7 +1020,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
               <li>כ-423 סיפורי שמע לילדים בפורמט דיגיטלי בנושאים שונים (ראה קטלוג מפורט)</li>
               <li>אורך כל קובץ בין 45-60 דקות</li>
               <li>מסופק באמצעות קישור למייל / על דיסק און קי</li>
-              <li>5 קבצי גמרא "אלו מציעות" בקטגוריה נפרדת — לרכישה רק בדיסק און קי</li>
+              <li>5 קבצי גמרא "אלו מציאות" בקטגוריה נפרדת — לרכישה רק בדיסק און קי</li>
               <li>קטלוג הרצאות ושיעורים למבוגרים (כ-283 שיעורים) — לרכישה רק בדיסק און קי</li>
             </ul>
           </div>
@@ -1079,7 +1079,7 @@ body { font-family: 'Heebo', sans-serif; direction: rtl; background: var(--bg); 
           </table>
         </div>
 
-        <div class="pricelist-highlight">מחיר כל הסדרה כ-423 קבצים <strong>1550 ש"ח בלבד!</strong></div>
+        <div class="pricelist-highlight">מחיר כל הסדרה כ-423 קבצים <strong>1550 ש"ח בלבד!</strong> (ניתן לחלק ל-10 תשלומים)</div>
 
         <div class="about-grid">
           <div class="about-card">
@@ -1667,7 +1667,7 @@ function selectProduct(type) {
           </div>
         </div>`).join('');
     } else if (type === 'GEMARA') {
-      document.getElementById('bundle-title').textContent = 'גמרא "אלו מציעות"';
+      document.getElementById('bundle-title').textContent = 'גמרא "אלו מציאות"';
       document.getElementById('bundle-desc').textContent  = '5 קבצי שמע — כלים, יסודות וכללים להבנת הגמרא.';
       document.getElementById('bundle-price-display').textContent = '₪' + GEMARA_PRICE.toLocaleString();
       document.getElementById('delivery-payment-note').style.display = '';
@@ -2075,7 +2075,7 @@ function buildSummary(autoSet = false) {
   } else if (state.product === 'ADULT_COLLECTION') {
     list.innerHTML = `<li><span>אוסף מבוגרים ונוער</span><span>₪${ADULT_COLLECTION_PRICE}</span></li>`;
   } else if (state.product === 'GEMARA') {
-    list.innerHTML = `<li><span>גמרא פרק "אלו מציעות"</span><span>₪${GEMARA_PRICE}</span></li>`;
+    list.innerHTML = `<li><span>גמרא פרק "אלו מציאות"</span><span>₪${GEMARA_PRICE}</span></li>`;
   }
 
   const bd = document.getElementById('price-breakdown');
@@ -2095,7 +2095,7 @@ function buildSummary(autoSet = false) {
       <div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
   } else if (state.product === 'GEMARA') {
     bd.innerHTML = `
-      <div class="price-row"><span>גמרא פרק "אלו מציעות" (כולל דיסק און קי)</span><span>₪${subtotal.toLocaleString()}</span></div>
+      <div class="price-row"><span>גמרא פרק "אלו מציאות" (כולל דיסק און קי)</span><span>₪${subtotal.toLocaleString()}</span></div>
       <div class="price-row total"><span>סה״כ לתשלום</span><span class="amount">₪${total.toLocaleString()}</span></div>`;
   }
 
@@ -2110,7 +2110,7 @@ function buildSummary(autoSet = false) {
 function buildMiniSummary() {
   const { usbCost, total } = getOrderTotal();
   const payLabels = { CREDIT_CARD: 'כרטיס אשראי', BANK_TRANSFER: 'העברה בנקאית', CALLBACK: 'התקשרו אליי' };
-  const productLabels = { STORY_SELECTION: state.selectedStories.size + ' סיפורים', ADULT_COLLECTION: 'אוסף מבוגרים', GEMARA: 'גמרא "אלו מציעות"' };
+  const productLabels = { STORY_SELECTION: state.selectedStories.size + ' סיפורים', ADULT_COLLECTION: 'אוסף מבוגרים', GEMARA: 'גמרא "אלו מציאות"' };
   document.getElementById('mini-summary').innerHTML = `
     <div class="price-row"><span>סוג הזמנה</span><span>${productLabels[state.product]}</span></div>
     ${state.useDrive ? `<div class="price-row"><span>דרייב</span><span style="color:var(--green)">כלול</span></div>` : ''}
