@@ -29,16 +29,19 @@ node server/index.js
 
 ## Git Push
 
-בסביבה הזו (השרת בפועל) אין credential helper/SSH key מוגדר ל-GitHub. האימות נמצא ב-`GITHUB_TOKEN` בקובץ `/www/YadTamar/.env` (הקובץ ב-`.gitignore`, לא נכנס ל-repo). `GITHUB_USER` באותו קובץ ריק בכוונה — לא בשימוש; ה-token עצמו משמש כ-username מול GitHub, בלי סיסמה.
+בסביבה הזו (השרת בפועל) אין credential helper/SSH key מוגדר ל-GitHub. האימות נמצא ב-`GITHUB_TOKEN` בקובץ `/www/YadTamar/.env` (הקובץ ב-`.gitignore`, לא נכנס ל-repo). `GITHUB_USER` באותו קובץ ריק בכוונה — לא בשימוש.
+
+**עדכון (2026-10-18):** הטוקן בתוך ה-URL (`https://${GITHUB_TOKEN}@github.com/...`) כבר לא עובד — GitHub מחזיר הפניה (redirect) וה-credentials שב-URL נזרקים בה (`could not read Username` / `unexpected disconnect while reading sideband packet`). במקום זה מעבירים את הטוקן בכותרת Authorization חד-פעמית, ששורדת את ההפניה.
 
 לדחוף בלי להדפיס את הטוקן לצ'אט:
 
 ```bash
 set -a; source /www/YadTamar/.env; set +a
-git push "https://${GITHUB_TOKEN}@github.com/silverchaya-glitch/YadTamar.git" main
+AUTH=$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)
+git -c http.extraHeader="Authorization: Basic $AUTH" push https://github.com/silverchaya-glitch/YadTamar.git main
 ```
 
-אל תשתמשי ב-`git remote set-url` עם הטוקן משובץ (זה משאיר את הסוד קבוע ב-`.git/config`) — תמיד להעביר את ה-URL עם הטוקן inline לפקודת ה-push עצמה, חד-פעמי.
+אל תשתמשי ב-`git remote set-url` עם הטוקן משובץ ואל תשמרי את `http.extraHeader` ב-`git config` (שניהם משאירים את הסוד קבוע ב-`.git/config`) — תמיד להעביר `-c` חד-פעמי לפקודת ה-push עצמה.
 
 ## Detail-Doc Index
 
