@@ -6,6 +6,7 @@
  *  המקור החי: Apps Script 1guEk38seafJ1OxBHisO0zctU3EVGLZFJYXfqX-Io2rkxyuP-Fx_DdfA7 — עורכים שם
  *  (או clasp push) ומעדכנים את ההפצה החיה; כאן רק עותק לגיבוי ולמעקב שינויים.
  *  הועתק 2026-10-11, אחרי הוספת CALLBACK ל-ALLOWED_PAYMENT_TYPES (הפצה @21).
+ *  עודכן 2026-10-18: תיקיות ההזמנה נוצרות בתוך תיקיית שנה (_getOrCreateYearFolder), הפצה @22.
  *  CUSTOMER_TOKEN הוחלף ב-<REDACTED> — הערך האמיתי קיים רק בסקריפט החי.
  */
 
@@ -590,7 +591,23 @@ function _getOrCreateRootFolder() {
 }
 
 /**
- * יוצרת תיקייה חדשה ומעתיקה אליה את כל הקבצים.
+ * מחזירה את תיקיית השנה הנוכחית (למשל "2026") בתוך תיקיית-האב, ויוצרת אותה אם
+ * אינה קיימת — כך שבשנה חדשה התיקייה "2027" נוצרת אוטומטית בהזמנה הראשונה.
+ * רצה בתוך הנעילה הגלובלית של doPost, ולכן לא תיווצר תיקיית שנה כפולה.
+ */
+function _getOrCreateYearFolder(rootFolder) {
+  const year = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy');
+  const existing = rootFolder.getFoldersByName(year);
+  if (existing.hasNext()) {
+    return existing.next();
+  }
+  const folder = rootFolder.createFolder(year);
+  console.log('_getOrCreateYearFolder: נוצרה תיקיית שנה "' + year + '", folderId=' + folder.getId());
+  return folder;
+}
+
+/**
+ * יוצרת תיקייה חדשה (בתוך תיקיית השנה הנוכחית) ומעתיקה אליה את כל הקבצים.
  */
 function copyFilesToNewFolder(orderId, orderNumber, fileIds, requestId) {
   const folderName = 'יד תמר - ' + (orderNumber || orderId);
@@ -599,7 +616,8 @@ function copyFilesToNewFolder(orderId, orderNumber, fileIds, requestId) {
   let folder;
   try {
     const rootFolder = _getOrCreateRootFolder();
-    folder = rootFolder.createFolder(folderName);
+    const yearFolder = _getOrCreateYearFolder(rootFolder);
+    folder = yearFolder.createFolder(folderName);
     console.log('copyFilesToNewFolder: התיקייה נוצרה. folderId=' + folder.getId());
   } catch (err) {
     console.log('copyFilesToNewFolder: שגיאה ביצירת התיקייה: ' + err.message);
